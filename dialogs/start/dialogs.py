@@ -1,22 +1,23 @@
+from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format, Const
-from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo
+from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo, Start
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from dialogs.start.getters import get_hello, get_creating_post_data
-from dialogs.start.handlers import create_post_click
-from states.start import StartSG
+from dialogs.start.handlers import process_post_msg
+from states.start import StartSG, PostingSG
+
 
 start_dialog = Dialog(
     Window(
         Format('{hello_admin}'),
         Group(
-            SwitchTo(
+            Start(
                 Format('{create_post}'),
                 id='create_post_pressed',
-                state=StartSG.creating_post,
-                on_click=create_post_click
+                state=PostingSG.watch_text,
             ),
             Button(
                 Format('{edit_post}'),
@@ -39,6 +40,16 @@ start_dialog = Dialog(
             one_time_keyboard=True,
             input_field_placeholder=Const('Выберите пункт меню')
         )
+    )
+)
+create_post_dialog = Dialog(
+    Window(
+        Format('{watch_text}'),
+        MessageInput(
+            func=process_post_msg,
+            content_types=ContentType.ANY
+        ),
+        state=PostingSG.watch_text
     ),
     Window(
         Format('{reply_title}\n{msg_to_reply}'),
@@ -46,41 +57,41 @@ start_dialog = Dialog(
             SwitchTo(
                 Format('{edit}'),
                 id='edit_text_pressed',
-                state=StartSG.editing_text,
+                state=PostingSG.editing_text,
             ),
             SwitchTo(
                 Format('{url}'),
                 id='add_url_pressed',
-                state=StartSG.add_url
+                state=PostingSG.add_url
             ),
             SwitchTo(
                 Format('{set_time}'),
                 id='set_time_pressed',
-                state=StartSG.set_time
+                state=PostingSG.set_time
             ),
             SwitchTo(
                 Format('{set_notify}'),
                 id='set_notify_pressed',
-                state=StartSG.set_notify
+                state=PostingSG.set_notify
             ),
             SwitchTo(
                 Format('{media}'),
                 id='media_pressed',
-                state=StartSG.media
+                state=PostingSG.media
             ),
             SwitchTo(
                 Format('{unset_comments}'),
                 id='unset_comments_pressed',
-                state=StartSG.toggle_comments
+                state=PostingSG.toggle_comments
             ),
             SwitchTo(
                 Format('{push_now}'),
                 id='push_now_pressed',
-                state=StartSG.push_now
+                state=PostingSG.push_now
             ),
             width=2
         ),
-        state=StartSG.creating_post,
-        getter=get_creating_post_data
+        state=PostingSG.creating_post,
     ),
+    getter=get_creating_post_data
 )

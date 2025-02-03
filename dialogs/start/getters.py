@@ -9,10 +9,10 @@ if TYPE_CHECKING:
     from locales.stub import TranslatorRunner # type:ignore 
 
 async def get_hello(
-        dialog_manager: DialogManager,
-        i18n: TranslatorRunner,
-        event_from_user: User,
-        **kwargs,
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
 ) -> Dict[str, str]:
     username = html.quote(event_from_user.first_name if event_from_user.first_name else "пользователь")
     return {
@@ -22,16 +22,17 @@ async def get_hello(
         "create_description": i18n.start.create.description(),
         "settings": i18n.start.settings(),
         }
+
     
 async def get_creating_post_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User
+    event_from_user: User,
+    **kwargs
 ) -> Dict[str, str]:
-    msg: Message = dialog_manager.dialog_data['msg_to_reply']
     return {
+        'watch_text': i18n.cr.watch.text(),
         'reply_title': i18n.cr.reply.text(),
-        'msg_to_reply': msg.text,
         'edit': i18n.cr.edit.text(),
         'url': i18n.cr.url.btns(),
         'set_time': i18n.cr.set.time(),
@@ -40,4 +41,4 @@ async def get_creating_post_data(
         'media': i18n.cr.add.media(),
         'unset_comments': i18n.cr.unset.comments(),
         'push_now': i18n.cr.push.now()
-        }
+    }

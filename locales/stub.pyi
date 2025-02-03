@@ -46,6 +46,7 @@ class StartEdit:
 
 
 class Cr:
+    watch: CrWatch
     reply: CrReply
     edit: CrEdit
     url: CrUrl
@@ -53,6 +54,11 @@ class Cr:
     unset: CrUnset
     add: CrAdd
     push: CrPush
+
+
+class CrWatch:
+    @staticmethod
+    def text() -> Literal["""✍ Отправьте текст поста, который необходимо опубликовать"""]: ...
 
 
 class CrReply:

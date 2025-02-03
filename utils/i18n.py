@@ -4,6 +4,9 @@ from fluentogram import FluentTranslator, TranslatorHub
 
 
 def create_translator_hub() -> TranslatorHub:
+    # i18n -dir-ftl locales/ru/LC_MESSAGES/ -stub locales/stub.pyi
+    # Генерация стабов из папки
+    
     translator_hub = TranslatorHub(
         locales_map={
             "ru": ("ru", "en"),

@@ -4,33 +4,94 @@ from typing import Literal
 class TranslatorRunner:
     def get(self, path: str, **kwargs) -> str: ...
     
-    hello: Hello
     start: Start
-    button: Button
-    no: No
+    cr: Cr
 
-
-class Hello:
     @staticmethod
-    def admin(*, username) -> Literal["""Привет, { $username } 👋! Я могу:
-
-📅 запланировать пост 📅
-✍ Подготовить карточку товара по отправленной фотографии или тексту ✍
-
-✨ Для демонстрации возможностей нажми &lt;code&gt;/demo&lt;/code&gt; ✨"""]: ...
+    def cancel() -> Literal["""❌Отмена"""]: ...
 
 
 class Start:
+    hello: StartHello
+    create: StartCreate
+    edit: StartEdit
+
     @staticmethod
-    def button() -> Literal["""Кнопка"""]: ...
+    def settings() -> Literal["""Настройки"""]: ...
 
 
-class Button:
+class StartHello:
     @staticmethod
-    def pressed() -> Literal["""Вы нажали на кнопку"""]: ...
+    def admin(*, username) -> Literal["""Привет, { $username }👋
+
+Я могу:
+✍Составить описание товара✍
+📅Запланировать пост📅
+✍Подготовить карточку товара✍
+
+✨Для демонстрации возможностей нажми /demo ✨"""]: ...
 
 
-class No:
+class StartCreate:
     @staticmethod
-    def handle() -> Literal["""Не смог обработать ваше сообщение.\nНажмите &lt;code&gt;/help&lt;/code&gt;, для просмотра доступных команд."""]: ...
+    def post() -> Literal["""Создать пост"""]: ...
+
+    @staticmethod
+    def description() -> Literal["""Создать описание"""]: ...
+
+
+class StartEdit:
+    @staticmethod
+    def post() -> Literal["""Редактировать пост"""]: ...
+
+
+class Cr:
+    reply: CrReply
+    edit: CrEdit
+    url: CrUrl
+    set: CrSet
+    unset: CrUnset
+    add: CrAdd
+    push: CrPush
+
+
+class CrReply:
+    @staticmethod
+    def text() -> Literal["""⬇ Проверьте текст, перед публикацей ⬇:"""]: ...
+
+
+class CrEdit:
+    @staticmethod
+    def text() -> Literal["""✍Изменить текст"""]: ...
+
+
+class CrUrl:
+    @staticmethod
+    def btns() -> Literal["""☑️URL Кнопки"""]: ...
+
+
+class CrSet:
+    @staticmethod
+    def time() -> Literal["""🕙Время отправки"""]: ...
+
+    @staticmethod
+    def notify() -> Literal["""🔔С уведомлением"""]: ...
+
+
+class CrUnset:
+    @staticmethod
+    def notify() -> Literal["""🔕Без уведомления"""]: ...
+
+    @staticmethod
+    def comments() -> Literal["""☑️Отключить комментарии"""]: ...
+
+
+class CrAdd:
+    @staticmethod
+    def media() -> Literal["""➕Добавить медиа"""]: ...
+
+
+class CrPush:
+    @staticmethod
+    def now() -> Literal["""🚀Отправить сейчас"""]: ...
 

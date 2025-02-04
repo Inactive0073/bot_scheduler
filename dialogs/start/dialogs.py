@@ -1,12 +1,18 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.text import Format, Const
+from aiogram_dialog.widgets.text import Format, Const, Case
 from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo, Start
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
-from dialogs.start.getters import get_hello, get_creating_post_data
-from dialogs.start.handlers import process_post_msg
+from dialogs.start.getters import (
+    get_hello, get_creating_post_data,
+    get_watch_text, 
+)
+from dialogs.start.handlers import (
+    process_post_msg,
+    process_other_type_msg
+)
 from states.start import StartSG, PostingSG
 
 
@@ -37,7 +43,6 @@ start_dialog = Dialog(
         state=StartSG.start,
         markup_factory=ReplyKeyboardFactory(
             resize_keyboard=True,
-            one_time_keyboard=True,
             input_field_placeholder=Const('Выберите пункт меню')
         )
     )
@@ -47,12 +52,22 @@ create_post_dialog = Dialog(
         Format('{watch_text}'),
         MessageInput(
             func=process_post_msg,
-            content_types=ContentType.ANY
+            content_types=[ContentType.PHOTO, ContentType.TEXT]
         ),
-        state=PostingSG.watch_text
+        MessageInput(
+            func=process_other_type_msg,
+        ),
+        state=PostingSG.watch_text,
+        getter=get_watch_text
     ),
     Window(
-        Format('{reply_title}\n{msg_to_reply}'),
+        Case(
+            texts={
+            'photos': Format('{reply_title}\n{post_message_with_photo}'),  
+            ...: Format('{reply_title}\n{post_message}'),
+            },
+            selector='photos'
+        ),
         Group(
             SwitchTo(
                 Format('{edit}'),
@@ -92,6 +107,6 @@ create_post_dialog = Dialog(
             width=2
         ),
         state=PostingSG.creating_post,
-    ),
-    getter=get_creating_post_data
+        getter=get_creating_post_data,
+    )
 )

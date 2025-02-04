@@ -47,6 +47,7 @@ class StartEdit:
 
 class Cr:
     watch: CrWatch
+    invalid: CrInvalid
     reply: CrReply
     edit: CrEdit
     url: CrUrl
@@ -59,6 +60,13 @@ class Cr:
 class CrWatch:
     @staticmethod
     def text() -> Literal["""✍ Отправьте текст поста, который необходимо опубликовать"""]: ...
+
+
+class CrInvalid:
+    @staticmethod
+    def data() -> Literal["""❌ Не поддерживаю такой тип данных ❌  
+
+Для демонстрации бота нажмите /demo или напишите в поддержку бота"""]: ...
 
 
 class CrReply:

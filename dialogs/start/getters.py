@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING, Dict
 
 from aiogram import html
-from aiogram.types import User, Message
+from aiogram.types import User, Message, ContentType
 from aiogram_dialog import DialogManager
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from fluentogram import TranslatorRunner
 
 if TYPE_CHECKING:
@@ -23,16 +24,36 @@ async def get_hello(
         "settings": i18n.start.settings(),
         }
 
-    
+
+async def get_watch_text(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+)-> Dict[str,str]:
+    return {'watch_text': i18n.cr.watch.text(),}
+
+
 async def get_creating_post_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
     event_from_user: User,
     **kwargs
 ) -> Dict[str, str]:
+    photos = dialog_manager.dialog_data.get('photos')
+    if photos:
+        content_msg, media = photos[0], *photos # (caption, file_id, unique_file_id)
+        print(f'{content_msg=}\n{media=}')
+        media = MediaAttachment(
+            type=ContentType.PHOTO,
+            file_id=MediaId(*media)
+        )
+    else:
+        content_msg = dialog_manager.dialog_data.get('post_message', 'Message not found') 
     return {
-        'watch_text': i18n.cr.watch.text(),
         'reply_title': i18n.cr.reply.text(),
+        'post_message': content_msg,
+        'photos': photos,
         'edit': i18n.cr.edit.text(),
         'url': i18n.cr.url.btns(),
         'set_time': i18n.cr.set.time(),

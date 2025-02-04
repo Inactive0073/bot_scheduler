@@ -40,20 +40,10 @@ async def get_creating_post_data(
     event_from_user: User,
     **kwargs
 ) -> Dict[str, str]:
-    photos = dialog_manager.dialog_data.get('photos')
-    if photos:
-        content_msg, media = photos[0], *photos # (caption, file_id, unique_file_id)
-        print(f'{content_msg=}\n{media=}')
-        media = MediaAttachment(
-            type=ContentType.PHOTO,
-            file_id=MediaId(*media)
-        )
-    else:
-        content_msg = dialog_manager.dialog_data.get('post_message', 'Message not found') 
+    content_msg = dialog_manager.dialog_data.get('post_message', 'Message not found') 
     return {
         'reply_title': i18n.cr.reply.text(),
         'post_message': content_msg,
-        'photos': photos,
         'edit': i18n.cr.edit.text(),
         'url': i18n.cr.url.btns(),
         'set_time': i18n.cr.set.time(),

@@ -61,13 +61,7 @@ create_post_dialog = Dialog(
         getter=get_watch_text
     ),
     Window(
-        Case(
-            texts={
-            'photos': Format('{reply_title}\n{post_message_with_photo}'),  
-            ...: Format('{reply_title}\n{post_message}'),
-            },
-            selector='photos'
-        ),
+        Format('{reply_title}\n{post_message}'),
         Group(
             SwitchTo(
                 Format('{edit}'),

@@ -21,21 +21,8 @@ async def process_post_msg(
     Сохраняет сообщение в dialog_data для дальнейшей репрезентации пользователю 
     и осуществляет переход в следующее окно.
     '''
-    data: Dict[str, str | List[Tuple[str]] | None] = {
-        'text': None,
-        'photos': []
-    }
-    if message.content_type == ContentType.TEXT:
-        data['text'] = message.text
-    elif message.content_type == ContentType.PHOTO:
-        data['photos'].append(
-        (
-            message.caption,
-            message.photo[-1].file_id, 
-            message.photo[-1].file_unique_id,
-        ),
-    )
-    dialog_manager.dialog_data.update(data)
+
+    dialog_manager.dialog_data.update({'post_message': message.text})
     await dialog_manager.switch_to(state=PostingSG.creating_post)
 
 async def process_other_type_msg(message: Message, widget: MessageInput, dialog_manager: DialogManager) -> None:

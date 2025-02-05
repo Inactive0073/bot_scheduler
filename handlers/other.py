@@ -5,10 +5,11 @@ from aiogram.types import Message
 from fluentogram import TranslatorRunner
 
 if TYPE_CHECKING:
-    from locales.stub import TranslatorRunner # type: ignore
+    from locales.stub import TranslatorRunner  # type: ignore
 
 # Инициализация роутера уровня модуля
 other_router = Router(name=__name__)
+
 
 # Хендлер будет срабатывать на любые сообщения справкой
 @other_router.message()

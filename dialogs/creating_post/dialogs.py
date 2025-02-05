@@ -15,6 +15,8 @@ from dialogs.creating_post.handlers import (
     process_button_case,
     process_invalid_button_case,
 )
+from dialogs.creating_post.services import parse_button
+
 from states.creating_post import PostingSG
 
 create_post_dialog = Dialog(
@@ -65,6 +67,7 @@ create_post_dialog = Dialog(
             id="watch_url_button",
             on_success=process_button_case,
             on_error=process_invalid_button_case,
+            type_factory=parse_button
         ),
         MessageInput(func=process_other_type_msg, content_types=ContentType.ANY),
         state=PostingSG.add_url,

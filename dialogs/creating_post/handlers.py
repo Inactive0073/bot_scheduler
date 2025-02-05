@@ -1,11 +1,10 @@
 from typing import TYPE_CHECKING
 
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardMarkup
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 
 from states.creating_post import PostingSG
-from dialogs.creating_post.keyboards import create_keyboard_for_url
 
 from logging import getLogger
 
@@ -46,7 +45,7 @@ async def process_other_type_msg(
 
 
 async def process_button_case(
-    message: Message, widget: TextInput, dialog_manager: DialogManager, text: str
+    message: Message, widget: TextInput, dialog_manager: DialogManager, keyboard: InlineKeyboardMarkup
 ) -> None:
     """
     Обрабатывает ввод пользователя для добавления URL-кнопок к сообщению.
@@ -63,17 +62,18 @@ async def process_button_case(
 
     logger.debug(
         f"Полученые следующие данные:"
-        f"message_id={msg_id}\n{chat_id=}\ntext={post_message}"
+        f"message_id={msg_id} \n{chat_id=}\ntext={post_message}\n"
         f"Начали формировать клавиатуру..."
     )
     # формируем юзер-клавиатуру
-    keyboard = create_keyboard_for_url(text)
 
     logger.debug(f"Клавиатура сформирована. Текущий объект клавиатуры: {keyboard}")
 
     # добавляем сообщению кнопки
-    await message.bot.edit_message_text(
-        text=text, chat_id=chat_id, message_id=msg_id, reply_markup=keyboard
+    await message.bot.edit_message_reply_markup(
+        chat_id=chat_id, 
+        message_id=msg_id, 
+        reply_markup=keyboard
     )
     logger.debug("Сообщение было отредактировано")
 

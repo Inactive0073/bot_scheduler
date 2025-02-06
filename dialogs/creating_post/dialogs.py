@@ -14,6 +14,7 @@ from dialogs.creating_post.handlers import (
     process_post_msg,
     process_button_case,
     process_invalid_button_case,
+    edit_text,
 )
 from dialogs.creating_post.services import parse_button
 
@@ -44,15 +45,17 @@ create_post_dialog = Dialog(
         # =============================================================
         Format("{reply_title}\n"),
         Group(
-            Back(
+            SwitchTo(
                 Format("{edit}"),
                 id="edit_text_pressed",
+                state=PostingSG.editing_text,
+                show_mode=ShowMode.DELETE_AND_SEND
             ),
             SwitchTo(
                 Format("{url}"),
                 id="add_url_pressed",
                 state=PostingSG.add_url,
-                show_mode=ShowMode.AUTO,
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
             SwitchTo(
                 Format("{set_time}"), id="set_time_pressed", state=PostingSG.set_time
@@ -76,6 +79,18 @@ create_post_dialog = Dialog(
         state=PostingSG.creating_post,
         getter=get_creating_post_data,
     ),
+    # окно редактирования текста поста
+    Window(
+        Format("{watch_text}"),
+        TextInput(
+            id='watch_edit_text',
+            on_success=edit_text,
+        ),
+        state=PostingSG.editing_text,
+        getter=get_watch_text
+    ),
+
+    # окно добавления кнопок к сообщению 
     Window(
         Format("{instruction_url}"),
         TextInput(

@@ -34,7 +34,9 @@ async def main() -> None:
     # Инициализируем бот и диспетчер
     bot = Bot(
         token=config.tg_bot.token,
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML, link_preview_is_disabled=True
+        ),
     )
     dp = Dispatcher()
 

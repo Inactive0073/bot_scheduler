@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from aiogram.types import Message, InlineKeyboardMarkup
-from aiogram_dialog import DialogManager
+from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 
 from states.creating_post import PostingSG
@@ -21,14 +21,26 @@ async def process_post_msg(
     Сохраняет сообщение в dialog_data для дальнейшей репрезентации пользователю
     и осуществляет переход в следующее окно.
     """
+    copy_msg = await message.send_copy(chat_id=message.chat.id)
+    logger.debug(
+        f"Полученые следующие данные:"
+        f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
+    )
+    # удаляем старое сообщение, чтобы сохранить историю чище
+    await message.bot.delete_message(
+        chat_id=message.chat.id, message_id=message.message_id
+    )
+
     dialog_manager.dialog_data.update(
         {
-            "post_message": message.text,
-            "chat_id": message.chat.id,
-            "message_id": message.message_id,
+            "post_message": copy_msg.text,
+            "chat_id": copy_msg.chat.id,
+            "message_id": copy_msg.message_id,
         }
     )
-    await dialog_manager.switch_to(state=PostingSG.creating_post)
+    await dialog_manager.switch_to(
+        state=PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND
+    )
 
 
 async def process_other_type_msg(
@@ -45,7 +57,10 @@ async def process_other_type_msg(
 
 
 async def process_button_case(
-    message: Message, widget: TextInput, dialog_manager: DialogManager, keyboard: InlineKeyboardMarkup
+    message: Message,
+    widget: TextInput,
+    dialog_manager: DialogManager,
+    keyboard: InlineKeyboardMarkup,
 ) -> None:
     """
     Обрабатывает ввод пользователя для добавления URL-кнопок к сообщению.
@@ -55,35 +70,37 @@ async def process_button_case(
 
     Логирует процесс формирования клавиатуры и результат редактирования.
     """
-    # Получаем данные из dialog_data для обновления кнопки
+    # Получаем данные из dialog_data для создания кнопки
     msg_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
     post_message = dialog_manager.dialog_data["post_message"]
 
-    logger.debug(
-        f"Полученые следующие данные:"
-        f"message_id={msg_id} \n{chat_id=}\ntext={post_message}\n"
-        f"Начали формировать клавиатуру..."
-    )
-    # формируем юзер-клавиатуру
-
-    logger.debug(f"Клавиатура сформирована. Текущий объект клавиатуры: {keyboard}")
-
     # добавляем сообщению кнопки
-    await message.bot.edit_message_reply_markup(
-        chat_id=chat_id, 
-        message_id=msg_id, 
-        reply_markup=keyboard
+    await message.bot.edit_message_text(
+        text=post_message, chat_id=chat_id, message_id=msg_id, reply_markup=keyboard
     )
+
+    # удаляем старое сообщение для чистой истории
+    await message.bot.delete_message(
+        chat_id=message.chat.id, message_id=message.message_id
+    )
+
     logger.debug("Сообщение было отредактировано")
+    await dialog_manager.switch_to(PostingSG.creating_post, ShowMode.DELETE_AND_SEND)
 
 
 async def process_invalid_button_case(
-    message: Message, widget: TextInput, dialog_manager: DialogManager, err: ValueError
-) -> None:
+    message: Message,
+    widget: TextInput,
+    dialog_manager: DialogManager,
+    error: ValueError,
+):
     """
-    Обработка невалидного сообщения.
+    Удаляет сообщения с неудачным текстом и инструкцией для чистой истории
     """
-    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    logger.info(f"Не валидная ссылка, произошла ошибка:\n{err}")
-    await message.answer(i18n.cr.instruction.url())
+    await message.bot.delete_message(
+        chat_id=message.chat.id, message_id=message.message_id - 1
+    )
+    await message.bot.delete_message(
+        chat_id=message.chat.id, message_id=message.message_id
+    )

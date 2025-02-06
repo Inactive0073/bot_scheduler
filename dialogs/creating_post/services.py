@@ -1,8 +1,8 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from typing import Tuple
 from validators.url import url
+
 
 def parse_button(text: str) -> InlineKeyboardMarkup:
     """
@@ -22,7 +22,7 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
         InlineKeyboardMarkup: Объект клавиатуры с кнопками.
 
     Raises:
-        ValueError: 
+        ValueError:
             - Если формат строки кнопки некорректен (не разделено на "Текст - URL").
             - Если URL не проходит валидацию.
     """
@@ -31,7 +31,7 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
     for row in text.strip().split("\n"):
         row_buttons = []
         for el in row.split("|"):
-            parts = [p for p in el.split(" - ")]
+            parts = [p.strip() for p in el.split(" - ")]
 
             if len(parts) != 2:
                 raise ValueError(
@@ -40,14 +40,11 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
                     f"Получено: {''.join(parts)}\n"
                 )
             name, link = parts
-
             if not url(link):
-                raise ValueError(
-                    f"Ошибка в процессе валидации ссылки, проверьте ссылку: {link}"
-                )
+                raise ValueError(f"Ошибка в процессе валидации ссылки: {link}")
 
             row_buttons.append(InlineKeyboardButton(text=name, url=link))
 
         builder.row(*row_buttons)
-    
+
     return builder.as_markup()

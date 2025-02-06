@@ -1,5 +1,5 @@
 from aiogram.types import ContentType
-from aiogram_dialog import Dialog, Window
+from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back
 from aiogram_dialog.widgets.input import TextInput, MessageInput
@@ -20,7 +20,9 @@ from dialogs.creating_post.services import parse_button
 from states.creating_post import PostingSG
 
 create_post_dialog = Dialog(
+    # Процесс создания поста
     Window(
+        # Записываем текст введенный пользователем
         Format("{watch_text}"),
         MessageInput(
             func=process_post_msg, content_types=[ContentType.PHOTO, ContentType.TEXT]
@@ -32,13 +34,26 @@ create_post_dialog = Dialog(
         getter=get_watch_text,
     ),
     Window(
-        Format("{reply_title}\n{post_message}"),
+        # =============================================================
+        # Меню настройки поста
+        # =============================================================
+        # Редактировать пост | Добавить URL кнопок / Удалить URL кнопки
+        # Время отправки     | С уведомлением / Без уведомления
+        # Добавить медиа     | Отключить комментарии
+        # Отправить сейчас
+        # =============================================================
+        Format("{reply_title}\n"),
         Group(
             Back(
                 Format("{edit}"),
                 id="edit_text_pressed",
             ),
-            SwitchTo(Format("{url}"), id="add_url_pressed", state=PostingSG.add_url),
+            SwitchTo(
+                Format("{url}"),
+                id="add_url_pressed",
+                state=PostingSG.add_url,
+                show_mode=ShowMode.AUTO,
+            ),
             SwitchTo(
                 Format("{set_time}"), id="set_time_pressed", state=PostingSG.set_time
             ),
@@ -67,7 +82,7 @@ create_post_dialog = Dialog(
             id="watch_url_button",
             on_success=process_button_case,
             on_error=process_invalid_button_case,
-            type_factory=parse_button
+            type_factory=parse_button,
         ),
         MessageInput(func=process_other_type_msg, content_types=ContentType.ANY),
         state=PostingSG.add_url,

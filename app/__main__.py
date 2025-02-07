@@ -9,11 +9,11 @@ from aiogram_dialog import setup_dialogs
 from fluentogram import TranslatorHub
 
 # Локальные импорты
-from config_data.config import Config, load_config
-from dialogs.setup import get_dialogs
-from handlers.commands import commands_router
-from middlewares.i18n import TranslatorRunnerMiddleware
-from utils.i18n import create_translator_hub
+from app.config_data.config import Config, load_config
+from app.dialogs.setup import get_dialogs
+from app.handlers.commands import commands_router
+from app.middlewares.i18n import TranslatorRunnerMiddleware
+from app.utils.i18n import create_translator_hub
 
 # Настраиваем базовую конфигурацию логирования
 logging.basicConfig(

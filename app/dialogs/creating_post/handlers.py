@@ -4,7 +4,7 @@ from aiogram.types import Message, InlineKeyboardMarkup
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 
-from states.creating_post import PostingSG
+from app.states.creating_post import PostingSG
 
 from logging import getLogger
 

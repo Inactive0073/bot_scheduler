@@ -3,9 +3,9 @@ from aiogram_dialog.widgets.text import Format, Const
 from aiogram_dialog.widgets.kbd import Button, Group, Start
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
-from dialogs.start.getters import get_hello
-from states.start import StartSG
-from states.creating_post import PostingSG
+from app.dialogs.start.getters import get_hello
+from app.states.start import StartSG
+from app.states.creating_post import PostingSG
 
 
 start_dialog = Dialog(

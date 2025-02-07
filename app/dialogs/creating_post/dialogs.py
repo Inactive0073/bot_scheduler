@@ -4,21 +4,21 @@ from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
-from dialogs.creating_post.getters import (
+from app.dialogs.creating_post.getters import (
     get_creating_post_data,
     get_watch_text,
     get_url_instruction,
 )
-from dialogs.creating_post.handlers import (
+from app.dialogs.creating_post.handlers import (
     process_other_type_msg,
     process_post_msg,
     process_button_case,
     process_invalid_button_case,
     edit_text,
 )
-from dialogs.creating_post.services import parse_button
+from app.dialogs.creating_post.services import parse_button
 
-from states.creating_post import PostingSG
+from app.states.creating_post import PostingSG
 
 create_post_dialog = Dialog(
     # Процесс создания поста

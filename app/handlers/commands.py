@@ -3,8 +3,8 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from states.start import StartSG
-from states.options import OptionsSG
+from app.states.start import StartSG
+from app.states.options import OptionsSG
 
 commands_router = Router(name=__name__)
 

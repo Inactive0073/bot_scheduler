@@ -169,3 +169,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Данные RabbitMQ (томы)
+rabbitmq_data/
+
+# Локальные настройки Docker Compose
+docker-compose.override.yml

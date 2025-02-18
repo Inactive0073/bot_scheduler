@@ -11,6 +11,7 @@ class TgBot:
 class RabbitMQConfig:
     URL: str
 
+
 @dataclass
 class Config:
     tg_bot: TgBot

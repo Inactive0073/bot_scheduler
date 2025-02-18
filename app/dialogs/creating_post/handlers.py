@@ -74,7 +74,7 @@ async def process_button_case(
     msg_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
     post_message = dialog_manager.dialog_data["post_message"]
-    
+
     # Кладем клавиатуру в dialog_data
     dialog_manager.dialog_data["keyboard"] = keyboard
 
@@ -134,10 +134,7 @@ async def process_invalid_button_case(
 
 
 async def edit_text(
-        message: Message,
-        widget: TextInput,
-        dialog_manager: DialogManager,
-        text: str
+    message: Message, widget: TextInput, dialog_manager: DialogManager, text: str
 ):
     """
     Финализатор работы с добавлением кнопок к сообщению.
@@ -150,17 +147,13 @@ async def edit_text(
 
     # удаляем старое сообщение
     await message.bot.delete_message(
-        chat_id=message.chat.id,
-        message_id=message.message_id
+        chat_id=message.chat.id, message_id=message.message_id
     )
 
     # редактируем выбранное сообщение
     if keyboard:
         await message.bot.edit_message_text(
-            text=text,
-            message_id=msg_id,
-            chat_id=chat_id,
-            reply_markup=keyboard
+            text=text, message_id=msg_id, chat_id=chat_id, reply_markup=keyboard
         )
 
     else:

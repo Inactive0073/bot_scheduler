@@ -51,7 +51,7 @@ create_post_dialog = Dialog(
                 Format("{edit}"),
                 id="edit_text_pressed",
                 state=PostingSG.editing_text,
-                show_mode=ShowMode.DELETE_AND_SEND
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
             # Добавить URL кнопок
             SwitchTo(
@@ -95,14 +95,13 @@ create_post_dialog = Dialog(
     Window(
         Format("{watch_text}"),
         TextInput(
-            id='watch_edit_text',
+            id="watch_edit_text",
             on_success=edit_text,
         ),
         state=PostingSG.editing_text,
-        getter=get_watch_text
+        getter=get_watch_text,
     ),
-
-    # окно добавления кнопок к сообщению 
+    # окно добавления кнопок к сообщению
     Window(
         Format("{instruction_url}"),
         TextInput(

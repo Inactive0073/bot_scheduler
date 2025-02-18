@@ -37,9 +37,7 @@ async def main():
 
     # Привязываем очередь к точке обмена
     await channel.queue_bind(
-        queue=declare_ok.queue,
-        exchange="test_exchange",
-        routing_key="test_routing_key"
+        queue=declare_ok.queue, exchange="test_exchange", routing_key="test_routing_key"
     )
 
     # Определяем количество сообщений, которое консьюмер может получить за один раз
@@ -50,6 +48,8 @@ async def main():
 
     # Создаем бесконечный цикл для ожидания сообщений для консьюмера из очереди
     await asyncio.Future()
+
+
 
 
 asyncio.run(main())

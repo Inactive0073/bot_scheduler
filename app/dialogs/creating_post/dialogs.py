@@ -114,5 +114,9 @@ create_post_dialog = Dialog(
         state=PostingSG.add_url,
         getter=get_url_instruction,
     ),
-    
+    # окно добавления времени постинга 
+    Window(
+        Format("{instruction_delayed_post}"),
+        
+    ),
 )

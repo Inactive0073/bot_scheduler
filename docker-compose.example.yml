@@ -9,7 +9,7 @@ services:
       - 15672:15672 # порт для управляющего интерфейса
     environment:
       - RABBITMQ_USER=${RABBITMQ_USER}  # Замените в .env
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}  # Замените в .env
+      - RABBITMQ_PASS=${RABBITMQ_PASS}  # Замените в .env
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit disk_free_limit 1431655766
     volumes:
       - ./rabbitmq_data:/var/lib/rabbitmq  # сохраняем данные на диске

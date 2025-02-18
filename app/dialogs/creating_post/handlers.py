@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 
-from aiogram.types import Message, InlineKeyboardMarkup
+from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
+from aiogram_dialog.widgets.kbd import Button
 
 from app.states.creating_post import PostingSG
 
@@ -68,7 +69,6 @@ async def process_button_case(
     Обновляет исходное сообщение, добавляя к нему инлайн-клавиатуру.
     Использует данные из dialog_data для редактирования сообщения.
 
-    Логирует процесс формирования клавиатуры и результат редактирования.
     """
     # Получаем данные из dialog_data для создания кнопки
     msg_id = dialog_manager.dialog_data["message_id"]
@@ -76,7 +76,7 @@ async def process_button_case(
     post_message = dialog_manager.dialog_data["post_message"]
     
     # Кладем клавиатуру в dialog_data
-    dialog_manager.dialog_data['keyboard'] = keyboard
+    dialog_manager.dialog_data["keyboard"] = keyboard
 
     # добавляем сообщению кнопки
     await message.bot.edit_message_text(
@@ -89,8 +89,32 @@ async def process_button_case(
     )
 
     logger.debug("Сообщение было отредактировано")
+    
+    # Сохраняем в dialog_data изменение кнопки
+    dialog_manager.dialog_data["url_button_empty"] = False
+    dialog_manager.dialog_data["url_button_exists"] = True
+    
     await dialog_manager.switch_to(PostingSG.creating_post, ShowMode.DELETE_AND_SEND)
 
+
+async def process_delete_button(
+    callback:CallbackQuery, 
+    button: Button,
+    dialog_manager: DialogManager
+):
+    """
+    Удаляет кнопки с меню настройки постинга новости
+    """
+    msg = dialog_manager.dialog_data["post_message"]
+    msg_id = dialog_manager.dialog_data["message_id"]
+    await callback.message.bot.edit_message_text(
+        text=msg,
+        chat_id=callback.message.chat.id,
+        message_id=msg_id,
+    )
+    dialog_manager.dialog_data["url_button_empty"] = True
+    dialog_manager.dialog_data["url_button_exists"] = False
+    
 
 async def process_invalid_button_case(
     message: Message,
@@ -115,6 +139,9 @@ async def edit_text(
         dialog_manager: DialogManager,
         text: str
 ):
+    """
+    Финализатор работы с добавлением кнопок к сообщению.
+    """
     # получаем данные для редактирования сообщения
     msg_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
@@ -142,6 +169,8 @@ async def edit_text(
             message_id=msg_id,
             chat_id=chat_id,
         )
-
+    
     # Возвращаемся обратно в меню создания и настройки поста
     await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
+    
+    

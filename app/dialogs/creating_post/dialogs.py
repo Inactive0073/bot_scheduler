@@ -1,7 +1,7 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.dialogs.creating_post.getters import (
@@ -10,6 +10,7 @@ from app.dialogs.creating_post.getters import (
     get_url_instruction,
 )
 from app.dialogs.creating_post.handlers import (
+    process_delete_button,
     process_other_type_msg,
     process_post_msg,
     process_button_case,
@@ -45,18 +46,29 @@ create_post_dialog = Dialog(
         # =============================================================
         Format("{reply_title}\n"),
         Group(
+            # Отредактировать текст поста
             SwitchTo(
                 Format("{edit}"),
                 id="edit_text_pressed",
                 state=PostingSG.editing_text,
                 show_mode=ShowMode.DELETE_AND_SEND
             ),
+            # Добавить URL кнопок
             SwitchTo(
                 Format("{url}"),
                 id="add_url_pressed",
                 state=PostingSG.add_url,
+                when="url_button_empty",
                 show_mode=ShowMode.DELETE_AND_SEND,
             ),
+            # Удалить URL кнопок
+            Button(
+                Format("{url_delete}"),
+                id="del_url_pressed",
+                on_click=process_delete_button,
+                when="url_button_exists",
+            ),
+            # Установить время
             SwitchTo(
                 Format("{set_time}"), id="set_time_pressed", state=PostingSG.set_time
             ),
@@ -103,4 +115,5 @@ create_post_dialog = Dialog(
         state=PostingSG.add_url,
         getter=get_url_instruction,
     ),
+    
 )

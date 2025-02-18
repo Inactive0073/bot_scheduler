@@ -26,19 +26,24 @@ async def get_creating_post_data(
     **kwargs,
 ) -> Dict[str, str]:
     content_msg = dialog_manager.dialog_data.get("post_message", "Message not found")
+    url_button_empty = dialog_manager.dialog_data.get("url_button_empty", True)
+    
     return {
         "reply_title": i18n.cr.reply.text(),
         "post_message": content_msg,
         "edit": i18n.cr.edit.text(),
         "url": i18n.cr.url.btns(),
+        "url_delete": i18n.cr.url.delete(),
         "set_time": i18n.cr.set.time(),
         "set_notify": i18n.cr.set.notify(),
         "unset_notify": i18n.cr.unset.notify(),
         "media": i18n.cr.add.media(),
         "unset_comments": i18n.cr.unset.comments(),
         "push_now": i18n.cr.push.now(),
+        "url_button_empty": url_button_empty,
+        "url_button_exists": not url_button_empty,
     }
-
+     
 
 async def get_url_instruction(
     dialog_manager: DialogManager,

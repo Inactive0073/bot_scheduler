@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-
+# Запись поста
 async def process_post_msg(
     message: Message, widget: MessageInput, dialog_manager: DialogManager
 ) -> None:
@@ -24,7 +24,7 @@ async def process_post_msg(
     """
     copy_msg = await message.send_copy(chat_id=message.chat.id)
     logger.debug(
-        f"Полученые следующие данные:"
+        f"Полученые следующие данные от {message.from_user.full_name}:\n"
         f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
     )
     # удаляем старое сообщение, чтобы сохранить историю чище
@@ -56,7 +56,7 @@ async def process_other_type_msg(
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     await message.answer(i18n.cr.invalid.data())
 
-
+# Добавления URL кнопок
 async def process_button_case(
     message: Message,
     widget: TextInput,
@@ -132,7 +132,7 @@ async def process_invalid_button_case(
         chat_id=message.chat.id, message_id=message.message_id
     )
 
-
+# Редактирование текста
 async def edit_text(
     message: Message, widget: TextInput, dialog_manager: DialogManager, text: str
 ):
@@ -166,4 +166,35 @@ async def edit_text(
     # Возвращаемся обратно в меню создания и настройки поста
     await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
     
+# Установка медиа
+
+async def process_addition_media(
+    message: Message,
+    widget: MessageInput,
+    dialog_manager: DialogManager,
+) -> None:
+    """
+    Установка медиа контента к посту
+    """
+    message_id = dialog_manager.dialog_data["message_id"]
+    chat_id = dialog_manager.dialog_data["chat_id"]
+    media = ...
+    await message.bot.edit_message_media(
+        media=...,
+        message_id=message_id,
+        chat_id=chat_id,
+    )
     
+    
+
+async def process_invalid_media_content(
+    message: Message,
+    widget: MessageInput,
+    dialog_manager: DialogManager,
+) -> None:
+    """
+    Обработка некорректных сообщений, если они не попадают под тайп видео, фото, кружка, гифки
+    """
+    i18n: TranslatorRunner = dialog_manager.dialog_data['i18n']
+    # dialog_manager.show_mode = ShowMode.DELETE_AND_SEND # пока оставим для экспериментов
+    await message.reply(i18n.cr.instruction.media.invalid.type())

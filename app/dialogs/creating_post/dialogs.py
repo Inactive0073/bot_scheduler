@@ -1,7 +1,7 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
-from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button
+from aiogram_dialog.widgets.text import Format, Case
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button, Calendar
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.dialogs.creating_post.getters import (
@@ -15,6 +15,7 @@ from app.dialogs.creating_post.handlers import (
     process_post_msg,
     process_button_case,
     process_invalid_button_case,
+    process_invalid_media_content,
     edit_text,
 )
 from app.dialogs.creating_post.services import parse_button
@@ -114,9 +115,22 @@ create_post_dialog = Dialog(
         state=PostingSG.add_url,
         getter=get_url_instruction,
     ),
-    # окно добавления времени постинга 
+    # окно добавления времени постинга
+    # (в разработке) 
     Window(
         Format("{instruction_delayed_post}"),
-        
+        state=PostingSG.set_time,
     ),
+    Window(
+        Format("{instruction_add_media}"),
+        MessageInput(
+            func=...,
+            content_types=[
+                ContentType.VIDEO, 
+                ContentType.PHOTO,
+            ]
+        ),
+        MessageInput(func=process_invalid_media_content),
+        state=PostingSG.media
+    )
 )

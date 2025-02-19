@@ -174,16 +174,15 @@ async def process_addition_media(
     dialog_manager: DialogManager,
 ) -> None:
     """
-    Установка медиа контента к посту
+    Установка медиа контента(фото/видео) к посту
     """
+    media_group_id = message.media_group_id
     message_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
-    media = ...
-    await message.bot.edit_message_media(
-        media=...,
-        message_id=message_id,
-        chat_id=chat_id,
+    dialog_manager.dialog_data.setdefault("post_media", []).append(
+        (message.photo[-1].file_id, message.photo[-1].file_unique_id),
     )
+
     
     
 

@@ -13,6 +13,7 @@ from app.dialogs.creating_post.handlers import (
     process_delete_button,
     process_other_type_msg,
     process_post_msg,
+    process_addition_media,
     process_button_case,
     process_invalid_button_case,
     process_invalid_media_content,
@@ -124,7 +125,7 @@ create_post_dialog = Dialog(
     Window(
         Format("{instruction_add_media}"),
         MessageInput(
-            func=...,
+            func=process_addition_media,
             content_types=[
                 ContentType.VIDEO, 
                 ContentType.PHOTO,

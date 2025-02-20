@@ -1,11 +1,13 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
-from aiogram_dialog.widgets.text import Format, Case
+from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button, Calendar
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.dialogs.creating_post.getters import (
+    get_addition_media_data,
     get_creating_post_data,
+    get_time_instruction_data,
     get_watch_text,
     get_url_instruction,
 )
@@ -42,8 +44,8 @@ create_post_dialog = Dialog(
         # Меню настройки поста
         # =============================================================
         # Редактировать пост | Добавить URL кнопок / Удалить URL кнопки
-        # Время отправки     | С уведомлением / Без уведомления
-        # Добавить медиа     | Отключить комментарии
+        # Время отправки / Удалить время     | С уведомлением / Без уведомления
+        # Добавить медиа / Удалить медиа     | Отключить комментарии
         # Отправить сейчас
         # =============================================================
         Format("{reply_title}\n"),
@@ -117,11 +119,17 @@ create_post_dialog = Dialog(
         getter=get_url_instruction,
     ),
     # окно добавления времени постинга
-    # (в разработке) 
     Window(
         Format("{instruction_delayed_post}"),
+        TextInput(
+            id="time_fixed",
+            type_factory=...,
+            on_error=...,
+        ),
         state=PostingSG.set_time,
+        getter=get_time_instruction_data,
     ),
+    # окно добавления медиа
     Window(
         Format("{instruction_add_media}"),
         MessageInput(
@@ -132,6 +140,14 @@ create_post_dialog = Dialog(
             ]
         ),
         MessageInput(func=process_invalid_media_content),
-        state=PostingSG.media
-    )
+        state=PostingSG.media,
+        getter=get_addition_media_data
+    ),
+    # окно апрува медиа
+    # Window(
+    #     Format("{cr-instruction-media-approve}"),
+    #     SwitchTo(),
+    #     state=...,
+    #     getter=...,
+    # )
 )

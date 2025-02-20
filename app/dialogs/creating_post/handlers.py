@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 
 from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery
+
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button
@@ -24,7 +26,7 @@ async def process_post_msg(
     """
     copy_msg = await message.send_copy(chat_id=message.chat.id)
     logger.debug(
-        f"Полученые следующие данные от {message.from_user.full_name}:\n"
+        f"Полученые следующие данные от {message.from_user.first_name}:\n"
         f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
     )
     # удаляем старое сообщение, чтобы сохранить историю чище
@@ -166,8 +168,33 @@ async def edit_text(
     # Возвращаемся обратно в меню создания и настройки поста
     await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
     
-# Установка медиа
 
+# Установка времени поста
+async def process_set_time(
+    message: Message,
+    widget: TextInput,
+    dialog_manager: DialogManager,
+    text: str
+) -> None:
+    """
+    Сохраняет время публикации
+    
+    Допустимые форматы:
+        18 - текущие сутки 18:00
+        830 - текущие сутки 08:30
+        1830 - текущие сутки 18:30
+        18300408 - 18:30 04.08
+    """
+    
+    if not all((char.isdigit() for char in text)):
+        raise ValueError
+    
+    
+    
+    
+    
+# Установка медиа
+# (!В разработке)
 async def process_addition_media(
     message: Message,
     widget: MessageInput,
@@ -176,10 +203,13 @@ async def process_addition_media(
     """
     Сохранение 
     """
-    dialog_manager.dialog_data.setdefault("post_media", []).append(
+    dialog_manager.dialog_data.setdefault("media_content", []).append(
         (message.photo[-1].file_id, message.photo[-1].file_unique_id),
     )
-
+    MediaAttachment()
+    await message.bot.edit_message_media(
+        
+    )
     
     
 
@@ -193,4 +223,4 @@ async def process_invalid_media_content(
     """
     i18n: TranslatorRunner = dialog_manager.dialog_data['i18n']
     # dialog_manager.show_mode = ShowMode.DELETE_AND_SEND # пока оставим для экспериментов
-    await message.reply(i18n.cr.instruction.media.invalid.type())
+    await message.answer(i18n.cr.instruction.media.invalid.type())

@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING, Dict
 
 from aiogram.types import User
+
 from aiogram_dialog import DialogManager
+
 from fluentogram import TranslatorRunner
 
 if TYPE_CHECKING:
@@ -27,7 +29,7 @@ async def get_creating_post_data(
 ) -> Dict[str, str]:
     content_msg = dialog_manager.dialog_data.get("post_message", "Message not found")
     url_button_empty = dialog_manager.dialog_data.get("url_button_empty", True)
-    
+
     return {
         "reply_title": i18n.cr.reply.text(),
         "post_message": content_msg,
@@ -43,6 +45,7 @@ async def get_creating_post_data(
         "url_button_empty": url_button_empty,
         "url_button_exists": not url_button_empty,
     }
+        
      
 
 async def get_url_instruction(
@@ -53,4 +56,25 @@ async def get_url_instruction(
 ) -> Dict[str, str]:
     return {
         "instruction_url": i18n.cr.instruction.url(),
+    }
+
+
+async def get_time_instruction_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> Dict[str,str]:
+    return {
+        "instruction_delayed_post": i18n.cr.instruction.delayed.post()
+    }
+
+async def get_addition_media_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> Dict[str,str]:
+    return {
+        "instruction_add_media": i18n.cr.instruction.media.post(),
     }

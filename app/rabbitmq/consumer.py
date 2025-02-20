@@ -86,7 +86,7 @@ async def create_channel(connection):
 
 async def main():
     # Указываем параметры соединения с брокером
-    connection_params = "amqp://rabbitmqlogin:rabbitmqpassword@localhost/"
+    connection_params = "amqp://solo:Gfhjkm0073@localhost/"
 
     # Запускаем бесконечный цикл попыток соединения с брокером
     while True:

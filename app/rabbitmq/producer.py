@@ -7,7 +7,7 @@ import aiormq
 
 async def publish_message():
     # Подключаемся к RabbitMQ
-    connection = await aiormq.connect('amqp://rabbitmqlogin:rabbitmqpassword@localhost/')
+    connection = await aiormq.connect('amqp://solo:Gfhjkm0073@localhost/')
 
     # Создаем канал
     channel = await connection.channel()

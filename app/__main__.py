@@ -13,7 +13,9 @@ from app.config_data.config import Config, load_config
 from app.dialogs.setup import get_dialogs
 from app.handlers.commands import commands_router
 from app.middlewares.i18n import TranslatorRunnerMiddleware
+from app.storage.nats_storage import NatsStorage
 from app.utils.i18n import create_translator_hub
+from app.utils.nats_connect import connect_to_nats
 
 # Настраиваем базовую конфигурацию логирования
 logging.basicConfig(
@@ -30,6 +32,12 @@ logger = logging.getLogger(__name__)
 async def main() -> None:
     # Загружаем конфиг в переменную config
     config: Config = load_config()
+    
+    # Подключение к NATS
+    nc, js = await connect_to_nats()
+    
+    # Инициализация хранилаща на базе NATS
+    storage: NatsStorage = await NatsStorage(nc=nc, js=js).create_storage()
 
     # Инициализируем бот и диспетчер
     bot = Bot(
@@ -38,7 +46,7 @@ async def main() -> None:
             parse_mode=ParseMode.HTML, link_preview_is_disabled=True
         ),
     )
-    dp = Dispatcher()
+    dp = Dispatcher(storage=storage)
 
     # Создаем объект типа TranslatorHub
     translator_hub: TranslatorHub = create_translator_hub()
@@ -54,8 +62,14 @@ async def main() -> None:
     setup_dialogs(dp)
 
     # Запускаем polling
-    await dp.start_polling(bot, _translator_hub=translator_hub)
-
+    try:
+        await dp.start_polling(bot, _translator_hub=translator_hub)
+    except Exception as e:
+        logger.exception(e)
+    finally:
+        # Закрываем соединение с NATS
+        await nc.close()
+        logger.info("Connection to NATS closed")
 
 if __name__ == "__main__":
     asyncio.run(main())

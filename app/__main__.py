@@ -16,6 +16,7 @@ from app.middlewares.i18n import TranslatorRunnerMiddleware
 from app.storage.nats_storage import NatsStorage
 from app.utils.i18n import create_translator_hub
 from app.utils.nats_connect import connect_to_nats
+from app.utils.start_consumers import start_delayed_consumer
 
 # Настраиваем базовую конфигурацию логирования
 logging.basicConfig(
@@ -63,7 +64,22 @@ async def main() -> None:
 
     # Запускаем polling
     try:
-        await dp.start_polling(bot, _translator_hub=translator_hub)
+        await asyncio.gather(
+            dp.start_polling(
+                bot, 
+                js=js, # прокидываем для получения контекста стрима внутри хендлеров
+                delay_del_subject=config.delayed_consumer.subject,
+                _translator_hub=translator_hub # i18n
+            ),
+            start_delayed_consumer(
+                nc=nc,
+                js=js,
+                bot=bot,
+                subject=config.delayed_consumer.subject,
+                stream=config.delayed_consumer.stream,
+                durable_name=config.delayed_consumer.durable_name
+            )
+        ) 
     except Exception as e:
         logger.exception(e)
     finally:

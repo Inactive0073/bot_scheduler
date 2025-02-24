@@ -7,6 +7,7 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button
 
+from app.dialogs.creating_post.services import parse_time
 from app.states.creating_post import PostingSG
 
 from logging import getLogger
@@ -189,6 +190,7 @@ async def process_set_time(
     if not all((char.isdigit() for char in text)):
         raise ValueError
 
+    time_post = parse_time()
 
 # Установка медиа
 # (!В разработке)

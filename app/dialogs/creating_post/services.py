@@ -2,7 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from validators.url import url
-
+from datetime import datetime as dt
+from datetime import timezone as tz
 
 def parse_button(text: str) -> InlineKeyboardMarkup:
     """
@@ -14,6 +15,7 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
 
     Пример:
         "Кнопка 1 - https://ya.ru | Кнопка 2 - https://google.com"
+        "Кнопка 3 - https://ya.ru | Кнопка 4 - https://google.com"
 
     Args:
         text (str): Входной текст с описанием кнопок.
@@ -48,3 +50,11 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
         builder.row(*row_buttons)
 
     return builder.as_markup()
+
+
+def parse_time(time: str):
+    current_date = dt.now()
+    print(current_date)
+    
+    
+parse_time()

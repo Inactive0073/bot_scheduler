@@ -34,7 +34,7 @@ async def main() -> None:
     config: Config = load_config()
     
     # Подключение к NATS
-    nc, js = await connect_to_nats()
+    nc, js = await connect_to_nats(servers=config.nats.servers)
     
     # Инициализация хранилаща на базе NATS
     storage: NatsStorage = await NatsStorage(nc=nc, js=js).create_storage()

@@ -45,8 +45,7 @@ async def get_creating_post_data(
         "url_button_empty": url_button_empty,
         "url_button_exists": not url_button_empty,
     }
-        
-     
+
 
 async def get_url_instruction(
     dialog_manager: DialogManager,
@@ -64,17 +63,16 @@ async def get_time_instruction_data(
     i18n: TranslatorRunner,
     event_from_user: User,
     **kwargs,
-) -> Dict[str,str]:
-    return {
-        "instruction_delayed_post": i18n.cr.instruction.delayed.post()
-    }
+) -> Dict[str, str]:
+    return {"instruction_delayed_post": i18n.cr.instruction.delayed.post()}
+
 
 async def get_addition_media_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
     event_from_user: User,
     **kwargs,
-) -> Dict[str,str]:
+) -> Dict[str, str]:
     return {
         "instruction_add_media": i18n.cr.instruction.media.post(),
     }

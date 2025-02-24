@@ -135,13 +135,13 @@ create_post_dialog = Dialog(
         MessageInput(
             func=process_addition_media,
             content_types=[
-                ContentType.VIDEO, 
+                ContentType.VIDEO,
                 ContentType.PHOTO,
-            ]
+            ],
         ),
         MessageInput(func=process_invalid_media_content),
         state=PostingSG.media,
-        getter=get_addition_media_data
+        getter=get_addition_media_data,
     ),
     # окно апрува медиа
     # Window(

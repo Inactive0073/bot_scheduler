@@ -3,7 +3,8 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from validators.url import url
 from datetime import datetime as dt
-from datetime import timezone as tz
+import pytz
+
 
 def parse_button(text: str) -> InlineKeyboardMarkup:
     """
@@ -53,8 +54,39 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
 
 
 def parse_time(time: str):
-    current_date = dt.now()
-    print(current_date)
+    """
+    Парсит строку времени в формате HH, HHMM, HHMMDD
+    и возвращает datetime с замененными значениями.
     
+    Args:
+        time_str (str): Строка времени (только цифры)
+        
+    Returns:
+        datetime: Объект datetime
+        
+    Raises:
+        ValueError: При неверном формате или некорректных значениях
+    """
+    date = dt.now()
+
+    while ' ' in time.strip():
+        time = time.replace(' ', '')
     
-parse_time()
+    if len(time) == 2:
+        hour = int(time)
+        date = date.replace(hour=hour, minute=0)
+    
+    elif len(time) <= 4:
+        hour = int(str(time[:2]))
+        minute = int(str(time[2:]))
+        date = date.replace(hour=hour, minute=minute)
+    
+    elif len(time) == 8:
+        hour, minute, day, month = [int(str(time[i:i+2])) for i in range(0, len(time), 2)]
+        date = date.replace(hour=hour, minute=minute, day=day, month=month)
+        
+    else:
+        raise ValueError
+    
+    date = date.replace(second=0, microsecond=0, tzinfo=pytz.timezone("Europe/Moscow"))
+    return date

@@ -1,6 +1,6 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
-from aiogram_dialog.widgets.text import Format
+from aiogram_dialog.widgets.text import Format, Case
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button, Calendar
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
@@ -12,6 +12,7 @@ from app.dialogs.creating_post.getters import (
     get_url_instruction,
 )
 from app.dialogs.creating_post.handlers import (
+    invalid_set_time,
     process_delete_button,
     process_other_type_msg,
     process_post_msg,
@@ -20,6 +21,7 @@ from app.dialogs.creating_post.handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
+    process_set_time,
 )
 from app.dialogs.creating_post.services import parse_button
 
@@ -74,7 +76,14 @@ create_post_dialog = Dialog(
             ),
             # Установить время
             SwitchTo(
-                Format("{set_time}"), id="set_time_pressed", state=PostingSG.set_time
+                Case(
+                    texts={
+                        0: Format("{set_time}"),
+                        1: Format("{posting_time}"),
+                    },
+                    selector="posting_time_index"
+                ),
+                id="set_time_pressed", state=PostingSG.set_time
             ),
             SwitchTo(
                 Format("{set_notify}"),
@@ -122,9 +131,9 @@ create_post_dialog = Dialog(
     Window(
         Format("{instruction_delayed_post}"),
         TextInput(
-            id="time_fixed",
-            type_factory=...,
-            on_error=...,
+            id="time_set",
+            type_factory=process_set_time,
+            on_error=invalid_set_time,
         ),
         state=PostingSG.set_time,
         getter=get_time_instruction_data,

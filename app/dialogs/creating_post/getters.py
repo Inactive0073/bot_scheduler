@@ -27,8 +27,11 @@ async def get_creating_post_data(
     event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
-    content_msg = dialog_manager.dialog_data.get("post_message", "Message not found")
+    content_msg = dialog_manager.dialog_data.get("post_message", "Сообщение не найдено")
     url_button_empty = dialog_manager.dialog_data.get("url_button_empty", True)
+    
+    posting_time = dialog_manager.dialog_data.get("dt_posting_view", None)
+    posting_time_index = bool(posting_time)
 
     return {
         "reply_title": i18n.cr.reply.text(),
@@ -37,6 +40,8 @@ async def get_creating_post_data(
         "url": i18n.cr.url.btns(),
         "url_delete": i18n.cr.url.delete(),
         "set_time": i18n.cr.set.time(),
+        "posting_time": posting_time,
+        "posting_time_index": posting_time_index,
         "set_notify": i18n.cr.set.notify(),
         "unset_notify": i18n.cr.unset.notify(),
         "media": i18n.cr.add.media(),

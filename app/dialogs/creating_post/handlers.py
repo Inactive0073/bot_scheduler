@@ -10,6 +10,8 @@ from aiogram_dialog.widgets.kbd import Button
 from app.dialogs.creating_post.services import parse_time
 from app.states.creating_post import PostingSG
 
+from datetime import datetime
+
 from logging import getLogger
 
 if TYPE_CHECKING:
@@ -28,7 +30,8 @@ async def process_post_msg(
     """
     copy_msg = await message.send_copy(chat_id=message.chat.id)
     logger.debug(
-        f"Полученые следующие данные от {message.from_user.first_name}:\n"
+        f"Полученые следующие данные от {message.from_user.username}:\n"
+        f"user_id={message.from_user.id}\n"
         f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
     )
     # удаляем старое сообщение, чтобы сохранить историю чище
@@ -123,7 +126,7 @@ async def process_invalid_button_case(
     message: Message,
     widget: TextInput,
     dialog_manager: DialogManager,
-    error: ValueError,
+    e: ValueError,
 ):
     """
     Удаляет сообщения с неудачным текстом и инструкцией для чистой истории
@@ -182,7 +185,7 @@ async def process_set_time(
 
     Допустимые форматы:
         18 - текущие сутки 18:00
-        830 - текущие сутки 08:30
+        0830 - текущие сутки 08:30
         1830 - текущие сутки 18:30
         18300408 - 18:30 04.08
     """
@@ -190,8 +193,21 @@ async def process_set_time(
     if not all((char.isdigit() for char in text)):
         raise ValueError
 
-    time_post = parse_time()
+    time_post: datetime = parse_time(text)
+    weekday = ("пн", "вт", "ср", "чт", "пт", "сб","вс")[time_post.weekday()]
+    dialog_manager.dialog_data["dt_posting_iso"] = time_post.isoformat()
+    dialog_manager.dialog_data["dt_posting_view"] = f"{weekday}, {time_post.strftime("%d/%m, %H:%M")}"
+    await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
 
+
+async def invalid_set_time(
+    message: Message, widget: TextInput, dialog_manager: DialogManager, e: ValueError
+) -> None:
+    dialog_manager.show_mode = ShowMode.DELETE_AND_SEND
+    i18n: TranslatorRunner = dialog_manager.dialog_data['i18n']
+    await message.answer(i18n.cr.instruction.invalid.time())
+    
+    
 # Установка медиа
 # (!В разработке)
 async def process_addition_media(

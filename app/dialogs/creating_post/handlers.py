@@ -5,7 +5,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
-from aiogram_dialog.widgets.kbd import Button
+from aiogram_dialog.widgets.kbd import Button, Toggle
 
 from app.dialogs.creating_post.services import parse_time
 from app.states.creating_post import PostingSG
@@ -30,7 +30,7 @@ async def process_post_msg(
     """
     copy_msg = await message.send_copy(chat_id=message.chat.id)
     logger.debug(
-        f"Полученые следующие данные от {message.from_user.username}:\n"
+        f"\nПолученые следующие данные от {message.from_user.username}:\n"
         f"user_id={message.from_user.id}\n"
         f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
     )
@@ -233,3 +233,19 @@ async def process_invalid_media_content(
     i18n: TranslatorRunner = dialog_manager.dialog_data["i18n"]
     # dialog_manager.show_mode = ShowMode.DELETE_AND_SEND # пока оставим для экспериментов
     await message.answer(i18n.cr.instruction.media.invalid.type())
+
+
+# Настройка времени
+async def process_toggle_notify(
+    message: Message,
+    widget: Toggle,
+    dialog_manager: DialogManager,
+    state: bool
+):  
+    print(state)
+    dialog_manager.dialog_data["notify_status"] = state
+    logger.info(
+        f"\nПользователь: {message.from_user.first_name} [{message.from_user.username}] переключил настройку уведомлений\n"
+        f"Текущее состояние поста: {"включен" if state else "выключен"}\n"
+    )
+    print("STATUS:", dialog_manager.dialog_data["notify_status"])

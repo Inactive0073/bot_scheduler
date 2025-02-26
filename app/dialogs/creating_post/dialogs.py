@@ -22,6 +22,7 @@ from app.dialogs.creating_post.handlers import (
     process_invalid_media_content,
     edit_text,
     process_set_time,
+    process_toggle_notify,
 )
 from app.dialogs.creating_post.services import parse_button, parse_time
 
@@ -46,7 +47,7 @@ create_post_dialog = Dialog(
         # Меню настройки поста
         # =============================================================
         # Редактировать пост | Добавить URL кнопок / Удалить URL кнопки
-        # Время отправки / Удалить время     | С уведомлением / Без уведомления
+        # Время отправки / Редактировать время     | С уведомлением / Без уведомления
         # Добавить медиа / Удалить медиа     | Отключить комментарии
         # Отправить сейчас
         # =============================================================
@@ -87,10 +88,13 @@ create_post_dialog = Dialog(
                 state=PostingSG.set_time,
                 show_mode=ShowMode.DELETE_AND_SEND
             ),
-            SwitchTo(
-                Format("{set_notify}"),
+            # Уведомление
+            Toggle(
+                Format("{item.desc}"),
                 id="set_notify_pressed",
-                state=PostingSG.set_notify,
+                items="states_notify",
+                item_id_getter=lambda notify: notify.id,
+                on_click=process_toggle_notify
             ),
             SwitchTo(Format("{media}"), id="media_pressed", state=PostingSG.media),
             SwitchTo(
@@ -162,4 +166,5 @@ create_post_dialog = Dialog(
     #     state=...,
     #     getter=...,
     # )
+    # окно уведомления
 )

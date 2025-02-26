@@ -67,10 +67,13 @@ def parse_time(time: str):
     Raises:
         ValueError: При неверном формате или некорректных значениях
     """
-    date = dt.now()
-
     while ' ' in time.strip():
         time = time.replace(' ', '')
+    
+    if not all((char.isdigit() for char in time)):
+        raise ValueError
+    
+    date = dt.now()
     
     if len(time) == 2:
         hour = int(time)

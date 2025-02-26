@@ -23,7 +23,7 @@ from app.dialogs.creating_post.handlers import (
     edit_text,
     process_set_time,
 )
-from app.dialogs.creating_post.services import parse_button
+from app.dialogs.creating_post.services import parse_button, parse_time
 
 from app.states.creating_post import PostingSG
 
@@ -83,7 +83,9 @@ create_post_dialog = Dialog(
                     },
                     selector="posting_time_index"
                 ),
-                id="set_time_pressed", state=PostingSG.set_time
+                id="set_time_pressed", 
+                state=PostingSG.set_time,
+                show_mode=ShowMode.DELETE_AND_SEND
             ),
             SwitchTo(
                 Format("{set_notify}"),
@@ -132,7 +134,8 @@ create_post_dialog = Dialog(
         Format("{instruction_delayed_post}"),
         TextInput(
             id="time_set",
-            type_factory=process_set_time,
+            type_factory=parse_time,
+            on_success=process_set_time,
             on_error=invalid_set_time,
         ),
         state=PostingSG.set_time,

@@ -178,7 +178,7 @@ async def edit_text(
 
 # Установка времени поста
 async def process_set_time(
-    message: Message, widget: TextInput, dialog_manager: DialogManager, text: str
+    message: Message, widget: TextInput, dialog_manager: DialogManager, dt: datetime
 ) -> None:
     """
     Сохраняет время публикации
@@ -189,23 +189,20 @@ async def process_set_time(
         1830 - текущие сутки 18:30
         18300408 - 18:30 04.08
     """
-
-    if not all((char.isdigit() for char in text)):
-        raise ValueError
-
-    time_post: datetime = parse_time(text)
-    weekday = ("пн", "вт", "ср", "чт", "пт", "сб","вс")[time_post.weekday()]
-    dialog_manager.dialog_data["dt_posting_iso"] = time_post.isoformat()
-    dialog_manager.dialog_data["dt_posting_view"] = f"{weekday}, {time_post.strftime("%d/%m, %H:%M")}"
+    weekday = ("пн", "вт", "ср", "чт", "пт", "сб","вс")[dt.weekday()]
+    dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
+    dialog_manager.dialog_data["dt_posting_view"] = f"{weekday}, {dt.strftime("%d.%m, %H:%M")}"
+    await message.delete()
     await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
 
 
 async def invalid_set_time(
     message: Message, widget: TextInput, dialog_manager: DialogManager, e: ValueError
 ) -> None:
-    dialog_manager.show_mode = ShowMode.DELETE_AND_SEND
-    i18n: TranslatorRunner = dialog_manager.dialog_data['i18n']
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get('i18n')
     await message.answer(i18n.cr.instruction.invalid.time())
+    await message.delete()
+    
     
     
 # Установка медиа

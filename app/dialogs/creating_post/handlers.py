@@ -149,7 +149,7 @@ async def edit_text(
     # получаем данные для редактирования сообщения
     msg_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
-
+    
     keyboard = dialog_manager.dialog_data.get("keyboard")
 
     # удаляем старое сообщение
@@ -240,12 +240,10 @@ async def process_toggle_notify(
     message: Message,
     widget: Toggle,
     dialog_manager: DialogManager,
-    state: bool
+    state: str
 ):  
-    print(state)
-    dialog_manager.dialog_data["notify_status"] = state
+    dialog_manager.dialog_data["notify_on"] = True if state == "turn_on" else False
     logger.info(
         f"\nПользователь: {message.from_user.first_name} [{message.from_user.username}] переключил настройку уведомлений\n"
-        f"Текущее состояние поста: {"включен" if state else "выключен"}\n"
+        f"Текущее состояние поста: {state}\n"
     )
-    print("STATUS:", dialog_manager.dialog_data["notify_status"])

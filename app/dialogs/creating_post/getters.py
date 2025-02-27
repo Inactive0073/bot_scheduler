@@ -15,7 +15,6 @@ if TYPE_CHECKING:
 @dataclass
 class NotifyAlert:
     id: str
-    state: bool
     desc: str
 
 
@@ -54,8 +53,8 @@ async def get_creating_post_data(
         "posting_time": posting_time,
         "posting_time_index": posting_time_index,
         "states_notify": [
-            NotifyAlert(id="turn_on",state=True, desc=i18n.cr.set.notify()),
-            NotifyAlert(id="turn_off",state=False, desc=i18n.cr.unset.notify()),
+            NotifyAlert(id="turn_on", desc=i18n.cr.set.notify()),
+            NotifyAlert(id="turn_off", desc=i18n.cr.unset.notify()),
         ],
         "notify_status": notify_status,
         "media": i18n.cr.add.media(),

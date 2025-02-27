@@ -84,7 +84,7 @@ async def process_button_case(
     post_message = dialog_manager.dialog_data["post_message"]
 
     # Кладем клавиатуру в dialog_data
-    dialog_manager.dialog_data["keyboard"] = keyboard
+    dialog_manager.dialog_data["keyboard"] = keyboard.model_dump()
 
     # добавляем сообщению кнопки
     await message.bot.edit_message_text(
@@ -149,7 +149,7 @@ async def edit_text(
     # получаем данные для редактирования сообщения
     msg_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
-    
+
     keyboard = dialog_manager.dialog_data.get("keyboard")
 
     # удаляем старое сообщение

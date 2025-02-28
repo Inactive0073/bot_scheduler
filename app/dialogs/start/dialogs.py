@@ -4,6 +4,8 @@ from aiogram_dialog.widgets.kbd import Button, Group, Start
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from app.dialogs.start.getters import get_hello
+from app.states.addition_channel import AdditionToChannelSG
+from app.states.settings import SettingsSG
 from app.states.start import StartSG
 from app.states.creating_post import PostingSG
 
@@ -19,8 +21,17 @@ start_dialog = Dialog(
             ),
             Button(Format("{edit_post}"), id="edit_post_pressed"),
             # Button(Format("{create_description}"), id="create_descript_card_pressed"), # пока отложено
-            Button(Format("{settings}"), id="settings_pressed"),
+            Start(
+                Format("{settings}"), 
+                id="settings_pressed",
+                state=SettingsSG.start
+            ),
             width=2,
+        ),
+        Start(
+            Format("{add_channel}"), 
+            id="add_channel_pressed",
+            state=AdditionToChannelSG.start
         ),
         getter=get_hello,
         state=StartSG.start,

@@ -6,6 +6,7 @@ class TranslatorRunner:
     
     start: Start
     cr: Cr
+    channel: Channel
 
     @staticmethod
     def cancel() -> Literal["""❌Отмена"""]: ...
@@ -15,6 +16,7 @@ class Start:
     hello: StartHello
     create: StartCreate
     edit: StartEdit
+    add: StartAdd
 
     @staticmethod
     def settings() -> Literal["""Настройки"""]: ...
@@ -43,6 +45,11 @@ class StartCreate:
 class StartEdit:
     @staticmethod
     def post() -> Literal["""Редактировать пост"""]: ...
+
+
+class StartAdd:
+    @staticmethod
+    def channel() -> Literal["""Мои каналы"""]: ...
 
 
 class Cr:
@@ -113,6 +120,9 @@ class CrPush:
     @staticmethod
     def now() -> Literal["""🚀Отправить сейчас"""]: ...
 
+    @staticmethod
+    def later() -> Literal["""📅Запланировать пост"""]: ...
+
 
 class CrInstruction:
     delayed: CrInstructionDelayed
@@ -130,29 +140,29 @@ Link 3 - http://ac.ru | Link 4 - http://mail.ru
 
 class CrInstructionDelayed:
     @staticmethod
-    def post() -> Literal["""&lt;b&gt;Отправьте время выхода поста в вашем часовом поясе (Europe/Moscow) в любом удобном формате, например:&lt;/b&gt;
-&lt;q&gt;
+    def post() -> Literal["""&lt;b&gt;Отправьте время выхода поста в часовом поясе (Europe/Moscow) в любом удобном формате, например:&lt;/b&gt;
+&lt;blockquote&gt;
 18 - текущие сутки 18:00
 0830 - текущие сутки 08:30
 08 30 - текущие сутки 08:30
 1830 - текущие сутки 18:30
 18300408 - 18:30 04.08
 18 30 04 08 - 18:30 04.08
-&lt;/q&gt;"""]: ...
+&lt;/blockquote&gt;"""]: ...
 
 
 class CrInstructionInvalid:
     @staticmethod
     def time() -> Literal["""Не поддерживаю такой формат ввода данных 🤷‍♂️
-&lt;b&gt;Отправьте время выхода поста в вашем часовом поясе (Europe/Moscow) в любом удобном формате, например:&lt;/b&gt;
-&lt;q&gt;
+&lt;b&gt;Отправьте время выхода поста в часовом поясе (Europe/Moscow) в любом удобном формате, например:&lt;/b&gt;
+&lt;blockquote&gt;
 18 - текущие сутки 18:00
 0830 - текущие сутки 08:30
 08 30 - текущие сутки 08:30
 1830 - текущие сутки 18:30
 18300408 - 18:30 04.08
 18 30 04 08 - 18:30 04.08
-&lt;/q&gt;"""]: ...
+&lt;/blockquote&gt;"""]: ...
 
 
 class CrInstructionMedia:
@@ -179,4 +189,14 @@ class CrInstructionMediaInvalid:
 - Видео
 
 Для демонстрации бота нажмите /demo или напишите в &lt;a href=&#34;@inactive0073&#34;&gt;поддержку бота&lt;/a&gt;"""]: ...
+
+
+class Channel:
+    instruction: ChannelInstruction
+
+
+class ChannelInstruction:
+    @staticmethod
+    def add() -> Literal["""Ниже представлен список ваших каналов.
+Для добавления бота сделайте бота администратором в канале и дайте ему права на управление сообщениями и управление историями."""]: ...
 

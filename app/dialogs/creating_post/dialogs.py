@@ -96,14 +96,20 @@ create_post_dialog = Dialog(
                 item_id_getter=lambda notify: notify.id,
                 on_click=process_toggle_notify
             ),
+            # Медиа
             SwitchTo(Format("{media}"), id="media_pressed", state=PostingSG.media),
+            # Включение/отключение комментариев
             SwitchTo(
                 Format("{unset_comments}"),
                 id="unset_comments_pressed",
                 state=PostingSG.toggle_comments,
             ),
+            # Отправить сейчас
             SwitchTo(
                 Format("{push_now}"), id="push_now_pressed", state=PostingSG.push_now
+            ),
+            SwitchTo(
+                Format("{push_later}"), id="push_later_pressed", state=PostingSG.push_later
             ),
             width=2,
         ),

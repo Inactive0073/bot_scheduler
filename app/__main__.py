@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -11,6 +12,8 @@ from aiogram_dialog import setup_dialogs
 from fluentogram import TranslatorHub
 
 from redis.asyncio import Redis
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
 
 # Локальные импорты
 from app.config_data.config import Config, load_config
@@ -37,6 +40,18 @@ async def main() -> None:
     # Загружаем конфиг в переменную config
     config: Config = load_config()
     
+    # Подключение к БД
+    db_config = config.db
+    
+    engine = create_async_engine(
+        url=db_config.dsn,
+        echo=db_config.is_echo
+    )
+
+    # Открытие нового соединение с базой
+    async with engine.begin() as conn:
+        await conn.execute(text("SELECT 1"))
+
     # Подключение к NATS
     nc, js = await connect_to_nats(servers=config.nats.servers)
     
@@ -88,4 +103,6 @@ async def main() -> None:
         logger.info("Connection to NATS closed")
 
 if __name__ == "__main__":
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     asyncio.run(main())

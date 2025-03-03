@@ -15,24 +15,25 @@ start_dialog = Dialog(
         Format("{hello_admin}"),
         Group(
             Start(
-                Format("{create_post}"),
+                text=Format("{create_post}"),
                 id="create_post_pressed",
                 state=PostingSG.watch_text,
             ),
             Button(Format("{edit_post}"), id="edit_post_pressed"),
             # Button(Format("{create_description}"), id="create_descript_card_pressed"), # пока отложено
             Start(
-                Format("{settings}"), 
+                text=Format("{settings}"), 
                 id="settings_pressed",
                 state=SettingsSG.start
             ),
+            Start(
+                text=Format("{add_channel}"), 
+                id="add_channel_pressed",
+                state=AdditionToChannelSG.start
+            ),
             width=2,
         ),
-        Start(
-            Format("{add_channel}"), 
-            id="add_channel_pressed",
-            state=AdditionToChannelSG.start
-        ),
+        
         getter=get_hello,
         state=StartSG.start,
         markup_factory=ReplyKeyboardFactory(

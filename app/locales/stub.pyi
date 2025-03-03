@@ -192,11 +192,25 @@ class CrInstructionMediaInvalid:
 
 
 class Channel:
+    _not: Channel_not
     instruction: ChannelInstruction
+    link: ChannelLink
+
+    @staticmethod
+    def exists() -> Literal["""Ниже представлен список ваших каналов."""]: ...
+
+
+class Channel_not:
+    @staticmethod
+    def exists() -> Literal["""У вас не добавлен ни один канал."""]: ...
 
 
 class ChannelInstruction:
     @staticmethod
-    def add() -> Literal["""Ниже представлен список ваших каналов.
-Для добавления бота сделайте бота администратором в канале и дайте ему права на управление сообщениями и управление историями."""]: ...
+    def add() -> Literal["""Для добавления бота сделайте бота администратором в канале и дайте ему права на управление сообщениями и управление историями."""]: ...
+
+
+class ChannelLink:
+    @staticmethod
+    def addition() -> Literal["""https://t.me/saler_scheduler_bot?startchannel&amp;admin=post_messages+edit_messages+delete_messages+invite_users"""]: ...
 

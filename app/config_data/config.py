@@ -3,6 +3,7 @@ from environs import Env
 
 from typing import List
 
+
 @dataclass
 class TgBot:
     token: str  # Токен для доступа к телеграм-боту
@@ -11,7 +12,8 @@ class TgBot:
 @dataclass
 class NatsConfig:
     servers: List[str]
-    
+
+
     
 @dataclass
 class NatsDelayedConsumerConfig:
@@ -21,10 +23,17 @@ class NatsDelayedConsumerConfig:
 
 
 @dataclass
+class DataBase:
+    dsn: str
+    is_echo: bool
+    
+
+@dataclass
 class Config:
     tg_bot: TgBot
     nats: NatsConfig
     delayed_consumer: NatsDelayedConsumerConfig
+    db: DataBase
 
 
 def load_config(path: str | None = None) -> Config:
@@ -37,5 +46,9 @@ def load_config(path: str | None = None) -> Config:
             subject=env('NATS_DELAYED_CONSUMER_SUBJECT'),
             stream=env('NATS_DELAYED_CONSUMER_STREAM'),
             durable_name=env('NATS_DELAYED_CONSUMER_DURABLE_NAME')
+        ),
+        db=DataBase(
+            dsn=env("DSN"),
+            is_echo=env.bool(("IS_ECHO"))
         )
     )

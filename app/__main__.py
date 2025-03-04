@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # Локальные импорты
 from app.config_data.config import Config, load_config
 from app.dialogs.setup import get_dialogs
+from app.db.requests import metadata
 from app.handlers.commands import commands_router
 from app.middlewares.i18n import TranslatorRunnerMiddleware
 from app.utils.i18n import create_translator_hub
@@ -48,9 +49,13 @@ async def main() -> None:
         echo=db_config.is_echo
     )
 
-    # Открытие нового соединение с базой
+    # Проверка соединения с СУБД
     async with engine.begin() as conn:
         await conn.execute(text("SELECT 1"))
+        
+    # Создание таблиц
+    async with engine.begin() as conn:
+        await conn.run_sync(metadata.create_all)
 
     # Подключение к NATS
     nc, js = await connect_to_nats(servers=config.nats.servers)
@@ -71,7 +76,7 @@ async def main() -> None:
             parse_mode=ParseMode.HTML, link_preview_is_disabled=True
         ),
     )
-    dp = Dispatcher(storage=storage)
+    dp = Dispatcher(storage=storage, db_engine=engine)
 
     # Создаем объект типа TranslatorHub
     translator_hub: TranslatorHub = create_translator_hub()
@@ -86,6 +91,7 @@ async def main() -> None:
     # Запускаем функцию настройки проекта для работы с диалогами
     setup_dialogs(dp)
 
+    
     # Запускаем polling
     try:
         await dp.start_polling(

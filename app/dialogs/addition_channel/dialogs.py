@@ -8,15 +8,13 @@ from app.states.addition_channel import AdditionToChannelSG
 
 dialog_addition_channel = Dialog(
     Window(
-        
         Format("{instruction_add_channel}"),
         Url(
             text=Const("Добавить канал"),
             url=Format("{url_button}"),
-            id="add_channel_pressed"),
+            id="add_channel_pressed",
+        ),
         state=AdditionToChannelSG.start,
         getter=get_url_info,
     ),
-
-
 )

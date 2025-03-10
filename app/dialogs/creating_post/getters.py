@@ -37,10 +37,10 @@ async def get_creating_post_data(
 ) -> Dict[str, str]:
     content_msg = dialog_manager.dialog_data.get("post_message", "Сообщение не найдено")
     url_button_empty = dialog_manager.dialog_data.get("url_button_empty", True)
-    
+
     posting_time = dialog_manager.dialog_data.get("dt_posting_view", None)
     posting_time_index = bool(posting_time)
-    
+
     notify_status = dialog_manager.dialog_data.get("notify_status", True)
 
     return {

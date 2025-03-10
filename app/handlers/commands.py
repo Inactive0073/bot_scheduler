@@ -3,12 +3,11 @@ from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, StartMode
 
-from sqlalchemy.ext.asyncio.engine import AsyncEngine
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.requests import users as users_table
 from app.states.start import StartSG
 from app.states.options import OptionsSG
+from app.db.requests import upsert_user, get_users
 
 commands_router = Router(name=__name__)
 
@@ -17,18 +16,15 @@ commands_router = Router(name=__name__)
 async def process_start_command(
     message: Message,
     dialog_manager: DialogManager,
-    db_engine: AsyncEngine
+    session: AsyncSession,
 ) -> None:
-    stmt = insert(users_table).values(
+    await upsert_user(
+        session=session,
         telegram_id=message.from_user.id,
         username=message.from_user.username,
         first_name=message.from_user.first_name,
-        last_name=message.from_user.last_name
+        last_name=message.from_user.last_name,
     )
-    ignore_stmt = stmt.on_conflict_do_nothing(index_elements=["telegram_id"])
-    async with db_engine.connect() as conn:
-        await conn.execute(ignore_stmt)
-        await conn.commit()
     await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
 
 

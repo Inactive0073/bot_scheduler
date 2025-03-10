@@ -82,11 +82,11 @@ create_post_dialog = Dialog(
                         0: Format("{set_time}"),
                         1: Format("{posting_time}"),
                     },
-                    selector="posting_time_index"
+                    selector="posting_time_index",
                 ),
-                id="set_time_pressed", 
+                id="set_time_pressed",
                 state=PostingSG.set_time,
-                show_mode=ShowMode.DELETE_AND_SEND
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
             # Уведомление
             Toggle(
@@ -94,7 +94,7 @@ create_post_dialog = Dialog(
                 id="set_notify_pressed",
                 items="states_notify",
                 item_id_getter=lambda notify: notify.id,
-                on_click=process_toggle_notify
+                on_click=process_toggle_notify,
             ),
             # Медиа
             SwitchTo(Format("{media}"), id="media_pressed", state=PostingSG.media),
@@ -109,7 +109,9 @@ create_post_dialog = Dialog(
                 Format("{push_now}"), id="push_now_pressed", state=PostingSG.push_now
             ),
             SwitchTo(
-                Format("{push_later}"), id="push_later_pressed", state=PostingSG.push_later
+                Format("{push_later}"),
+                id="push_later_pressed",
+                state=PostingSG.push_later,
             ),
             width=2,
         ),

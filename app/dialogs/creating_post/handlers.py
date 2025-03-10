@@ -189,22 +189,25 @@ async def process_set_time(
         1830 - текущие сутки 18:30
         18300408 - 18:30 04.08
     """
-    weekday = ("пн", "вт", "ср", "чт", "пт", "сб","вс")[dt.weekday()]
+    weekday = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")[dt.weekday()]
     dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
-    dialog_manager.dialog_data["dt_posting_view"] = f"{weekday}, {dt.strftime("%d.%m, %H:%M")}"
+    dialog_manager.dialog_data["dt_posting_view"] = (
+        f"{weekday}, {dt.strftime('%d.%m, %H:%M')}"
+    )
     await message.delete()
-    await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
+    await dialog_manager.switch_to(
+        PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND
+    )
 
 
 async def invalid_set_time(
     message: Message, widget: TextInput, dialog_manager: DialogManager, e: ValueError
 ) -> None:
-    i18n: TranslatorRunner = dialog_manager.middleware_data.get('i18n')
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     await message.answer(i18n.cr.instruction.invalid.time())
     await message.delete()
-    
-    
-    
+
+
 # Установка медиа
 # (!В разработке)
 async def process_addition_media(
@@ -237,11 +240,8 @@ async def process_invalid_media_content(
 
 # Настройка времени
 async def process_toggle_notify(
-    message: Message,
-    widget: Toggle,
-    dialog_manager: DialogManager,
-    state: str
-):  
+    message: Message, widget: Toggle, dialog_manager: DialogManager, state: str
+):
     dialog_manager.dialog_data["notify_on"] = True if state == "turn_on" else False
     logger.info(
         f"\nПользователь: {message.from_user.first_name} [{message.from_user.username}] переключил настройку уведомлений\n"

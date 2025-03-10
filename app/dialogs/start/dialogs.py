@@ -22,18 +22,15 @@ start_dialog = Dialog(
             Button(Format("{edit_post}"), id="edit_post_pressed"),
             # Button(Format("{create_description}"), id="create_descript_card_pressed"), # пока отложено
             Start(
-                text=Format("{settings}"), 
-                id="settings_pressed",
-                state=SettingsSG.start
+                text=Format("{settings}"), id="settings_pressed", state=SettingsSG.start
             ),
             Start(
-                text=Format("{add_channel}"), 
+                text=Format("{add_channel}"),
                 id="add_channel_pressed",
-                state=AdditionToChannelSG.start
+                state=AdditionToChannelSG.start,
             ),
             width=2,
         ),
-        
         getter=get_hello,
         state=StartSG.start,
         markup_factory=ReplyKeyboardFactory(

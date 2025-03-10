@@ -14,7 +14,6 @@ class NatsConfig:
     servers: List[str]
 
 
-    
 @dataclass
 class NatsDelayedConsumerConfig:
     subject: str
@@ -26,7 +25,7 @@ class NatsDelayedConsumerConfig:
 class DataBase:
     dsn: str
     is_echo: bool
-    
+
 
 @dataclass
 class Config:
@@ -40,15 +39,12 @@ def load_config(path: str | None = None) -> Config:
     env = Env()
     env.read_env(path)
     return Config(
-        tg_bot=TgBot(token=env("BOT_TOKEN")), 
+        tg_bot=TgBot(token=env("BOT_TOKEN")),
         nats=NatsConfig(servers=env.list("NATS_SERVERS")),
         delayed_consumer=NatsDelayedConsumerConfig(
-            subject=env('NATS_DELAYED_CONSUMER_SUBJECT'),
-            stream=env('NATS_DELAYED_CONSUMER_STREAM'),
-            durable_name=env('NATS_DELAYED_CONSUMER_DURABLE_NAME')
+            subject=env("NATS_DELAYED_CONSUMER_SUBJECT"),
+            stream=env("NATS_DELAYED_CONSUMER_STREAM"),
+            durable_name=env("NATS_DELAYED_CONSUMER_DURABLE_NAME"),
         ),
-        db=DataBase(
-            dsn=env("DSN"),
-            is_echo=env.bool(("IS_ECHO"))
-        )
+        db=DataBase(dsn=env("DSN"), is_echo=env.bool(("IS_ECHO"))),
     )

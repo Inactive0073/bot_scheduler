@@ -2,7 +2,7 @@ from sqlalchemy import BigInteger, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.mixins import TimestampMixin
-from app.db.base import Base
+from app.db import Base
 
 
 class TgChannel(TimestampMixin, Base):

@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db.base import Base
+from app.db import Base
 from app.db.models.mixins import TimestampMixin
 
 

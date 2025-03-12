@@ -1,9 +1,10 @@
-from aiogram_dialog import Dialog, Window
+from aiogram_dialog import Dialog, LaunchMode, Window
 from aiogram_dialog.widgets.text import Format, Const
 from aiogram_dialog.widgets.kbd import Button, Url, SwitchTo
 
 from app.dialogs.addition_channel.getters import get_url_info
 from app.states.addition_channel import AdditionToChannelSG
+from .handlers import check_admin_status
 
 
 dialog_addition_channel = Dialog(
@@ -16,5 +17,7 @@ dialog_addition_channel = Dialog(
         ),
         state=AdditionToChannelSG.start,
         getter=get_url_info,
+        on_process_result=check_admin_status,
     ),
+    launch_mode=LaunchMode.EXCLUSIVE
 )

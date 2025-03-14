@@ -11,6 +11,7 @@ class TgChannel(TimestampMixin, Base):
     channel_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     channel_name: Mapped[str] = mapped_column(String, nullable=False)
     channel_link: Mapped[str] = mapped_column(String, nullable=False)
+    channel_username: Mapped[str] = mapped_column(String, nullable=False)
     # created_at добавляется из миксина
     admin_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE")

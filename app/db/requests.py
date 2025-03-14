@@ -36,6 +36,7 @@ async def upsert_channel(
     session: AsyncSession,
     channel_id: int,
     channel_name: str,
+    channel_username: str,
     channel_link: str,
     admin_id: int,
 ):
@@ -43,6 +44,7 @@ async def upsert_channel(
         {
             "channel_id": channel_id,
             "channel_name": channel_name,
+            "channel_username": channel_username,
             "channel_link": channel_link,
             "admin_id": admin_id,
         }
@@ -59,13 +61,21 @@ async def upsert_channel(
     await session.commit()
 
 
-async def get_channels(session: AsyncSession, telegram_id: int) -> list[int]:
-    user = await session.get(
-        User, {"telegram_id": telegram_id}, options=[selectinload(User.channels)]
+async def get_channels(session: AsyncSession, telegram_id: int) -> list[dict[str, str | int]]:
+    stmt = (
+        select(TgChannel).where(TgChannel.admin_id == telegram_id)
     )
-    
-    return user.channels
-
+    result = await session.execute(stmt)
+    channels = result.scalars()
+    return [
+        {
+            "channel_name": channel.channel_name,
+            "channel_username": channel.channel_username,
+            "channel_link": channel.channel_link,
+            "channel_username": channel.admin_id,
+        }
+        for channel in channels if channel
+    ]
 
 async def get_users(
     session: AsyncSession,

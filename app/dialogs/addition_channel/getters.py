@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 from aiogram.types import User
 
 from aiogram_dialog import DialogManager
@@ -18,14 +19,12 @@ async def get_url_info(
     i18n: TranslatorRunner,
     event_from_user: User,
     **kwargs,
-) -> dict[str, str]:
+) -> dict[str, str | bool]:
     session: AsyncSession = dialog_manager.middleware_data.get("session")
-    
+
     channels = await get_channels(session=session, telegram_id=event_from_user.id)
     channel_exists = bool(channels)
-    print(channels)
-    
-    
+
     return {
         "channel_exists_message": i18n.channel.exists(),
         "channel_not_exists_message": i18n.channel._not.exists(),
@@ -33,5 +32,5 @@ async def get_url_info(
         "url_button": i18n.channel.link.addition(),
         "url_button_name": i18n.channel.add.channel.button(),
         "channel_exists": channel_exists,
-        # "keyboards": keyboards
+        "channels": channels,
     }

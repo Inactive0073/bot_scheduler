@@ -57,12 +57,11 @@ async def main() -> None:
     async with engine.begin() as conn:
         await conn.execute(text("SELECT 1"))
 
-
     # Создание таблиц
     async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all) 
+        # await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
-        
+
     # Подключение к NATS
     nc, js = await connect_to_nats(servers=config.nats.servers)
 

@@ -1,6 +1,6 @@
 from aiogram_dialog import Dialog, LaunchMode, Window
 from aiogram_dialog.widgets.text import Format, Const, Case
-from aiogram_dialog.widgets.kbd import Button, Url, SwitchTo, Group
+from aiogram_dialog.widgets.kbd import Button, Url, SwitchTo, Select
 from aiogram_dialog.widgets.input import TextInput
 
 from app.states.addition_channel import AdditionToChannelSG
@@ -12,14 +12,17 @@ dialog_addition_channel = Dialog(
     Window(
         Case(
             {
-                1:Format("{channel_exists_message}"),
-                0:Format("{channel_not_exists_message}"),
+                1: Format("{channel_exists_message}"),
+                0: Format("{channel_not_exists_message}"),
             },
             selector="channel_exists",
-            ),
+        ),
         Format("{instruction_add_channel}"),
-        Group(
-            
+        Select(
+            "{keyboard}",
+            id="selected_channel",
+            items="channels",
+            when="channel_exists"
         ),
         Url(
             text=Format("{url_button_name}"),
@@ -33,5 +36,5 @@ dialog_addition_channel = Dialog(
         ),
         state=AdditionToChannelSG.start,
         getter=get_url_info,
-    )
+    ),
 )

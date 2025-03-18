@@ -14,7 +14,7 @@ from app.config_data.config import load_config, DataBase
 # access to the values within the .ini file in use.
 config = context.config
 
-# For migrations to work 
+# For migrations to work
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Interpret the config file for Python logging.
@@ -33,10 +33,7 @@ target_metadata = Base.metadata
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 db_config: DataBase = load_config().db
-config.set_main_option(
-    'sqlalchemy.url',
-    str(db_config.dsn)
-)
+config.set_main_option("sqlalchemy.url", str(db_config.dsn))
 
 
 def run_migrations_offline() -> None:

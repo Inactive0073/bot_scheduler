@@ -1,5 +1,6 @@
 import asyncio
 from logging.config import fileConfig
+import sys
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -7,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from app.db import Base, User, TgChannel
+from app.db import Base
 from app.config_data.config import load_config, DataBase
 
 # this is the Alembic Config object, which provides
@@ -15,7 +16,8 @@ from app.config_data.config import load_config, DataBase
 config = context.config
 
 # For migrations to work
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

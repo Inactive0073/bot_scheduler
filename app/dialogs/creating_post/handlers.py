@@ -2,12 +2,11 @@ from typing import TYPE_CHECKING
 
 from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery
 
-from aiogram_dialog.api.entities import MediaAttachment, MediaId
+from aiogram_dialog.api.entities import MediaAttachment
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle
 
-from app.dialogs.creating_post.services import parse_time
 from app.states.creating_post import PostingSG
 
 from datetime import datetime

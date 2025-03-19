@@ -9,6 +9,10 @@ class TranslatorRunner:
 
     @staticmethod
     def cancel() -> Literal["""❌Отмена"""]: ...
+    @staticmethod
+    def back() -> Literal["""🔙 Назад"""]: ...
+    @staticmethod
+    def no() -> Literal["""Нет"""]: ...
 
 class Start:
     hello: StartHello
@@ -182,12 +186,17 @@ class Channel:
     _not: Channel_not
     instruction: ChannelInstruction
     link: ChannelLink
+    settings: ChannelSettings
+    delete: ChannelDelete
 
     @staticmethod
     def exists() -> Literal["""Ниже представлен список ваших каналов."""]: ...
 
 class ChannelAdd:
     channel: ChannelAddChannel
+
+    @staticmethod
+    def caption() -> Literal["""✍ Добавить автоподпись"""]: ...
 
 class ChannelAddChannel:
     @staticmethod
@@ -205,11 +214,47 @@ class ChannelInstruction:
     ]: ...
 
 class ChannelLink:
+    wrong: ChannelLinkWrong
+    after: ChannelLinkAfter
+
     @staticmethod
     def addition() -> Literal[
         """https://t.me/saler_scheduler_bot?startchannel&amp;admin=post_messages+edit_messages+delete_messages+invite_users"""
     ]: ...
     @staticmethod
     def invalid() -> Literal[
-        """&#34;Что-то не так с ссылкой на канал, проверьте её и отправьте в формате &lt;b&gt;@channelusername&lt;/b&gt;"""
+        """Что-то не так с ссылкой на канал, проверьте её и отправьте в формате &lt;b&gt;@channelusername&lt;/b&gt;"""
     ]: ...
+
+class ChannelLinkWrong:
+    @staticmethod
+    def type() -> Literal[
+        """🤖 Бот может работать только с каналами. 
+Типы приватных чатов, групп и форумов не поддерживаются."""
+    ]: ...
+
+class ChannelLinkAfter:
+    joining: ChannelLinkAfterJoining
+
+class ChannelLinkAfterJoining:
+    @staticmethod
+    def channel() -> Literal[
+        """🙌 Бот успешно добавлен в администраторы канала."""
+    ]: ...
+
+class ChannelSettings:
+    @staticmethod
+    def desc(
+        *, channel_name, caption
+    ) -> Literal[
+        """🛠 Настройки канала &lt;b&gt;{ $channel_name }&lt;/b&gt;
+
+Подписка: { $caption }"""
+    ]: ...
+
+class ChannelDelete:
+    _from: ChannelDelete_from
+
+class ChannelDelete_from:
+    @staticmethod
+    def bot() -> Literal["""❌ Удалить канал из телеграм бота"""]: ...

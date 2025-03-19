@@ -29,7 +29,6 @@ from app.middlewares import (
 from app.utils import (
     create_translator_hub,
     connect_to_nats,
-    start_delayed_consumer,
 )
 
 # Настраиваем базовую конфигурацию логирования

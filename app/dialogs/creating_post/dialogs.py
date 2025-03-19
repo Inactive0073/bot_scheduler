@@ -1,7 +1,7 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, Case
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button, Calendar
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.dialogs.creating_post.getters import (

@@ -15,3 +15,10 @@ class User(TimestampMixin, Base):
     # created_at добавляется из миксина
 
     channels: Mapped[list["TgChannel"]] = relationship(back_populates="user")  # type: ignore
+
+    def __repr__(self) -> str:
+        if self.last_name is None:
+            name = self.first_name
+        else:
+            name = f"{self.first_name} {self.last_name}"
+        return f"[{self.telegram_id} | {self.username}] {name}"

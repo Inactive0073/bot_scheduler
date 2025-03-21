@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, ForeignKey, String
+from sqlalchemy import BigInteger, ForeignKey, String, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.mixins import TimestampMixin
@@ -12,7 +12,10 @@ class TgChannel(TimestampMixin, Base):
     channel_name: Mapped[str] = mapped_column(String, nullable=False)
     channel_link: Mapped[str] = mapped_column(String, nullable=False)
     channel_username: Mapped[str] = mapped_column(String, nullable=False)
-    channel_caption: Mapped[str] = mapped_column(String, nullable=True)
+    channel_caption: Mapped[Text] = mapped_column(String, nullable=True)
+    channel_auto_caption: Mapped[bool] = mapped_column(
+        Boolean, default=True, nullable=True
+    )
     # created_at добавляется из миксина
     admin_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE")

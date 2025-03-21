@@ -8,7 +8,7 @@ from fluentogram import TranslatorRunner
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.requests import get_channels, get_channel
+from app.db.requests import get_caption_channel, get_channels, get_channel
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner
@@ -33,6 +33,7 @@ async def get_url_info(
         "url_button_name": i18n.channel.add.channel.button(),
         "channel_exists": channel_exists,
         "channels": channels,
+        "back": i18n.back(),
     }
 
 
@@ -43,14 +44,13 @@ async def get_channel_settings(
     **kwargs,
 ) -> dict[str, str]:
     session: AsyncSession = dialog_manager.middleware_data.get("session")
-
-    channel = await get_channel(
-        session=session, channel_id=dialog_manager.dialog_data["channel_selected_id"]
-    )
+    channel_id = dialog_manager.dialog_data.get("channel_selected_id")
+    channel = await get_channel(session=session, channel_id=channel_id)
     name = channel.channel_name
     caption = channel.channel_caption if channel.channel_caption else i18n.no()
-    channel_settings_desc = i18n.channel.settings.desc(name=name, caption=caption)
-    print(f"{channel.__dict__=}")
+    channel_settings_desc = i18n.channel.settings.desc(
+        channel_name=name, caption=caption
+    )
 
     return {
         "channel_name": name,
@@ -58,6 +58,7 @@ async def get_channel_settings(
         "channel_settings_desc": channel_settings_desc,
         "channel_delete_from_bot_desc": i18n.channel.delete._from.bot(),
         "channel_add_caption_desc": i18n.channel.add.caption(),
+        "back": i18n.back(),
     }
 
 
@@ -69,5 +70,37 @@ async def get_data_for_delete(
 ) -> dict[str, str]:
     return {
         "delete_bot_from_channel_desc": i18n.channel.delete.channel.instruction(),
-        "channe_delete_button": i18n.channel.delete.button(),
+        "channel_delete_button": i18n.channel.delete.button(),
+        "back": i18n.back(),
+    }
+
+
+async def get_data_for_set_caption(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> dict[str, str]:
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    return {
+        "channel_caption_wait": i18n.channel.caption.wait(),
+    }
+
+
+async def get_data_for_caption(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> dict[str, str | bool | None]:
+    session = dialog_manager.middleware_data.get("session")
+    channel_id = dialog_manager.dialog_data["channel_id"]
+    caption = get_caption_channel(session=session, channel_id=channel_id)
+    caption_exists = bool(caption)
+    return {
+        "not_exists": i18n.channel.caption._not.exists(),
+        "caption": caption,
+        "caption_exists": caption_exists,
+        "turn_on": i18n.channel.caption.on(),
+        "turn_off": i18n.channel.caption.off(),
     }

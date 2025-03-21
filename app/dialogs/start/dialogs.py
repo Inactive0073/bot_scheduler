@@ -1,4 +1,4 @@
-from aiogram_dialog import Dialog, Window
+from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, Const
 from aiogram_dialog.widgets.kbd import Button, Group, Start
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
@@ -18,6 +18,7 @@ start_dialog = Dialog(
                 text=Format("{create_post}"),
                 id="create_post_pressed",
                 state=PostingSG.watch_text,
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
             Button(Format("{edit_post}"), id="edit_post_pressed"),
             # Button(Format("{create_description}"), id="create_descript_card_pressed"), # пока отложено
@@ -28,13 +29,15 @@ start_dialog = Dialog(
                 text=Format("{add_channel}"),
                 id="add_channel_pressed",
                 state=AdditionToChannelSG.start,
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
             width=2,
         ),
         getter=get_hello,
         state=StartSG.start,
         markup_factory=ReplyKeyboardFactory(
-            resize_keyboard=True, input_field_placeholder=Const("Выберите пункт меню")
+            resize_keyboard=True,
+            input_field_placeholder=Const("Выберите пункт меню"),
         ),
     )
 )

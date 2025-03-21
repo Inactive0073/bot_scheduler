@@ -188,6 +188,8 @@ class Channel:
     link: ChannelLink
     settings: ChannelSettings
     delete: ChannelDelete
+    success: ChannelSuccess
+    unsuccessful: ChannelUnsuccessful
 
     @staticmethod
     def exists() -> Literal["""Ниже представлен список ваших каналов."""]: ...
@@ -254,7 +256,31 @@ class ChannelSettings:
 
 class ChannelDelete:
     _from: ChannelDelete_from
+    channel: ChannelDeleteChannel
+
+    @staticmethod
+    def button() -> Literal["""Удалить бота 🤖"""]: ...
 
 class ChannelDelete_from:
     @staticmethod
     def bot() -> Literal["""❌ Удалить канал из телеграм бота"""]: ...
+
+class ChannelDeleteChannel:
+    @staticmethod
+    def instruction() -> Literal[
+        """⚠ Вы удаляете бота из канала ⚠
+
+Если вы уверены нажмите &lt;b&gt;Удалить бота 🤖&lt;/b&gt;"""
+    ]: ...
+
+class ChannelSuccess:
+    @staticmethod
+    def deleted() -> Literal["""Бот успешно удален"""]: ...
+
+class ChannelUnsuccessful:
+    @staticmethod
+    def deleted() -> Literal[
+        """Бот не был удален, попробуйте повторить попытку позже. 
+
+Если проблема повторяется - напишите в техническую поддержку 💻."""
+    ]: ...

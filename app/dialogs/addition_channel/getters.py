@@ -94,7 +94,7 @@ async def get_data_for_caption(
     **kwargs,
 ) -> dict[str, str | bool | None]:
     session = dialog_manager.middleware_data.get("session")
-    channel_id = dialog_manager.dialog_data["channel_id"]
+    channel_id = dialog_manager.dialog_data["channel_selected_id"]
     caption = get_caption_channel(session=session, channel_id=channel_id)
     caption_exists = bool(caption)
     return {

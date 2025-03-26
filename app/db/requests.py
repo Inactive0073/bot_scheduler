@@ -6,7 +6,7 @@
 """
 
 from typing import cast, Tuple, Union
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.tgchannel import TgChannel
@@ -195,10 +195,8 @@ async def upsert_caption_channel(
     Example:
         await upsert_caption_channel(session, -100123, "New channel description")
     """
-    stmt = select(TgChannel).where(TgChannel.channel_id == channel_id)
+    stmt = update(TgChannel).where(TgChannel.channel_id == channel_id).values(channel_caption=caption)
     result = await session.execute(stmt)
-    channel = result.scalar()
-    channel.channel_caption = caption # тут проблема, надо решить
     await session.commit()
 
 

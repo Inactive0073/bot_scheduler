@@ -65,7 +65,7 @@ async def check_admin_status(
     bot: Bot = dialog_manager.middleware_data.get("bot")
     session: AsyncSession = dialog_manager.middleware_data.get("session")
     user_id = message.from_user.id
-    logger.info(f"Начата проверка прав для канала {text} пользователем {user_id}")
+    logger.info(f"Начата проверка прав для канала {text} пользователем {message.from_user.username}|{user_id}")
 
     try:
         chat_full_info = await bot.get_chat(chat_id=text)

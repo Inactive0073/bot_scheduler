@@ -200,10 +200,26 @@ async def upsert_caption_channel(
     await session.commit()
 
 
-async def get_caption_channel(session: AsyncSession, channel_id: int):
+async def get_caption_channel(session: AsyncSession, channel_id: int) -> str:
     """Возвращает подпись канала к посту"""
     stmt = select(TgChannel.channel_caption).where(TgChannel.channel_id == channel_id)
     result = await session.execute(stmt)
-    caption = result.first()
-
+    caption = result.first()[0]
     return caption
+
+
+async def delete_caption_channel(session: AsyncSession, channel_id: int) -> bool:
+    """Удаляет подпись к посту"""
+    stmt = update(TgChannel).where(TgChannel.channel_id==channel_id).values(channel_caption=None)
+    result = await session.execute(stmt)
+    await session.commit()
+    if result: 
+        return True
+    
+async def toggle_auto_caption_channel(session: AsyncSession, channel_id: int, option: bool) -> bool:
+    """Переключает автоподпись канала"""
+    stmt = update(TgChannel).where(TgChannel.channel_id==channel_id).values(channel_auto_caption=option)
+    result = await session.execute(stmt)
+    await session.commit()
+    if result:
+        return True

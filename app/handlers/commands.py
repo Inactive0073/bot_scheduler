@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
-from aiogram_dialog import DialogManager, StartMode
+from aiogram_dialog import DialogManager, ShowMode, StartMode
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -41,4 +41,4 @@ async def process_cancel_command(
     message: Message,
     dialog_manager: DialogManager,
 ) -> None:
-    await dialog_manager.start(state=OptionsSG.cancel)
+    await dialog_manager.back(show_mode=ShowMode.DELETE_AND_SEND)

@@ -91,6 +91,8 @@ async def main() -> None:
     # Регистриуем роутеры в диспетчере
     dp.include_router(commands_router)
     dp.include_routers(*get_dialogs())
+    
+
 
     # Регистрируем миддлварь для i18n и бд
     dp.update.middleware(TranslatorRunnerMiddleware())

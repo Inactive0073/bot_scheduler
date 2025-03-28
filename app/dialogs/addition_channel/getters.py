@@ -95,10 +95,13 @@ async def get_data_for_caption(
 ) -> dict[str, str | bool | None]:
     session = dialog_manager.middleware_data.get("session")
     channel_id = dialog_manager.dialog_data["channel_selected_id"]
-    caption = get_caption_channel(session=session, channel_id=channel_id)
+    caption = await get_caption_channel(session=session, channel_id=channel_id)
     caption_exists = bool(caption)
     return {
         "not_exists": i18n.channel.caption._not.exists(),
+        "edit": i18n.edit(),
+        "delete": i18n.delete(),
+        "back": i18n.back(),
         "caption": caption,
         "caption_exists": caption_exists,
         "turn_on": i18n.channel.caption.on(),

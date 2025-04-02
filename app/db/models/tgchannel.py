@@ -17,8 +17,14 @@ class TgChannel(TimestampMixin, Base):
         Boolean, default=True, nullable=True
     )
     # created_at добавляется из миксина
-    admin_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE")
-    )
 
-    user: Mapped["User"] = relationship(back_populates="channels")  # type: ignore
+    # user: Mapped["User"] = relationship(back_populates="channels")  # type: ignore
+    admins: Mapped[list["User"]] = relationship( # type: ignore
+        secondary="user_channels",
+        back_populates="managed_channels",
+        lazy="dynamic"
+    )
+    
+    def __repr__(self) -> str:
+        name = f"{self.channel_name} {self.channel_username}"
+        return f"[{name} | {self.channel_id} | ссылка для вступления [{self.channel_link}]]"

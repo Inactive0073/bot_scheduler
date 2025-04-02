@@ -11,7 +11,7 @@ from aiogram_dialog.widgets.input import TextInput
 from fluentogram import TranslatorRunner
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.requests import delete_caption_channel, delete_channel, toggle_auto_caption_channel, upsert_caption_channel, upsert_channel
+from app.db.requests import delete_caption_channel, delete_channel, toggle_auto_caption_channel, upsert_caption_channel, upsert_channel_with_admin
 from app.states.addition_channel import AdditionToChannelSG
 
 if TYPE_CHECKING:
@@ -81,7 +81,7 @@ async def check_admin_status(
         return
 
     try:
-        await upsert_channel(
+        await upsert_channel_with_admin(
             session=session,
             channel_id=chat_full_info.id,
             channel_name=chat_full_info.title,
@@ -167,7 +167,7 @@ async def add_caption_to_channel(
     await upsert_caption_channel(session=session, channel_id=channel_id, caption=text)
     logger.info(f"Для канала {channel_id}, добавлена автоподпись: [{text}]")
     await message.delete()
-    await dialog_manager.switch_to(state=AdditionToChannelSG.config_caption)
+    await dialog_manager.switch_to(state=AdditionToChannelSG.channel_settings)
 
 
 async def auto_caption_changed(

@@ -159,7 +159,6 @@ create_post_dialog = Dialog(
         MessageInput(
             func=process_addition_media,
             content_types=[
-                ContentType.VIDEO,
                 ContentType.PHOTO,
             ],
         ),

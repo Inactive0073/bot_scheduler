@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery
+from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ContentType, InputMediaPhoto
 
 from aiogram_dialog.api.entities import MediaAttachment
 from aiogram_dialog import DialogManager, ShowMode
@@ -27,24 +27,27 @@ async def process_post_msg(
     Сохраняет сообщение в dialog_data для дальнейшей репрезентации пользователю
     и осуществляет переход в следующее окно.
     """
-    copy_msg = await message.send_copy(chat_id=message.chat.id)
-    logger.debug(
-        f"\nПолученые следующие данные от {message.from_user.username}:\n"
-        f"user_id={message.from_user.id}\n"
-        f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
+    logger.info(
+        f"Пользователь {message.from_user.username}|{message.from_user.id} создает новый пост"
     )
+    try:
+        copy_msg = await message.send_copy(chat_id=message.chat.id)
+        dialog_manager.dialog_data.update({
+            "post_message": copy_msg.text,
+            "chat_id": copy_msg.chat.id,
+            "message_id": copy_msg.message_id,
+        })
+        logger.debug(f"Пост успешно сохранен в dialog_data: {copy_msg.text[:50]}...")
+    except Exception as e:
+        logger.critical(
+            f"Ошибка при создании поста пользователем {message.from_user.username}: {str(e)}"
+        )
+        raise
     # удаляем старое сообщение, чтобы сохранить историю чище
     await message.bot.delete_message(
         chat_id=message.chat.id, message_id=message.message_id
     )
 
-    dialog_manager.dialog_data.update(
-        {
-            "post_message": copy_msg.text,
-            "chat_id": copy_msg.chat.id,
-            "message_id": copy_msg.message_id,
-        }
-    )
     await dialog_manager.switch_to(
         state=PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND
     )
@@ -77,23 +80,36 @@ async def process_button_case(
     Использует данные из dialog_data для редактирования сообщения.
 
     """
-    # Получаем данные из dialog_data для создания кнопки
-    msg_id = dialog_manager.dialog_data["message_id"]
-    chat_id = dialog_manager.dialog_data["chat_id"]
-    post_message = dialog_manager.dialog_data["post_message"]
-
-    # Кладем клавиатуру в dialog_data
-    dialog_manager.dialog_data["keyboard"] = keyboard.model_dump()
-
-    # добавляем сообщению кнопки
-    await message.bot.edit_message_text(
-        text=post_message, chat_id=chat_id, message_id=msg_id, reply_markup=keyboard
+    logger.info(
+        f"Пользователь {message.from_user.username} добавляет URL-кнопки к посту"
     )
+    try:
+        # Получаем данные из dialog_data для создания кнопки
+        msg_id = dialog_manager.dialog_data["message_id"]
+        chat_id = dialog_manager.dialog_data["chat_id"]
+        post_message = dialog_manager.dialog_data["post_message"]
 
-    # удаляем старое сообщение для чистой истории
-    await message.bot.delete_message(
-        chat_id=message.chat.id, message_id=message.message_id
-    )
+        # Кладем клавиатуру в dialog_data
+        dialog_manager.dialog_data["keyboard"] = keyboard.model_dump()
+
+        # добавляем сообщению кнопки
+        await message.bot.edit_message_text(
+            text=post_message, chat_id=chat_id, message_id=msg_id, reply_markup=keyboard
+        )
+
+        # удаляем старое сообщение для чистой истории
+        await message.bot.delete_message(
+            chat_id=message.chat.id, message_id=message.message_id
+        )
+
+        logger.debug(
+            f"Кнопки успешно добавлены к посту. Keyboard data: {keyboard.model_dump()}"
+        )
+    except Exception as e:
+        logger.critical(
+            f"Ошибка при добавлении кнопок к посту: {str(e)}"
+        )
+        raise
 
     logger.debug("Сообщение было отредактировано")
 
@@ -188,11 +204,23 @@ async def process_set_time(
         1830 - текущие сутки 18:30
         18300408 - 18:30 04.08
     """
-    weekday = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")[dt.weekday()]
-    dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
-    dialog_manager.dialog_data["dt_posting_view"] = (
-        f"{weekday}, {dt.strftime('%d.%m, %H:%M')}"
+    logger.info(
+        f"Пользователь {message.from_user.username} устанавливает время публикации на {dt}"
     )
+    try:
+        weekday = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")[dt.weekday()]
+        dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
+        dialog_manager.dialog_data["dt_posting_view"] = (
+            f"{weekday}, {dt.strftime('%d.%m, %H:%M')}"
+        )
+        logger.debug(
+            f"Время публикации установлено на {dialog_manager.dialog_data['dt_posting_view']}"
+        )
+    except Exception as e:
+        logger.critical(
+            f"Ошибка при установке времени публикации: {str(e)}"
+        )
+        raise
     await message.delete()
     await dialog_manager.switch_to(
         PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND
@@ -208,20 +236,49 @@ async def invalid_set_time(
 
 
 # Установка медиа
-# (!В разработке)
 async def process_addition_media(
     message: Message,
     widget: MessageInput,
     dialog_manager: DialogManager,
 ) -> None:
     """
-    Сохранение
+    Сохранение медиа
     """
-    dialog_manager.dialog_data.setdefault("media_content", []).append(
-        (message.photo[-1].file_id, message.photo[-1].file_unique_id),
+    logger.info(
+        f"Пользователь {message.from_user.username} добавляет медиа к посту"
     )
-    MediaAttachment()
-    await message.bot.edit_message_media()
+    try:
+        file_id = message.photo[-1].file_id
+        file_unique_id = message.photo[-1].file_unique_id
+        dialog_manager.dialog_data.setdefault("media_content", []).append(
+            (file_id, file_unique_id),
+        )
+        msg_id = dialog_manager.dialog_data["message_id"]
+        chat_id = dialog_manager.dialog_data["chat_id"]
+        post_message = dialog_manager.dialog_data["post_message"]
+        keyboard = dialog_manager.dialog_data.get("keyboard")
+        await message.bot.edit_message_media(
+            media=InputMediaPhoto(
+                media=file_id,
+                caption=post_message
+            ),
+            chat_id=chat_id,
+            message_id=msg_id,
+            reply_markup=keyboard
+        )
+        await message.bot.delete_messages(
+            chat_id=chat_id,
+            message_ids=[message.message_id -1, message.message_id]
+        )
+        logger.debug(
+            f"Медиа успешно добавлено к посту. File ID: {file_id[:15]}..."
+        )
+    except Exception as e:
+        logger.critical(
+            f"Ошибка при добавлении медиа к посту: {str(e)}"
+        )
+        raise
+    await dialog_manager.switch_to(state=PostingSG.creating_post)
 
 
 async def process_invalid_media_content(

@@ -114,7 +114,7 @@ dialog_addition_channel = Dialog(
     Window(
         Format(text="{not_exists}", when=~F["caption_exists"]),
         SwitchTo(
-            text={"add"},
+            text=Format("{add}"),
             id="add_caption_btn_pressed",
             state=AdditionToChannelSG.add_caption_to_channel,
             when=~F["caption_exists"],

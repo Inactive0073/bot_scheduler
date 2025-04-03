@@ -62,6 +62,7 @@ cr-set-time = 🕙Время отправки
 cr-set-notify = 🔔С уведомлением
 cr-unset-notify = 🔕Без уведомления
 cr-add-media = ➕Добавить медиа
+cr-remove-media = ❌Удалить медиа
 cr-unset-comments = ☑️Отключить комментарии
 cr-push-now = 🚀Отправить сейчас
 cr-push-later = 📅Запланировать пост

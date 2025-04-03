@@ -6,7 +6,6 @@ from aiogram_dialog import DialogManager, ShowMode, StartMode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.states.start import StartSG
-from app.states.options import OptionsSG
 from app.db.requests import upsert_user
 
 commands_router = Router(name=__name__)

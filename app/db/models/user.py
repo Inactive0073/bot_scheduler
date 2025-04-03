@@ -14,11 +14,9 @@ class User(TimestampMixin, Base):
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     # created_at добавляется из миксина
 
-    managed_channels: Mapped[list["TgChannel"]] = relationship( # type: ignore
-        secondary='user_channels',
-        back_populates='admins',
-        lazy='dynamic'
-    )  
+    managed_channels: Mapped[list["TgChannel"]] = relationship(  # type: ignore
+        secondary="user_channels", back_populates="admins", lazy="dynamic"
+    )
 
     def __repr__(self) -> str:
         if self.last_name is None:

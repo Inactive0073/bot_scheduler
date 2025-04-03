@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, ForeignKey, String, Text, Boolean
+from sqlalchemy import BigInteger, String, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.models.mixins import TimestampMixin
@@ -19,12 +19,10 @@ class TgChannel(TimestampMixin, Base):
     # created_at добавляется из миксина
 
     # user: Mapped["User"] = relationship(back_populates="channels")  # type: ignore
-    admins: Mapped[list["User"]] = relationship( # type: ignore
-        secondary="user_channels",
-        back_populates="managed_channels",
-        lazy="dynamic"
+    admins: Mapped[list["User"]] = relationship(  # type: ignore
+        secondary="user_channels", back_populates="managed_channels", lazy="dynamic"
     )
-    
+
     def __repr__(self) -> str:
         name = f"{self.channel_name} {self.channel_username}"
         return f"[{name} | {self.channel_id} | ссылка для вступления [{self.channel_link}]]"

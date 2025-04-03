@@ -1,17 +1,18 @@
+from aiogram import F
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, Case
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
-from app.dialogs.creating_post.getters import (
+from .getters import (
     get_addition_media_data,
     get_creating_post_data,
     get_time_instruction_data,
     get_watch_text,
     get_url_instruction,
 )
-from app.dialogs.creating_post.handlers import (
+from .handlers import (
     invalid_set_time,
     process_delete_button,
     process_other_type_msg,
@@ -21,6 +22,7 @@ from app.dialogs.creating_post.handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
+    process_remove_media,
     process_set_time,
     process_toggle_notify,
 )
@@ -61,19 +63,21 @@ create_post_dialog = Dialog(
                 show_mode=ShowMode.DELETE_AND_SEND,
             ),
             # Добавить URL кнопок
-            SwitchTo(
-                Format("{url}"),
-                id="add_url_pressed",
-                state=PostingSG.add_url,
-                when="url_button_empty",
-                show_mode=ShowMode.DELETE_AND_SEND,
-            ),
-            # Удалить URL кнопок
-            Button(
-                Format("{url_delete}"),
-                id="del_url_pressed",
-                on_click=process_delete_button,
-                when="url_button_exists",
+            Group(
+                SwitchTo(
+                    Format("{url}"),
+                    id="add_url_pressed",
+                    state=PostingSG.add_url,
+                    when="url_button_empty",
+                    show_mode=ShowMode.DELETE_AND_SEND,
+                ),
+                # Удалить URL кнопок
+                Button(
+                    Format("{url_delete}"),
+                    id="del_url_pressed",
+                    on_click=process_delete_button,
+                    when="url_button_exists",
+                )
             ),
             # Установить время
             SwitchTo(
@@ -97,7 +101,15 @@ create_post_dialog = Dialog(
                 on_click=process_toggle_notify,
             ),
             # Медиа
-            SwitchTo(Format("{media}"), id="media_pressed", state=PostingSG.media),
+            Group(
+                SwitchTo(Format("{media_message}"), id="media_pressed", state=PostingSG.media),
+                Button(
+                    Format("{delete_media_message}"), 
+                    id="delete_media_pressed", 
+                    on_click=process_remove_media,
+                    when=F["has_media"]
+                ),
+            ),
             # Включение/отключение комментариев
             SwitchTo(
                 Format("{unset_comments}"),
@@ -159,7 +171,7 @@ create_post_dialog = Dialog(
         MessageInput(
             func=process_addition_media,
             content_types=[
-                ContentType.PHOTO,
+                ContentType.PHOTO,ContentType.VIDEO
             ],
         ),
         MessageInput(func=process_invalid_media_content),

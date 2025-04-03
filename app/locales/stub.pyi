@@ -79,6 +79,7 @@ class Cr:
     set: CrSet
     unset: CrUnset
     add: CrAdd
+    remove: CrRemove
     push: CrPush
     instruction: CrInstruction
 
@@ -132,6 +133,11 @@ class CrUnset:
 class CrAdd:
     @staticmethod
     def media() -> Literal["""➕Добавить медиа"""]: ...
+
+
+class CrRemove:
+    @staticmethod
+    def media() -> Literal["""❌Удалить медиа"""]: ...
 
 
 class CrPush:
@@ -319,7 +325,7 @@ class ChannelCaption:
     def on() -> Literal["""✔ Автоподпись включена"""]: ...
 
     @staticmethod
-    def off() -> Literal["""📴 Автоподпись выключена"""]: ...
+    def off() -> Literal["""❌ Автоподпись выключена"""]: ...
 
     @staticmethod
     def error() -> Literal["""📝В качестве подписи к тексту принимается только текст."""]: ...

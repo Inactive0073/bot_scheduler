@@ -11,7 +11,13 @@ from aiogram_dialog.widgets.input import TextInput
 from fluentogram import TranslatorRunner
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.requests import delete_caption_channel, delete_channel, toggle_auto_caption_channel, upsert_caption_channel, upsert_channel_with_admin
+from app.db.requests import (
+    delete_caption_channel,
+    delete_channel,
+    toggle_auto_caption_channel,
+    upsert_caption_channel,
+    upsert_channel_with_admin,
+)
 from app.states.addition_channel import AdditionToChannelSG
 
 if TYPE_CHECKING:
@@ -65,7 +71,9 @@ async def check_admin_status(
     bot: Bot = dialog_manager.middleware_data.get("bot")
     session: AsyncSession = dialog_manager.middleware_data.get("session")
     user_id = message.from_user.id
-    logger.info(f"Начата проверка прав для канала {text} пользователем {message.from_user.username}|{user_id}")
+    logger.info(
+        f"Начата проверка прав для канала {text} пользователем {message.from_user.username}|{user_id}"
+    )
 
     try:
         chat_full_info = await bot.get_chat(chat_id=text)
@@ -152,17 +160,20 @@ async def delete_caption(
     user_id = callback.from_user.id
     username = callback.from_user.username
     result = await delete_caption_channel(session=session, channel_id=channel_id)
-    if result: 
+    if result:
         logger.info(f"{username}|{user_id} успешно удалил подпись к каналу")
     else:
-        logger.error(f"Возникла ошибка {username}|{user_id} не смог удалить подпись к каналу {channel_id}")
+        logger.error(
+            f"Возникла ошибка {username}|{user_id} не смог удалить подпись к каналу {channel_id}"
+        )
+
 
 async def add_caption_to_channel(
     message: Message, widget: TextInput, dialog_manager: DialogManager, text: str
 ):
     """Хендлер для добавления автоподписи к боту"""
     session = dialog_manager.middleware_data.get("session")
-    
+
     channel_id = dialog_manager.dialog_data.get("channel_selected_id")
     await upsert_caption_channel(session=session, channel_id=channel_id, caption=text)
     logger.info(f"Для канала {channel_id}, добавлена автоподпись: [{text}]")
@@ -177,18 +188,22 @@ async def auto_caption_changed(
     channel_id = dialog_manager.dialog_data.get("channel_selected_id")
     username = event.from_user.username
     user_id = event.from_user.id
-    
+
     is_checked = checkbox.is_checked()
     result = await toggle_auto_caption_channel(
-        session=session, 
+        session=session,
         channel_id=channel_id,
         option=is_checked,
     )
     if result:
-        logger.info(f"{username}|{user_id} {"включил" if is_checked else "выключил"} автоподпись.")
+        logger.info(
+            f"{username}|{user_id} {'включил' if is_checked else 'выключил'} автоподпись."
+        )
     else:
-        logger.error(f"Произошла ошибка во время переключения автоподписи юзером {username}|{user_id}"
-                     f"с состояния {"включил" if is_checked else "выключил"}")
+        logger.error(
+            f"Произошла ошибка во время переключения автоподписи юзером {username}|{user_id}"
+            f"с состояния {'включил' if is_checked else 'выключил'}"
+        )
 
 
 async def handle_error_caption(

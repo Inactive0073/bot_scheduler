@@ -40,7 +40,8 @@ async def get_creating_post_data(
 
     posting_time = dialog_manager.dialog_data.get("dt_posting_view", None)
     posting_time_index = bool(posting_time)
-
+    has_media = dialog_manager.dialog_data.get("has_media", False)
+    has_keyboard = dialog_manager.dialog_data.get("has_keyboard", False)
     notify_status = dialog_manager.dialog_data.get("notify_status", True)
 
     return {
@@ -57,7 +58,10 @@ async def get_creating_post_data(
             NotifyAlert(id="turn_off", desc=i18n.cr.unset.notify()),
         ],
         "notify_status": notify_status,
-        "media": i18n.cr.add.media(),
+        "media_message": i18n.cr.add.media(),
+        "delete_media_message": i18n.cr.remove.media(),
+        "has_media": has_media,
+        "has_keyboard": has_keyboard,
         "unset_comments": i18n.cr.unset.comments(),
         "push_now": i18n.cr.push.now(),
         "push_later": i18n.cr.push.later(),

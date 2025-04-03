@@ -68,7 +68,9 @@ async def get_users(
     users = result.scalars().all()
     return cast(list[User], users)
 
+
 # ------------------- Channel Operations -------------------
+
 
 async def upsert_channel(
     session: AsyncSession,
@@ -89,16 +91,20 @@ async def upsert_channel(
     Example:
         await upsert_channel(session, -100123, 'My Channel', 'mychannel', 'https://t.me/mychannel')
     """
-    stmt = upsert(TgChannel).values(
-        {
-            "channel_id": channel_id,
-            "channel_name": channel_name,
-            "channel_username": channel_username,
-            "channel_link": channel_link,
-        }
-    ).on_conflict_do_update(
-        index_elements=["channel_id"],
-        set_=dict(channel_name=channel_name, channel_link=channel_link),
+    stmt = (
+        upsert(TgChannel)
+        .values(
+            {
+                "channel_id": channel_id,
+                "channel_name": channel_name,
+                "channel_username": channel_username,
+                "channel_link": channel_link,
+            }
+        )
+        .on_conflict_do_update(
+            index_elements=["channel_id"],
+            set_=dict(channel_name=channel_name, channel_link=channel_link),
+        )
     )
     await session.execute(stmt)
     await session.commit()
@@ -127,7 +133,12 @@ async def get_channels(
     )
     result = await session.execute(stmt)
     return [
-        (channel.channel_id, channel.channel_name, channel.channel_username, channel.channel_link)
+        (
+            channel.channel_id,
+            channel.channel_name,
+            channel.channel_username,
+            channel.channel_link,
+        )
         for channel in result.scalars()
     ]
 
@@ -189,15 +200,12 @@ async def remove_admin_from_channel(
 ) -> None:
     """Удаляет админа из канала"""
     stmt = delete(UserChannel).where(
-        (
-            UserChannel.user_id == user_id,
-            UserChannel.channel_id == channel_id
-        )
+        (UserChannel.user_id == user_id, UserChannel.channel_id == channel_id)
     )
     await session.execute(stmt)
     await session.commit()
-    
-    
+
+
 # ------------------- Advanced Helpers -------------------
 async def upsert_channel_with_admin(
     session: AsyncSession,
@@ -208,7 +216,9 @@ async def upsert_channel_with_admin(
     admin_id: int,
 ) -> None:
     """Создает канал и сразу назначает администратора"""
-    await upsert_channel(session, channel_id, channel_name, channel_username, channel_link)
+    await upsert_channel(
+        session, channel_id, channel_name, channel_username, channel_link
+    )
     await add_admin_to_channel(session, admin_id, channel_id)
 
 
@@ -226,7 +236,11 @@ async def upsert_caption_channel(
     Example:
         await upsert_caption_channel(session, -100123, "New channel description")
     """
-    stmt = update(TgChannel).where(TgChannel.channel_id == channel_id).values(channel_caption=caption)
+    stmt = (
+        update(TgChannel)
+        .where(TgChannel.channel_id == channel_id)
+        .values(channel_caption=caption)
+    )
     result = await session.execute(stmt)
     await session.commit()
 
@@ -241,15 +255,26 @@ async def get_caption_channel(session: AsyncSession, channel_id: int) -> str:
 
 async def delete_caption_channel(session: AsyncSession, channel_id: int) -> bool:
     """Удаляет подпись к посту"""
-    stmt = update(TgChannel).where(TgChannel.channel_id==channel_id).values(channel_caption=None)
+    stmt = (
+        update(TgChannel)
+        .where(TgChannel.channel_id == channel_id)
+        .values(channel_caption=None)
+    )
     result = await session.execute(stmt)
     await session.commit()
-    if result: 
+    if result:
         return True
-    
-async def toggle_auto_caption_channel(session: AsyncSession, channel_id: int, option: bool) -> bool:
+
+
+async def toggle_auto_caption_channel(
+    session: AsyncSession, channel_id: int, option: bool
+) -> bool:
     """Переключает автоподпись канала"""
-    stmt = update(TgChannel).where(TgChannel.channel_id==channel_id).values(channel_auto_caption=option)
+    stmt = (
+        update(TgChannel)
+        .where(TgChannel.channel_id == channel_id)
+        .values(channel_auto_caption=option)
+    )
     result = await session.execute(stmt)
     await session.commit()
     if result:

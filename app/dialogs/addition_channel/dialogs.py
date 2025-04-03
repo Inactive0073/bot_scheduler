@@ -2,7 +2,6 @@ from aiogram.types import ContentType
 from aiogram_dialog import Dialog, ShowMode, Window
 from aiogram_dialog.widgets.text import Format, Case
 from aiogram_dialog.widgets.kbd import (
-    Button,
     Url,
     SwitchTo,
     Select,
@@ -121,9 +120,12 @@ dialog_addition_channel = Dialog(
         ),
         Format(text="{caption}", when=F["caption"]),
         Group(
-            SwitchTo(Format("{delete}"), id="delete_caption_selected",
-                    state=AdditionToChannelSG.start,
-                    on_click=delete_caption),
+            SwitchTo(
+                Format("{delete}"),
+                id="delete_caption_selected",
+                state=AdditionToChannelSG.start,
+                on_click=delete_caption,
+            ),
             Checkbox(
                 checked_text=Format("{turn_on}"),
                 unchecked_text=Format("{turn_off}"),
@@ -133,10 +135,12 @@ dialog_addition_channel = Dialog(
             ),
             width=1,
         ),
-        SwitchTo(text=Format("{back}"),
-                id="back_from_config_caption",
-                state=AdditionToChannelSG.channel_settings,
-                show_mode=ShowMode.DELETE_AND_SEND),
+        SwitchTo(
+            text=Format("{back}"),
+            id="back_from_config_caption",
+            state=AdditionToChannelSG.channel_settings,
+            show_mode=ShowMode.DELETE_AND_SEND,
+        ),
         state=AdditionToChannelSG.config_caption,
         getter=get_data_for_caption,
     ),

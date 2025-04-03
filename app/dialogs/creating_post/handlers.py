@@ -1,8 +1,7 @@
 from typing import TYPE_CHECKING
 
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, ContentType, InputMediaPhoto
+from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto, InputMediaVideo
 
-from aiogram_dialog.api.entities import MediaAttachment
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle
@@ -32,11 +31,13 @@ async def process_post_msg(
     )
     try:
         copy_msg = await message.send_copy(chat_id=message.chat.id)
-        dialog_manager.dialog_data.update({
-            "post_message": copy_msg.text,
-            "chat_id": copy_msg.chat.id,
-            "message_id": copy_msg.message_id,
-        })
+        dialog_manager.dialog_data.update(
+            {
+                "post_message": copy_msg.text,
+                "chat_id": copy_msg.chat.id,
+                "message_id": copy_msg.message_id,
+            }
+        )
         logger.debug(f"Пост успешно сохранен в dialog_data: {copy_msg.text[:50]}...")
     except Exception as e:
         logger.critical(
@@ -106,9 +107,7 @@ async def process_button_case(
             f"Кнопки успешно добавлены к посту. Keyboard data: {keyboard.model_dump()}"
         )
     except Exception as e:
-        logger.critical(
-            f"Ошибка при добавлении кнопок к посту: {str(e)}"
-        )
+        logger.critical(f"Ошибка при добавлении кнопок к посту: {str(e)}")
         raise
 
     logger.debug("Сообщение было отредактировано")
@@ -217,9 +216,7 @@ async def process_set_time(
             f"Время публикации установлено на {dialog_manager.dialog_data['dt_posting_view']}"
         )
     except Exception as e:
-        logger.critical(
-            f"Ошибка при установке времени публикации: {str(e)}"
-        )
+        logger.critical(f"Ошибка при установке времени публикации: {str(e)}")
         raise
     await message.delete()
     await dialog_manager.switch_to(
@@ -244,9 +241,7 @@ async def process_addition_media(
     """
     Сохранение медиа
     """
-    logger.info(
-        f"Пользователь {message.from_user.username} добавляет медиа к посту"
-    )
+    logger.info(f"Пользователь {message.from_user.username} добавляет медиа к посту")
     try:
         file_id = message.photo[-1].file_id
         file_unique_id = message.photo[-1].file_unique_id
@@ -258,29 +253,22 @@ async def process_addition_media(
         post_message = dialog_manager.dialog_data["post_message"]
         keyboard = dialog_manager.dialog_data.get("keyboard")
         await message.bot.edit_message_media(
-            media=InputMediaPhoto(
-                media=file_id,
-                caption=post_message
-            ),
+            media=InputMediaPhoto(media=file_id, caption=post_message),
             chat_id=chat_id,
             message_id=msg_id,
-            reply_markup=keyboard
+            reply_markup=keyboard,
         )
         await message.bot.delete_messages(
-            chat_id=chat_id,
-            message_ids=[message.message_id -1, message.message_id]
+            chat_id=chat_id, message_ids=[message.message_id - 1, message.message_id]
         )
-        logger.debug(
-            f"Медиа успешно добавлено к посту. File ID: {file_id[:15]}..."
-        )
+        logger.debug(f"Медиа успешно добавлено к посту. File ID: {file_id[:15]}...")
+        dialog_manager.dialog_data["has_media"] = True
     except Exception as e:
-        logger.critical(
-            f"Ошибка при добавлении медиа к посту: {str(e)}"
-        )
+        logger.critical(f"Ошибка при добавлении медиа к посту: {str(e)}")
         raise
     await dialog_manager.switch_to(state=PostingSG.creating_post)
-
-
+    
+    
 async def process_invalid_media_content(
     message: Message,
     widget: MessageInput,
@@ -293,6 +281,25 @@ async def process_invalid_media_content(
     # dialog_manager.show_mode = ShowMode.DELETE_AND_SEND # пока оставим для экспериментов
     await message.answer(i18n.cr.instruction.media.invalid.type())
 
+
+# Удаление медиа
+async def process_remove_media(
+    message: Message, widget: Button, dialog_manager: DialogManager
+) -> None:
+    """Удаляет медиа контент из сообщения"""
+    msg_id = dialog_manager.dialog_data["message_id"]
+    chat_id = dialog_manager.dialog_data["chat_id"]
+    keyboard = dialog_manager.dialog_data.get("keyboard")
+    post_message = dialog_manager.dialog_data["post_message"]
+
+    await message.bot.delete_message(
+        chat_id=chat_id,
+        message_id=msg_id,
+    )
+    # Заново складываем в диалог дату обновленные данные
+    new_message = await message.bot.send_message(chat_id=chat_id, text=post_message, reply_markup=keyboard)
+    dialog_manager.dialog_data["message_id"] = new_message.message_id
+    dialog_manager.dialog_data["has_media"] = False
 
 # Настройка времени
 async def process_toggle_notify(

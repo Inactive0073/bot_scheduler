@@ -13,7 +13,7 @@ class User(TimestampMixin, Base):
     first_name: Mapped[str] = mapped_column(String, nullable=False)
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     # created_at добавляется из миксина
-
+    utc: Mapped[str] = mapped_column(String(50), default="Europe/Moscow", nullable=True)
     managed_channels: Mapped[list["TgChannel"]] = relationship(  # type: ignore
         secondary="user_channels", back_populates="admins", lazy="dynamic"
     )

@@ -47,6 +47,34 @@ async def upsert_user(
     await session.commit()
 
 
+async def get_user_tz(
+    session: AsyncSession,
+    telegram_id: int,
+) -> str:
+    """Возвращает часовой пояс пользователя. По умолчанию у всех пользователей выставлен Europe/Moscow"""
+    stmt = select(User.utc).where(User.telegram_id == telegram_id)
+    result = await session.execute(stmt)
+    tz = result.first()[0]
+    return tz
+
+
+async def set_user_tz(
+    session: AsyncSession,
+    telegram_id: int,
+    new_utc: str
+) -> bool:
+    """Устанавливает часовой пояс пользователя.
+    По умолчанию у всех пользователей выставлен Europe/Moscow"""
+    stmt = (
+        update(User)
+        .where(User.telegram_id == telegram_id)
+        .values(utc=new_utc)
+    )
+    result = await session.execute(stmt)
+    await session.commit()
+    return result.rowcount > 0
+
+
 async def get_users(
     session: AsyncSession,
     number_of_users: int,

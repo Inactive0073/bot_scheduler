@@ -1,3 +1,5 @@
+import pytz
+
 from typing import TYPE_CHECKING
 
 from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto, InputMediaVideo
@@ -6,6 +8,7 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle
 
+from app.db.requests import get_user_tz
 from app.states.creating_post import PostingSG
 
 from datetime import datetime
@@ -203,6 +206,9 @@ async def process_set_time(
         1830 - текущие сутки 18:30
         18300408 - 18:30 04.08
     """
+    session = dialog_manager.middleware_data.get("session")
+    tz = await get_user_tz(session, message.from_user.id)
+    dt = dt.replace(tzinfo=pytz.timezone(tz)) # Устанавливаем часовой пояс из БД
     logger.info(
         f"Пользователь {message.from_user.username} устанавливает время публикации на {dt}"
     )

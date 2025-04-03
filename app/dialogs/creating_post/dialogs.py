@@ -26,7 +26,7 @@ from .handlers import (
     process_set_time,
     process_toggle_notify,
 )
-from app.dialogs.creating_post.services import parse_button, parse_time
+from .services import parse_button, parse_time
 
 from app.states.creating_post import PostingSG
 
@@ -120,6 +120,7 @@ create_post_dialog = Dialog(
             SwitchTo(
                 Format("{push_now}"), id="push_now_pressed", state=PostingSG.push_now
             ),
+            # Планирование поста
             SwitchTo(
                 Format("{push_later}"),
                 id="push_later_pressed",

@@ -140,7 +140,7 @@ async def upsert_channel(
 
 async def get_channels(
     session: AsyncSession, telegram_id: int
-) -> list[Tuple[Union[str, int]]]:
+) -> list[Tuple[int, str, str, str]]:
     """Возвращает каналы, принадлежащие указанному администратору.
 
     Args:
@@ -149,7 +149,7 @@ async def get_channels(
 
     Returns:
         Список кортежей с данными каналов в формате:
-        (channel_id, name, username, link, admin_id)
+        (channel_id, name, username, link)
 
     Example:
         channels = await get_channels(session, 12345)

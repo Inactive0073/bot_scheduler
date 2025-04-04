@@ -12,3 +12,4 @@ class PostingSG(StatesGroup):
     toggle_comments = State()
     push_now = State()
     push_later = State()
+    select_channels = State()

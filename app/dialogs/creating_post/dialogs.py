@@ -2,15 +2,18 @@ from aiogram import F
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, Case
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button, Cancel, Multiselect
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from .getters import (
     get_addition_media_data,
+    get_approve_push_data,
     get_creating_post_data,
+    get_preselect_channel_data,
     get_time_instruction_data,
     get_watch_text,
     get_url_instruction,
+    get_posting_sg_common_data
 )
 from .handlers import (
     invalid_set_time,
@@ -179,12 +182,27 @@ create_post_dialog = Dialog(
         state=PostingSG.media,
         getter=get_addition_media_data,
     ),
-    # окно апрува медиа
-    # Window(
-    #     Format("{cr-instruction-media-approve}"),
-    #     SwitchTo(),
-    #     state=...,
-    #     getter=...,
-    # )
-    # окно уведомления
+    # окно выбора каналов для публикаций
+    Window(
+        Format("{select_channel_message}"),
+        Multiselect(
+            checked_text=Format("{✓ {item[0]}}"),
+            unchecked_text=Format("{item[0]}"),
+            items="all_channels"
+        ),
+        getter=get_preselect_channel_data,
+        state=PostingSG.select_channels,
+    ),
+    # окно моментальной отправки
+    Window(
+        Format("{push_now_approve_message}"),
+        Group(
+            Cancel(Format("{cancel_caption}")),
+            Button(Format("{yes_caption}"), id="push_now_pressed", on_click=...),
+            width=2
+        ),
+        state=PostingSG.push_now,
+        getter=get_approve_push_data,
+    ),
+    getter=get_posting_sg_common_data,
 )

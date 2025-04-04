@@ -316,3 +316,16 @@ async def process_toggle_notify(
         f"\nПользователь: {message.from_user.first_name} [{message.from_user.username}] переключил настройку уведомлений\n"
         f"Текущее состояние поста: {state}\n"
     )
+
+
+# Отправка прямо сейчас
+async def process_push_now_button(
+    message: Message, widget: Button, dialog_manager: DialogManager
+):
+    msg_id = dialog_manager.dialog_data["message_id"]
+    chat_id = dialog_manager.dialog_data["chat_id"]
+    keyboard = dialog_manager.dialog_data.get("keyboard")
+    post_message = dialog_manager.dialog_data["post_message"]
+    file_id, file_unique_id = dialog_manager.dialog_data.get("media_content", (None, None))
+    if file_id is None:
+        await message.bot.send_message()

@@ -8,6 +8,8 @@ from dataclasses import dataclass
 
 from fluentogram import TranslatorRunner
 
+from app.db.requests import get_channels
+
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
 
@@ -16,6 +18,18 @@ if TYPE_CHECKING:
 class NotifyAlert:
     id: str
     desc: str
+
+
+async def get_posting_sg_common_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> Dict[str, str]:
+    return {
+        "cancel_caption": i18n.cancel(),
+        "yes_caption": i18n.yes(),
+    }
 
 
 async def get_watch_text(
@@ -98,4 +112,31 @@ async def get_addition_media_data(
 ) -> Dict[str, str]:
     return {
         "instruction_add_media": i18n.cr.instruction.media.post(),
+    }
+
+
+async def get_approve_push_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> Dict[str, str]:
+    return {
+        "push_now_approve_message": i18n.cr.approve.media.now(),
+    }
+    
+
+async def get_preselect_channel_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> Dict[str, str]:
+    session = dialog_manager.middleware_data.get("session")
+    telegram_id = event_from_user.id
+    channels = await get_channels(session=session, telegram_id=telegram_id)
+    
+    return {
+        "push_now_approve_message": i18n.cr.approve.media.now(),
+        "channels": channels,
     }

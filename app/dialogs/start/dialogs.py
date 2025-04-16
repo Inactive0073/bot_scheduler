@@ -17,7 +17,7 @@ start_dialog = Dialog(
             Start(
                 text=Format("{create_post}"),
                 id="create_post_pressed",
-                state=PostingSG.watch_text,
+                state=PostingSG.select_channels,
                 show_mode=ShowMode.DELETE_AND_SEND,
             ),
             Button(Format("{edit_post}"), id="edit_post_pressed"),

@@ -2,7 +2,7 @@ from aiogram import F
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, Case
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button, Cancel, Multiselect
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button, Back, Multiselect, Row
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from .getters import (
@@ -25,8 +25,11 @@ from .handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
+    process_push_now_to_channel_button,
     process_remove_media,
     process_set_time,
+    process_to_select_bot_mailing,
+    process_to_select_channel,
     process_toggle_notify,
 )
 from .services import parse_button, parse_time
@@ -35,6 +38,30 @@ from app.states.creating_post import PostingSG
 
 create_post_dialog = Dialog(
     # Процесс создания поста
+    # окно выбора каналов для публикаций
+    Window(
+        Format("{select_channel_message}"),
+        SwitchTo(
+            Format("{mail_to_bots_subscribers_message}"),
+            id="bot_sending_selected",
+            state=PostingSG.watch_text,
+            on_click=process_to_select_bot_mailing
+        ),
+        Multiselect(
+            checked_text=Format("✓ {item[1]}"),
+            unchecked_text=Format("{item[1]}"),
+            id="selected_channel_for_publication",
+            item_id_getter=lambda item: item[2],
+            items="all_channels",
+            on_click=process_to_select_channel,
+        ),
+        Row(
+            Back(Format("{back}")),
+            SwitchTo(Format("{next}"), id='next_clicked', state=PostingSG.watch_text, when=F["one_or_more_selected"]),
+        ),
+        getter=get_preselect_channel_data,
+        state=PostingSG.select_channels,
+    ),
     Window(
         # Записываем текст введенный пользователем
         Format("{watch_text}"),
@@ -182,23 +209,16 @@ create_post_dialog = Dialog(
         state=PostingSG.media,
         getter=get_addition_media_data,
     ),
-    # окно выбора каналов для публикаций
-    Window(
-        Format("{select_channel_message}"),
-        Multiselect(
-            checked_text=Format("{✓ {item[0]}}"),
-            unchecked_text=Format("{item[0]}"),
-            items="all_channels"
-        ),
-        getter=get_preselect_channel_data,
-        state=PostingSG.select_channels,
-    ),
     # окно моментальной отправки
     Window(
         Format("{push_now_approve_message}"),
         Group(
-            Cancel(Format("{cancel_caption}")),
-            Button(Format("{yes_caption}"), id="push_now_pressed", on_click=...),
+            Back(Format("{cancel_caption}")),
+            Button(
+                Format("{yes_caption}"),
+                id="push_now_pressed", 
+                on_click=process_push_now_to_channel_button            
+            ),
             width=2
         ),
         state=PostingSG.push_now,

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Dict
 from aiogram.types import User
 
 from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Multiselect
 
 from dataclasses import dataclass
 
@@ -29,6 +30,8 @@ async def get_posting_sg_common_data(
     return {
         "cancel_caption": i18n.cancel(),
         "yes_caption": i18n.yes(),
+        "next": i18n.next(),
+        "back":i18n.back(),
     }
 
 
@@ -122,7 +125,7 @@ async def get_approve_push_data(
     **kwargs,
 ) -> Dict[str, str]:
     return {
-        "push_now_approve_message": i18n.cr.approve.media.now(),
+        "push_now_approve_message": i18n.cr.approve.media.push.now(),
     }
     
 
@@ -135,8 +138,11 @@ async def get_preselect_channel_data(
     session = dialog_manager.middleware_data.get("session")
     telegram_id = event_from_user.id
     channels = await get_channels(session=session, telegram_id=telegram_id)
-    
+    multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
+    one_or_more_selected = multiselect.get_checked()
     return {
-        "push_now_approve_message": i18n.cr.approve.media.now(),
-        "channels": channels,
+        "all_channels": channels,
+        "mail_to_bots_subscribers_message": i18n.cr.select.bot.to.send.message(),
+        "select_channel_message": i18n.cr.select.channel.to.send.message(),
+        "one_or_more_selected": one_or_more_selected
     }

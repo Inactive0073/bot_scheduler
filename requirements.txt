@@ -37,6 +37,7 @@ psycopg-binary==3.1.19
 pycron==3.1.2
 pydantic==2.10.6
 pydantic_core==2.27.2
+pydantic_settings==2.7.1
 python-dotenv==1.0.1
 pytz==2025.1
 redis==5.2.1
@@ -54,3 +55,8 @@ validators==0.34.0
 watchdog==2.3.1
 yarl==1.18.3
 zipp==3.21.0
+apscheduler==3.11.0
+fastapi==0.115.8
+uvicorn==0.34.0
+faststream==0.5.34
+aio-pika==9.5.4

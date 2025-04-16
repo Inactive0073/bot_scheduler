@@ -6,7 +6,7 @@ from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InputMed
 
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
-from aiogram_dialog.widgets.kbd import Button, Toggle
+from aiogram_dialog.widgets.kbd import Button, Toggle, Multiselect, ManagedMultiselect
 
 from app.db.requests import get_user_tz
 from app.states.creating_post import PostingSG
@@ -19,6 +19,20 @@ if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
 
 logger = getLogger(__name__)
+
+
+async def process_to_select_bot_mailing(
+    message: Message, widget: Button, dialog_manager: DialogManager, _
+) -> None:
+    """Сеттер для типа получателя бот"""
+    dialog_manager.dialog_data["recipient_type"] = "bot"
+
+
+async def process_to_select_channel(
+    message: Message, widget: ManagedMultiselect, dialog_manager: DialogManager, _
+) -> None:
+    """Сеттер для типа получателя канал"""
+    dialog_manager.dialog_data["recipient_type"] = "channel"
 
 
 # Запись поста
@@ -307,7 +321,7 @@ async def process_remove_media(
     dialog_manager.dialog_data["message_id"] = new_message.message_id
     dialog_manager.dialog_data["has_media"] = False
 
-# Настройка времени
+# Настройка уведомлений
 async def process_toggle_notify(
     message: Message, widget: Toggle, dialog_manager: DialogManager, state: str
 ):
@@ -319,13 +333,27 @@ async def process_toggle_notify(
 
 
 # Отправка прямо сейчас
-async def process_push_now_button(
+async def process_push_now_to_channel_button(
     message: Message, widget: Button, dialog_manager: DialogManager
 ):
-    msg_id = dialog_manager.dialog_data["message_id"]
-    chat_id = dialog_manager.dialog_data["chat_id"]
+    """Отправка в Телеграм канал"""
+    msg_id = dialog_manager.dialog_data.get("message_id")
+    chat_id = dialog_manager.dialog_data.get("chat_id")
     keyboard = dialog_manager.dialog_data.get("keyboard")
-    post_message = dialog_manager.dialog_data["post_message"]
+    post_message = dialog_manager.dialog_data.get("post_message")
+    notify_on = dialog_manager.dialog_data.get("notify_on")
     file_id, file_unique_id = dialog_manager.dialog_data.get("media_content", (None, None))
-    if file_id is None:
-        await message.bot.send_message()
+    recipient_type = dialog_manager.dialog_data.get("recipient_type")
+    multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
+    channels: list[str] = multiselect.get_checked()
+    print(channels)
+    if recipient_type == "channel":
+        if file_id is None:
+            for channel_name in channels:
+                channel_name = "@" + channel_name
+                await message.bot.send_message(
+                    chat_id=channel_name,
+                    text=post_message,
+                    reply_markup=keyboard,
+                    disable_notification=notify_on
+                )

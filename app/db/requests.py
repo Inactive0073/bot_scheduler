@@ -5,7 +5,7 @@
 Поддерживает PostgreSQL-специфичные UPSERT-операции через on_conflict_do_update.
 """
 
-from typing import cast, Tuple, Union
+from typing import cast, Literal
 from sqlalchemy import select, delete, update
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -140,7 +140,7 @@ async def upsert_channel(
 
 async def get_channels(
     session: AsyncSession, telegram_id: int
-) -> list[Tuple[int, str, str, str]]:
+) -> list[Literal['telegram_id', 'channel_name', 'channel_username', 'channel_link']]:
     """Возвращает каналы, принадлежащие указанному администратору.
 
     Args:

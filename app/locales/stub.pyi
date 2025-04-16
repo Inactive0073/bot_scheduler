@@ -9,6 +9,9 @@ class TranslatorRunner:
     channel: Channel
 
     @staticmethod
+    def next() -> Literal["""⏭ Далее"""]: ...
+
+    @staticmethod
     def cancel() -> Literal["""❌Отмена"""]: ...
 
     @staticmethod
@@ -16,6 +19,9 @@ class TranslatorRunner:
 
     @staticmethod
     def error() -> Literal["""⚠ Произошла ошибка"""]: ...
+
+    @staticmethod
+    def yes() -> Literal["""Да"""]: ...
 
     @staticmethod
     def no() -> Literal["""Нет"""]: ...
@@ -71,6 +77,7 @@ class StartAdd:
 
 
 class Cr:
+    select: CrSelect
     watch: CrWatch
     invalid: CrInvalid
     reply: CrReply
@@ -82,6 +89,41 @@ class Cr:
     remove: CrRemove
     push: CrPush
     instruction: CrInstruction
+    approve: CrApprove
+
+
+class CrSelect:
+    channel: CrSelectChannel
+    bot: CrSelectBot
+    channels: CrSelectChannels
+
+
+class CrSelectChannel:
+    to: CrSelectChannelTo
+
+
+class CrSelectChannelTo:
+    send: CrSelectChannelToSend
+
+
+class CrSelectChannelToSend:
+    @staticmethod
+    def message() -> Literal["""Выберите место публикации вашего поста. 
+
+&lt;i&gt;Общая рассылка — это рассылка сообщения по пользователям бота&lt;/i&gt;"""]: ...
+
+
+class CrSelectBot:
+    to: CrSelectBotTo
+
+
+class CrSelectBotTo:
+    send: CrSelectBotToSend
+
+
+class CrSelectBotToSend:
+    @staticmethod
+    def message() -> Literal["""🤖 Общая рассылка"""]: ...
 
 
 class CrWatch:
@@ -213,6 +255,32 @@ class CrInstructionMediaInvalid:
 - Видео
 
 Для демонстрации бота нажмите /demo или напишите в &lt;a href=&#34;@inactive0073&#34;&gt;поддержку бота&lt;/a&gt;"""]: ...
+
+
+class CrSelectChannels:
+    to: CrSelectChannelsTo
+
+
+class CrSelectChannelsTo:
+    push: CrSelectChannelsToPush
+
+
+class CrSelectChannelsToPush:
+    @staticmethod
+    def message() -> Literal["""Выберите каналы для публикации поста."""]: ...
+
+
+class CrApprove:
+    media: CrApproveMedia
+
+
+class CrApproveMedia:
+    push: CrApproveMediaPush
+
+
+class CrApproveMediaPush:
+    @staticmethod
+    def now() -> Literal["""Отправить сейчас?"""]: ...
 
 
 class Channel:

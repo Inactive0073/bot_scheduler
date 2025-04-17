@@ -2,7 +2,14 @@ import pytz
 
 from typing import TYPE_CHECKING
 
-from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery, InputMediaPhoto, InputMediaVideo
+from aiogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    CallbackQuery,
+    InputMediaPhoto,
+    InputMediaVideo,
+)
+from aiogram.exceptions import TelegramBadRequest
 
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
@@ -29,7 +36,7 @@ async def process_to_select_bot_mailing(
 
 
 async def process_to_select_channel(
-    message: Message, widget: ManagedMultiselect, dialog_manager: DialogManager, _
+    message: Message, widget: ManagedMultiselect, dialog_manager: DialogManager, data
 ) -> None:
     """Сеттер для типа получателя канал"""
     dialog_manager.dialog_data["recipient_type"] = "channel"
@@ -106,14 +113,27 @@ async def process_button_case(
         msg_id = dialog_manager.dialog_data["message_id"]
         chat_id = dialog_manager.dialog_data["chat_id"]
         post_message = dialog_manager.dialog_data["post_message"]
+        media_file_id = dialog_manager.dialog_data.get("media_content")
 
         # Кладем клавиатуру в dialog_data
         dialog_manager.dialog_data["keyboard"] = keyboard.model_dump()
 
         # добавляем сообщению кнопки
-        await message.bot.edit_message_text(
-            text=post_message, chat_id=chat_id, message_id=msg_id, reply_markup=keyboard
-        )
+        if dialog_manager.dialog_data.get("media_content") is None:
+            await message.bot.edit_message_text(
+                text=post_message,
+                chat_id=chat_id,
+                message_id=msg_id,
+                reply_markup=keyboard,
+            )
+        else:
+            media = InputMediaPhoto(media=media_file_id, caption=post_message)
+            await message.bot.edit_message_media(
+                media=media,
+                chat_id=chat_id,
+                message_id=msg_id,
+                reply_markup=keyboard,
+            )
 
         # удаляем старое сообщение для чистой истории
         await message.bot.delete_message(
@@ -144,11 +164,20 @@ async def process_delete_button(
     """
     msg = dialog_manager.dialog_data["post_message"]
     msg_id = dialog_manager.dialog_data["message_id"]
-    await callback.message.bot.edit_message_text(
-        text=msg,
-        chat_id=callback.message.chat.id,
-        message_id=msg_id,
-    )
+    media = dialog_manager.dialog_data.get("media_content")
+    if media is None:
+        await callback.message.bot.edit_message_text(
+            text=msg,
+            chat_id=callback.message.chat.id,
+            message_id=msg_id,
+        )
+    else:
+        media = InputMediaPhoto(media=media, caption=msg)
+        await callback.message.bot.edit_message_media(
+            media=media,
+            chat_id=callback.message.chat.id,
+            message_id=msg_id,
+        )
     dialog_manager.dialog_data["url_button_empty"] = True
     dialog_manager.dialog_data["url_button_exists"] = False
 
@@ -222,7 +251,7 @@ async def process_set_time(
     """
     session = dialog_manager.middleware_data.get("session")
     tz = await get_user_tz(session, message.from_user.id)
-    dt = dt.replace(tzinfo=pytz.timezone(tz)) # Устанавливаем часовой пояс из БД
+    dt = dt.replace(tzinfo=pytz.timezone(tz))  # Устанавливаем часовой пояс из БД
     logger.info(
         f"Пользователь {message.from_user.username} устанавливает время публикации на {dt}"
     )
@@ -287,8 +316,8 @@ async def process_addition_media(
         logger.critical(f"Ошибка при добавлении медиа к посту: {str(e)}")
         raise
     await dialog_manager.switch_to(state=PostingSG.creating_post)
-    
-    
+
+
 async def process_invalid_media_content(
     message: Message,
     widget: MessageInput,
@@ -297,7 +326,7 @@ async def process_invalid_media_content(
     """
     Обработка некорректных сообщений, если они не попадают под тайп видео, фото, кружка, гифки
     """
-    i18n: TranslatorRunner = dialog_manager.dialog_data["i18n"]
+    i18n: TranslatorRunner = dialog_manager.middleware_data["i18n"]
     # dialog_manager.show_mode = ShowMode.DELETE_AND_SEND # пока оставим для экспериментов
     await message.answer(i18n.cr.instruction.media.invalid.type())
 
@@ -317,9 +346,13 @@ async def process_remove_media(
         message_id=msg_id,
     )
     # Заново складываем в диалог дату обновленные данные
-    new_message = await message.bot.send_message(chat_id=chat_id, text=post_message, reply_markup=keyboard)
+    new_message = await message.bot.send_message(
+        chat_id=chat_id, text=post_message, reply_markup=keyboard
+    )
     dialog_manager.dialog_data["message_id"] = new_message.message_id
     dialog_manager.dialog_data["has_media"] = False
+    dialog_manager.dialog_data["media_content"] = None
+
 
 # Настройка уведомлений
 async def process_toggle_notify(
@@ -337,23 +370,39 @@ async def process_push_now_to_channel_button(
     message: Message, widget: Button, dialog_manager: DialogManager
 ):
     """Отправка в Телеграм канал"""
-    msg_id = dialog_manager.dialog_data.get("message_id")
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     chat_id = dialog_manager.dialog_data.get("chat_id")
     keyboard = dialog_manager.dialog_data.get("keyboard")
     post_message = dialog_manager.dialog_data.get("post_message")
     notify_on = dialog_manager.dialog_data.get("notify_on")
-    file_id, file_unique_id = dialog_manager.dialog_data.get("media_content", (None, None))
+    file_id = dialog_manager.dialog_data.get("media_content")
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
     multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
     channels: list[str] = multiselect.get_checked()
-    print(channels)
+
+    logger.info(
+        f"Полученные данные:{chat_id=}, {post_message=}, "
+        f"{recipient_type=}, {notify_on=}"
+    )
+
     if recipient_type == "channel":
         if file_id is None:
             for channel_name in channels:
                 channel_name = "@" + channel_name
-                await message.bot.send_message(
-                    chat_id=channel_name,
-                    text=post_message,
-                    reply_markup=keyboard,
-                    disable_notification=notify_on
-                )
+                try:
+                    await message.bot.send_message(
+                        chat_id=channel_name,
+                        text=post_message,
+                        reply_markup=keyboard,
+                        disable_notification=notify_on,
+                    )
+                    logger.info(f"Сообщение отправлено в канал: {channel_name}")
+                except TelegramBadRequest as e:
+                    logger.info(
+                        f"Ошибка во время выполнения рассылки в {channel_name}.\n{e!r}"
+                    )
+                    await message.answer(f"{i18n.error()}")
+                finally:
+                    await dialog_manager.switch_to(state=PostingSG.show_posted_status)
+
+            

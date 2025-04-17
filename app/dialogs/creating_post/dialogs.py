@@ -1,8 +1,16 @@
 from aiogram import F
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window, ShowMode
-from aiogram_dialog.widgets.text import Format, Case
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Toggle, Button, Back, Multiselect, Row
+from aiogram_dialog.widgets.text import Format, Case, List
+from aiogram_dialog.widgets.kbd import (
+    Group,
+    SwitchTo,
+    Toggle,
+    Button,
+    Back,
+    Multiselect,
+    Row,
+)
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from .getters import (
@@ -10,10 +18,11 @@ from .getters import (
     get_approve_push_data,
     get_creating_post_data,
     get_preselect_channel_data,
+    get_report_after_push_data,
     get_time_instruction_data,
     get_watch_text,
     get_url_instruction,
-    get_posting_sg_common_data
+    get_posting_sg_common_data,
 )
 from .handlers import (
     invalid_set_time,
@@ -45,7 +54,7 @@ create_post_dialog = Dialog(
             Format("{mail_to_bots_subscribers_message}"),
             id="bot_sending_selected",
             state=PostingSG.watch_text,
-            on_click=process_to_select_bot_mailing
+            on_click=process_to_select_bot_mailing,
         ),
         Multiselect(
             checked_text=Format("✓ {item[1]}"),
@@ -57,7 +66,12 @@ create_post_dialog = Dialog(
         ),
         Row(
             Back(Format("{back}")),
-            SwitchTo(Format("{next}"), id='next_clicked', state=PostingSG.watch_text, when=F["one_or_more_selected"]),
+            SwitchTo(
+                Format("{next}"),
+                id="next_clicked",
+                state=PostingSG.watch_text,
+                when=F["one_or_more_selected"],
+            ),
         ),
         getter=get_preselect_channel_data,
         state=PostingSG.select_channels,
@@ -107,7 +121,7 @@ create_post_dialog = Dialog(
                     id="del_url_pressed",
                     on_click=process_delete_button,
                     when="url_button_exists",
-                )
+                ),
             ),
             # Установить время
             SwitchTo(
@@ -132,12 +146,14 @@ create_post_dialog = Dialog(
             ),
             # Медиа
             Group(
-                SwitchTo(Format("{media_message}"), id="media_pressed", state=PostingSG.media),
+                SwitchTo(
+                    Format("{media_message}"), id="media_pressed", state=PostingSG.media
+                ),
                 Button(
-                    Format("{delete_media_message}"), 
-                    id="delete_media_pressed", 
+                    Format("{delete_media_message}"),
+                    id="delete_media_pressed",
                     on_click=process_remove_media,
-                    when=F["has_media"]
+                    when=F["has_media"],
                 ),
             ),
             # Включение/отключение комментариев
@@ -201,9 +217,7 @@ create_post_dialog = Dialog(
         Format("{instruction_add_media}"),
         MessageInput(
             func=process_addition_media,
-            content_types=[
-                ContentType.PHOTO,ContentType.VIDEO
-            ],
+            content_types=[ContentType.PHOTO, ContentType.VIDEO],
         ),
         MessageInput(func=process_invalid_media_content),
         state=PostingSG.media,
@@ -216,13 +230,21 @@ create_post_dialog = Dialog(
             Back(Format("{cancel_caption}")),
             Button(
                 Format("{yes_caption}"),
-                id="push_now_pressed", 
-                on_click=process_push_now_to_channel_button            
+                id="push_now_pressed",
+                on_click=process_push_now_to_channel_button,
             ),
-            width=2
+            width=2,
         ),
         state=PostingSG.push_now,
         getter=get_approve_push_data,
+    ),
+    # Окно отображения статуса отправленного поста
+    Window(
+        Format("{report_message}"),
+        List(Format("└ {item[1]}"), items="channels"),
+        Format("\n\n{autocaption}"),
+        state=PostingSG.show_posted_status,
+        getter=get_report_after_push_data,
     ),
     getter=get_posting_sg_common_data,
 )

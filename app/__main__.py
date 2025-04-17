@@ -26,10 +26,7 @@ from app.middlewares import (
     TrackAllUsersMiddleware,
     TranslatorRunnerMiddleware,
 )
-from app.utils import (
-    create_translator_hub,
-    connect_to_nats,
-)
+from app.utils import create_translator_hub, connect_to_nats, setup_bot_commands
 
 # Настраиваем базовую конфигурацию логирования
 logging.basicConfig(
@@ -83,7 +80,6 @@ async def main() -> None:
     )
     dp = Dispatcher(storage=storage)
 
-    # Создаем объект типа TranslatorHub
     translator_hub: TranslatorHub = create_translator_hub()
     # Sessionmaker для прокидывания сессии в хендлеры
     Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)

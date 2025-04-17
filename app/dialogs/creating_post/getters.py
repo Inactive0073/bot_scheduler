@@ -1,3 +1,5 @@
+import datetime as dt
+
 from typing import TYPE_CHECKING, Dict
 
 from aiogram.types import User
@@ -24,21 +26,20 @@ class NotifyAlert:
 async def get_posting_sg_common_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     return {
         "cancel_caption": i18n.cancel(),
         "yes_caption": i18n.yes(),
         "next": i18n.next(),
-        "back":i18n.back(),
+        "back": i18n.back(),
+        "autocaption": i18n.caption(),
     }
 
 
 async def get_watch_text(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     return {
@@ -49,7 +50,6 @@ async def get_watch_text(
 async def get_creating_post_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     content_msg = dialog_manager.dialog_data.get("post_message", "Сообщение не найдено")
@@ -90,7 +90,6 @@ async def get_creating_post_data(
 async def get_url_instruction(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     return {
@@ -101,7 +100,6 @@ async def get_url_instruction(
 async def get_time_instruction_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     return {"instruction_delayed_post": i18n.cr.instruction.delayed.post()}
@@ -110,7 +108,6 @@ async def get_time_instruction_data(
 async def get_addition_media_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     return {
@@ -121,13 +118,12 @@ async def get_addition_media_data(
 async def get_approve_push_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
-    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     return {
         "push_now_approve_message": i18n.cr.approve.media.push.now(),
     }
-    
+
 
 async def get_preselect_channel_data(
     dialog_manager: DialogManager,
@@ -140,9 +136,29 @@ async def get_preselect_channel_data(
     channels = await get_channels(session=session, telegram_id=telegram_id)
     multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
     one_or_more_selected = multiselect.get_checked()
+    selected_channels = [(channel[2], channel[1]) for channel in channels if channel[2] in one_or_more_selected]
+    dialog_manager.dialog_data["selected_channels"] = selected_channels
     return {
         "all_channels": channels,
         "mail_to_bots_subscribers_message": i18n.cr.select.bot.to.send.message(),
         "select_channel_message": i18n.cr.select.channel.to.send.message(),
-        "one_or_more_selected": one_or_more_selected
+        "one_or_more_selected": one_or_more_selected,
+    }
+
+
+async def get_report_after_push_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    **kwargs,
+) -> Dict[str, str]:
+    post_message = dialog_manager.dialog_data.get("post_message")
+    date_posting = dt.datetime.now().strftime("%d/%m, %H:%M")
+    report = i18n.cr.success.pushed(
+        post_message=post_message, date_posting=date_posting
+    )
+    channels_name = [channel for channel in dialog_manager.dialog_data.get("selected_channels", [])]
+
+    return {
+        "report_message": report,
+        "channels": channels_name,
     }

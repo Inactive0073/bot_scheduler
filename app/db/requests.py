@@ -58,18 +58,10 @@ async def get_user_tz(
     return tz
 
 
-async def set_user_tz(
-    session: AsyncSession,
-    telegram_id: int,
-    new_utc: str
-) -> bool:
+async def set_user_tz(session: AsyncSession, telegram_id: int, new_utc: str) -> bool:
     """Устанавливает часовой пояс пользователя.
     По умолчанию у всех пользователей выставлен Europe/Moscow"""
-    stmt = (
-        update(User)
-        .where(User.telegram_id == telegram_id)
-        .values(utc=new_utc)
-    )
+    stmt = update(User).where(User.telegram_id == telegram_id).values(utc=new_utc)
     result = await session.execute(stmt)
     await session.commit()
     return result.rowcount > 0
@@ -140,7 +132,7 @@ async def upsert_channel(
 
 async def get_channels(
     session: AsyncSession, telegram_id: int
-) -> list[Literal['telegram_id', 'channel_name', 'channel_username', 'channel_link']]:
+) -> list[Literal["telegram_id", "channel_name", "channel_username", "channel_link"]]:
     """Возвращает каналы, принадлежащие указанному администратору.
 
     Args:

@@ -18,6 +18,7 @@ from .getters import (
     get_approve_push_data,
     get_creating_post_data,
     get_preselect_channel_data,
+    get_push_later_data,
     get_report_after_push_data,
     get_time_instruction_data,
     get_watch_text,
@@ -166,7 +167,7 @@ create_post_dialog = Dialog(
             SwitchTo(
                 Format("{push_now}"), id="push_now_pressed", state=PostingSG.push_now
             ),
-            # Планирование поста
+            # Запланировать пост
             SwitchTo(
                 Format("{push_later}"),
                 id="push_later_pressed",
@@ -245,6 +246,12 @@ create_post_dialog = Dialog(
         Format("\n\n{autocaption}"),
         state=PostingSG.show_posted_status,
         getter=get_report_after_push_data,
+    ),
+    # Окно планирования поста
+    Window(
+        Format("{schedule_message}"),
+        state=PostingSG.schedule_post,
+        getter=get_push_later_data,        
     ),
     getter=get_posting_sg_common_data,
 )

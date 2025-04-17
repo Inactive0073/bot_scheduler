@@ -162,3 +162,13 @@ async def get_report_after_push_data(
         "report_message": report,
         "channels": channels_name,
     }
+
+
+async def get_push_later_data(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    **kwargs,
+) -> Dict[str, str]:
+    return {
+        "schedule_message": i18n.cr.push.later.message()
+    }

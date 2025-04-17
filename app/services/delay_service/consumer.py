@@ -54,11 +54,16 @@ class DelayedMessageConsumer:
             # Отправляем nak с временем задержки
             await msg.nak(delay=new_delay)
         else:
-            # Если время обработки наступило - пытаемся удалить сообщение в чате
+            # Если время обработки наступило - пытаемся отправить сообщение
             chat_id = msg.headers.get("Tg-Delayed-Chat-ID")
-            message_id = msg.headers.get("Tg-Delayed-Msg-ID")
+            post_message = msg.headers.get("Tg-Delayed-Msg-Text")
+            keyboard = msg.headers.get("Tg-Delayed-Msg-Keyboard")
             with suppress(TelegramBadRequest):
-                await self.bot.delete_message(chat_id=chat_id, message_id=message_id)
+                await self.bot.send_message(
+                    chat_id=chat_id,
+                    text=post_message,
+                    reply_markup=keyboard
+                )
             await msg.ack()
 
     async def unsubscribe(self) -> None:

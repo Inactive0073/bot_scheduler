@@ -14,4 +14,3 @@ class PostingSG(StatesGroup):
     push_later = State()
     select_channels = State()
     show_posted_status = State()
-    schedule_post = State()

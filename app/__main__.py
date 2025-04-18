@@ -26,7 +26,12 @@ from app.middlewares import (
     TrackAllUsersMiddleware,
     TranslatorRunnerMiddleware,
 )
-from app.utils import create_translator_hub, connect_to_nats, setup_bot_commands
+from app.utils import (
+    create_translator_hub,
+    connect_to_nats,
+    setup_bot_commands,
+    start_delayed_consumer,
+)
 
 # Настраиваем базовую конфигурацию логирования
 logging.basicConfig(
@@ -84,6 +89,9 @@ async def main() -> None:
     # Sessionmaker для прокидывания сессии в хендлеры
     Sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
 
+    # Ставим команды
+    await setup_bot_commands(bot)
+
     # Регистриуем роутеры в диспетчере
     dp.include_router(commands_router)
     dp.include_routers(*get_dialogs())
@@ -98,11 +106,21 @@ async def main() -> None:
 
     # Запускаем polling
     try:
-        await dp.start_polling(
-            bot,
-            js=js,  # прокидываем для получения контекста стрима внутри хендлеров
-            delay_del_subject=config.delayed_consumer.subject,
-            _translator_hub=translator_hub,  # i18n
+        await asyncio.gather(
+            dp.start_polling(
+                bot,
+                js=js,  # прокидываем для получения контекста стрима внутри хендлеров
+                delay_send_subject=config.delayed_consumer.subject,
+                _translator_hub=translator_hub,  # i18n
+            ),
+            start_delayed_consumer(
+                nc=nc,
+                js=js,
+                bot=bot,
+                subject=config.delayed_consumer.subject,    
+                stream=config.delayed_consumer.stream,    
+                durable_name=config.delayed_consumer.durable_name,    
+            ),
         )
 
     except Exception as e:

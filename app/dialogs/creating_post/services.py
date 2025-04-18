@@ -95,3 +95,25 @@ def parse_time(time: str):
 
     date = date.replace(second=0, microsecond=0, tzinfo=pytz.timezone("Europe/Moscow"))
     return date
+
+
+def get_delay(post_time: dt) -> float:
+    """
+    Вычисляет задержку в секундах между текущим моментом и указанным временем.
+
+    Args:
+        post_time (datetime): Целевое время (с учетом часового пояса)
+
+    Returns:
+        float: Задержка в секундах (положительное число)
+
+    Raises:
+        ValueError: Если post_time находится в прошлом
+    """
+    now = dt.now(post_time.tzinfo)
+    delay = (post_time - now).total_seconds()
+
+    if delay <= 0:
+        raise ValueError("Время публикации должно быть в будущем")
+
+    return delay

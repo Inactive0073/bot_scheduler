@@ -16,11 +16,16 @@ from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle, Multiselect, ManagedMultiselect
 
 from app.db.requests import get_user_tz
+from app.dialogs.creating_post.services import get_delay
 from app.states.creating_post import PostingSG
 
 from datetime import datetime
 
 from logging import getLogger
+
+from nats.js.client import JetStreamContext
+
+from app.services.delay_service.publisher import delay_message_sending
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
@@ -277,7 +282,9 @@ async def invalid_set_time(
     message: Message, widget: TextInput, dialog_manager: DialogManager, e: ValueError
 ) -> None:
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    await message.answer(i18n.cr.instruction.invalid.time())
+    session = dialog_manager.middleware_data.get("session")
+    tz = await get_user_tz(session=session, telegram_id=message.from_user.id)
+    await message.answer(i18n.cr.instruction.invalid.time(tz=tz))
     await message.delete()
 
 
@@ -405,4 +412,31 @@ async def process_push_now_to_channel_button(
                 finally:
                     await dialog_manager.switch_to(state=PostingSG.show_posted_status)
 
-            
+
+# Отправка по расписанию
+async def process_send_to_channel_later(
+    message: Message,
+    widget: Button,
+    dialog_manager: DialogManager,
+) -> None:
+    js: JetStreamContext = dialog_manager.middleware_data.get("js")
+    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject")
+    
+    posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
+    posting_time = datetime.fromisoformat(posting_time_iso)
+    delay = int(get_delay(post_time=posting_time))
+    selected_channels = dialog_manager.dialog_data["selected_channels"]
+    post_message = dialog_manager.dialog_data.get("post_message")
+    keyboard = dialog_manager.dialog_data.get("keyboard")
+
+    for channel in selected_channels:
+        channel_name = "@" + channel[0]
+        await delay_message_sending(
+            js=js,
+            chat_id=channel_name,
+            text=post_message,
+            keyboard=keyboard,
+            subject=delay_send_subject,
+            delay=delay,
+        )
+    await dialog_manager.switch_to(state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND)

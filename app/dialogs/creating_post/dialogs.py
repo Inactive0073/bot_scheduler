@@ -7,9 +7,9 @@ from aiogram_dialog.widgets.kbd import (
     SwitchTo,
     Toggle,
     Button,
-    Back,
     Multiselect,
     Row,
+    Start,
 )
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
@@ -37,6 +37,7 @@ from .handlers import (
     edit_text,
     process_push_now_to_channel_button,
     process_remove_media,
+    process_send_to_channel_later,
     process_set_time,
     process_to_select_bot_mailing,
     process_to_select_channel,
@@ -45,6 +46,7 @@ from .handlers import (
 from .services import parse_button, parse_time
 
 from app.states.creating_post import PostingSG
+from app.states.start import StartSG
 
 create_post_dialog = Dialog(
     # Процесс создания поста
@@ -66,7 +68,7 @@ create_post_dialog = Dialog(
             on_click=process_to_select_channel,
         ),
         Row(
-            Back(Format("{back}")),
+            Start(Format("{back}"), id="back_to_menu", state=StartSG.start),
             SwitchTo(
                 Format("{next}"),
                 id="next_clicked",
@@ -172,6 +174,7 @@ create_post_dialog = Dialog(
                 Format("{push_later}"),
                 id="push_later_pressed",
                 state=PostingSG.push_later,
+                when=F["posting_time"],
             ),
             width=2,
         ),
@@ -228,7 +231,9 @@ create_post_dialog = Dialog(
     Window(
         Format("{push_now_approve_message}"),
         Group(
-            Back(Format("{cancel_caption}")),
+            SwitchTo(
+                Format("{cancel_caption}"), id="__back__", state=PostingSG.creating_post
+            ),
             Button(
                 Format("{yes_caption}"),
                 id="push_now_pressed",
@@ -250,8 +255,18 @@ create_post_dialog = Dialog(
     # Окно планирования поста
     Window(
         Format("{schedule_message}"),
-        state=PostingSG.schedule_post,
-        getter=get_push_later_data,        
+        List(Format("└ {item[1]}"), items="selected_channels"),
+        Group(
+            SwitchTo(Format("{back}"), id="__back__", state=PostingSG.creating_post),
+            Button(
+                Format("{schedule_button_caption}"),
+                id="push_later_pressed",
+                on_click=process_send_to_channel_later,
+            ),
+            width=2,
+        ),
+        state=PostingSG.push_later,
+        getter=get_push_later_data,
     ),
     getter=get_posting_sg_common_data,
 )

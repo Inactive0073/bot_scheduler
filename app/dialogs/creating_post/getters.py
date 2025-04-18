@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from fluentogram import TranslatorRunner
 
-from app.db.requests import get_channels
+from app.db.requests import get_channels, get_user_tz
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
@@ -100,9 +100,12 @@ async def get_url_instruction(
 async def get_time_instruction_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
+    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
-    return {"instruction_delayed_post": i18n.cr.instruction.delayed.post()}
+    session = dialog_manager.middleware_data.get("session")
+    tz = await get_user_tz(session=session, telegram_id=event_from_user.id)
+    return {"instruction_delayed_post": i18n.cr.instruction.delayed.post(tz=tz)}
 
 
 async def get_addition_media_data(
@@ -136,7 +139,11 @@ async def get_preselect_channel_data(
     channels = await get_channels(session=session, telegram_id=telegram_id)
     multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
     one_or_more_selected = multiselect.get_checked()
-    selected_channels = [(channel[2], channel[1]) for channel in channels if channel[2] in one_or_more_selected]
+    selected_channels = [
+        (channel[2], channel[1])
+        for channel in channels
+        if channel[2] in one_or_more_selected
+    ]
     dialog_manager.dialog_data["selected_channels"] = selected_channels
     return {
         "all_channels": channels,
@@ -152,11 +159,17 @@ async def get_report_after_push_data(
     **kwargs,
 ) -> Dict[str, str]:
     post_message = dialog_manager.dialog_data.get("post_message")
-    date_posting = dt.datetime.now().strftime("%d/%m, %H:%M")
+    date_posting = (
+        dt.datetime.now().strftime("%d/%m, %H:%M")
+        if (schedule_time := dialog_manager.dialog_data.get("posting_time")) is None
+        else schedule_time
+    )
     report = i18n.cr.success.pushed(
         post_message=post_message, date_posting=date_posting
     )
-    channels_name = [channel for channel in dialog_manager.dialog_data.get("selected_channels", [])]
+    channels_name = [
+        channel for channel in dialog_manager.dialog_data.get("selected_channels", [])
+    ]
 
     return {
         "report_message": report,
@@ -169,6 +182,10 @@ async def get_push_later_data(
     i18n: TranslatorRunner,
     **kwargs,
 ) -> Dict[str, str]:
+    date_posting = dialog_manager.dialog_data["dt_posting_view"]
+    selected_channels = dialog_manager.dialog_data["selected_channels"]
     return {
-        "schedule_message": i18n.cr.push.later.message()
+        "schedule_message": i18n.cr.push.later.message(current_date=date_posting),
+        "selected_channels": selected_channels,
+        "schedule_button_caption": i18n.cr.push.later.button.caption(),
     }

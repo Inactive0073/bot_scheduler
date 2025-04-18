@@ -60,9 +60,7 @@ class DelayedMessageConsumer:
             keyboard = msg.headers.get("Tg-Delayed-Msg-Keyboard")
             with suppress(TelegramBadRequest):
                 await self.bot.send_message(
-                    chat_id=chat_id,
-                    text=post_message,
-                    reply_markup=keyboard
+                    chat_id=chat_id, text=post_message, reply_markup=keyboard
                 )
             await msg.ack()
 

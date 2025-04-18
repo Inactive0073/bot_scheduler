@@ -1,8 +1,11 @@
 from nats.js import JetStreamContext
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiogram.types import InlineKeyboardMarkup
+import logging
 
+
+logger = logging.getLogger(__name__)
 
 async def delay_message_sending(
     js: JetStreamContext,
@@ -21,3 +24,5 @@ async def delay_message_sending(
         "Tg-Delayed-Msg-Delay": str(delay),
     }
     await js.publish(subject=subject, headers=headers)
+    logger.info(f"Сообщение с текстом {text[:30]} отправлено в очередь на {subject=}"
+                f" Пост должен быть доставлен в {datetime.now() + timedelta(seconds=delay)}")

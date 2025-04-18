@@ -39,6 +39,10 @@ class DelayedMessageConsumer:
         )
 
     async def on_message(self, msg: Msg):
+        logger.info(f"Получено сообщение из очереди."
+                     f"Содержание: {msg.headers=}, "
+                     f"Содержание: {msg.data=}")
+        
         # Получаем из заголовков сообщения время отправки и время задержки
         sent_time = datetime.fromtimestamp(
             float(msg.headers.get("Tg-Delayed-Msg-Timestamp")), tz=timezone.utc

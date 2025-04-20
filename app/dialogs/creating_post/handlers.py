@@ -263,6 +263,7 @@ async def process_set_time(
     try:
         weekday = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")[dt.weekday()]
         dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
+        dialog_manager.dialog_data["user_timezone"] = tz
         dialog_manager.dialog_data["dt_posting_view"] = (
             f"{weekday}, {dt.strftime('%d.%m, %H:%M')}"
         )
@@ -421,7 +422,7 @@ async def process_send_to_channel_later(
 ) -> None:
     js: JetStreamContext = dialog_manager.middleware_data.get("js")
     delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject")
-    
+
     posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
     posting_time = datetime.fromisoformat(posting_time_iso)
     delay = int(get_delay(post_time=posting_time))
@@ -439,4 +440,6 @@ async def process_send_to_channel_later(
             subject=delay_send_subject,
             delay=delay,
         )
-    await dialog_manager.switch_to(state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND)
+    await dialog_manager.switch_to(
+        state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND
+    )

@@ -1,9 +1,10 @@
 from typing import List
 from aiogram_dialog import Dialog
 
-from app.dialogs.start.dialogs import start_dialog
-from app.dialogs.creating_post.dialogs import create_post_dialog
-from app.dialogs.addition_channel.dialogs import dialog_addition_channel
+from .start.dialogs import start_dialog
+from .creating_post.dialogs import create_post_dialog
+from .addition_channel.dialogs import dialog_addition_channel
+from .settings.dialogs import settings_dialog
 
 
 def get_dialogs() -> List[Dialog]:
@@ -11,4 +12,5 @@ def get_dialogs() -> List[Dialog]:
         start_dialog,
         create_post_dialog,
         dialog_addition_channel,
+        settings_dialog
     ]

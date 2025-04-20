@@ -1,4 +1,5 @@
 import logging
+import json
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 
@@ -39,34 +40,49 @@ class DelayedMessageConsumer:
         )
 
     async def on_message(self, msg: Msg):
-        logger.info(f"Получено сообщение из очереди."
-                     f"Содержание: {msg.headers=}, "
-                     f"Содержание: {msg.data=}")
-        
-        # Получаем из заголовков сообщения время отправки и время задержки
-        sent_time = datetime.fromtimestamp(
-            float(msg.headers.get("Tg-Delayed-Msg-Timestamp")), tz=timezone.utc
+        logger.info(
+            f"Получено сообщение из очереди. Заголовки: {msg.headers=}, Данные: {msg.data=}"
         )
-        delay = int(msg.headers.get("Tg-Delayed-Msg-Delay"))
 
-        # Проверяем наступило ли время обработки сообщения
-        if sent_time + timedelta(seconds=delay) > datetime.now().astimezone():
-            # Если время обработки не наступило - вычисляем сколько секунд осталось до обработки
-            new_delay = (
-                sent_time + timedelta(seconds=delay) - datetime.now().astimezone()
-            ).total_seconds()
-            # Отправляем nak с временем задержки
-            await msg.nak(delay=new_delay)
-        else:
-            # Если время обработки наступило - пытаемся отправить сообщение
-            chat_id = msg.headers.get("Tg-Delayed-Chat-ID")
-            post_message = msg.headers.get("Tg-Delayed-Msg-Text")
-            keyboard = msg.headers.get("Tg-Delayed-Msg-Keyboard")
+        try:
+            # Декодируем payload как JSON
+            payload: dict[str, str] = json.loads(msg.data.decode("utf-8"))
+
+            chat_id = payload.get("chat_id")
+            post_message = payload.get("text")
+            keyboard_data = payload.get("keyboard")
+            delay = payload.get("delay", 0)
+
+            # Время публикации
+            sent_time_str = payload.get("timestamp")
+            sent_time = datetime.fromisoformat(sent_time_str).astimezone(timezone.utc)
+
+            # Проверяем, нужно ли отложить повторно
+            if sent_time + timedelta(seconds=delay) > datetime.now(timezone.utc):
+                new_delay = (
+                    sent_time + timedelta(seconds=delay) - datetime.now(timezone.utc)
+                ).total_seconds()
+                await msg.nak(delay=new_delay)
+                return
+
+            # Восстанавливаем клавиатуру, если она есть
+            reply_markup = None
+            if keyboard_data:
+                from aiogram.types import InlineKeyboardMarkup
+
+                reply_markup = InlineKeyboardMarkup.model_validate(keyboard_data)
+
+            # Отправляем сообщение
             with suppress(TelegramBadRequest):
                 await self.bot.send_message(
-                    chat_id=chat_id, text=post_message, reply_markup=keyboard
+                    chat_id=chat_id, text=post_message, reply_markup=reply_markup
                 )
+
             await msg.ack()
+
+        except Exception as e:
+            logger.exception(f"Ошибка при обработке сообщения: {e}")
+            await msg.term()  # Или retry / nak, в зависимости от логики
 
     async def unsubscribe(self) -> None:
         if self.stream_sub:

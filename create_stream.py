@@ -8,6 +8,7 @@ from nats.js.api import RetentionPolicy, StorageType
 
 from app.config_data.config import Config, load_config
 
+
 async def main():
     config: Config = load_config()
     # Подключаемся к NATS серверу
@@ -17,9 +18,9 @@ async def main():
 
     # Настройка стрима с заданными параметрами
     stream_config = StreamConfig(
-        name=config.delayed_consumer.stream, # Название стрима
-        subjects=config.delayed_consumer.subject, # Список сабжектов
-        retention=RetentionPolicy.LIMITS, # Политика удержания
+        name=config.delayed_consumer.stream,  # Название стрима
+        subjects=config.delayed_consumer.subject,  # Список сабжектов
+        retention=RetentionPolicy.LIMITS,  # Политика удержания
         max_bytes=3000 * 1024 * 1024,  # 3000 MiB
         max_msg_size=10 * 1024 * 1024,  # 10 MiB
         storage=StorageType.FILE,  # Хранение сообщений на диске
@@ -29,6 +30,7 @@ async def main():
     await js.add_stream(config=stream_config)
 
     print("Stream `SocialMediaStream` created successfully.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

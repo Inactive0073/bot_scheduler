@@ -117,9 +117,9 @@ async def main() -> None:
                 nc=nc,
                 js=js,
                 bot=bot,
-                subject=config.delayed_consumer.subject,    
-                stream=config.delayed_consumer.stream,    
-                durable_name=config.delayed_consumer.durable_name,    
+                subject=config.delayed_consumer.subject,
+                stream=config.delayed_consumer.stream,
+                durable_name=config.delayed_consumer.durable_name,
             ),
         )
 

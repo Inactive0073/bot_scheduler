@@ -104,7 +104,7 @@ async def get_time_instruction_data(
     **kwargs,
 ) -> Dict[str, str]:
     session = dialog_manager.middleware_data.get("session")
-    tz = await get_user_tz(session=session, telegram_id=event_from_user.id)
+    tz, tz_offset = await get_user_tz(session=session, telegram_id=event_from_user.id)
     return {"instruction_delayed_post": i18n.cr.instruction.delayed.post(tz=tz)}
 
 
@@ -161,7 +161,7 @@ async def get_report_after_push_data(
     post_message = dialog_manager.dialog_data.get("post_message")
     date_posting = (
         dt.datetime.now().strftime("%d/%m, %H:%M")
-        if (schedule_time := dialog_manager.dialog_data.get("posting_time")) is None
+        if (schedule_time := dialog_manager.dialog_data.get("dt_posting_view")) is None
         else schedule_time
     )
     report = i18n.cr.success.pushed(

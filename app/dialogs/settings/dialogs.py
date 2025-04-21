@@ -7,6 +7,7 @@ from aiogram_dialog.widgets.kbd import (
     SwitchTo,
     Radio,
     Start,
+    Column
 )
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
@@ -38,21 +39,26 @@ settings_dialog = Dialog(
     # Окно настройки часового пояса
     Window(
         Format("{settings_select_timezone_message}"),
-        Radio(
-            Format("✅ {item[0]}"),
-            Format("{item[0]}"),
-            id="selecting_timezones",
-            item_id_getter=lambda item: item[1],
-            items="timezones", 
-            on_click=on_timezone_selected,
+        Column(
+            Radio(
+                Format("✅ {item[0]}"),
+                Format("{item[0]}"),
+                id="selecting_timezones",
+                item_id_getter=lambda item: item[1],
+                items="timezones",
+                on_click=on_timezone_selected,
+            ),
         ),
+        SwitchTo(Format("{back}"), id="__back__", state=SettingsSG.start),
         state=SettingsSG.timezone,
         getter=get_start_setting_tz_data,
     ),
     # Окно поддержки
     Window(
         Format("{settings_support_message}"),
+        SwitchTo(Format("{back}"), id="__back__", state=SettingsSG.start),
         state=SettingsSG.support,
+        
     ),
     getter=get_settings_data,
 )

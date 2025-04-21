@@ -2,8 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from validators.url import url
-from datetime import datetime as dt
-import pytz
+from datetime import datetime as dt, timezone, timedelta
 
 
 def parse_button(text: str) -> InlineKeyboardMarkup:
@@ -67,6 +66,7 @@ def parse_time(time: str):
     Raises:
         ValueError: При неверном формате или некорректных значениях
     """
+    FIXED_MSK = timezone(timedelta(hours=3))
     while " " in time.strip():
         time = time.replace(" ", "")
 
@@ -93,7 +93,7 @@ def parse_time(time: str):
     else:
         raise ValueError
 
-    date = date.replace(second=0, microsecond=0, tzinfo=pytz.timezone("Europe/Moscow"))
+    date = date.replace(second=0, microsecond=0, tzinfo=FIXED_MSK)
     return date
 
 

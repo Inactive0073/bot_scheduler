@@ -1,19 +1,32 @@
-import datetime
+from datetime import datetime, timedelta, timezone, UTC
 from typing import TYPE_CHECKING, Dict
 
 from aiogram.types import User
 
 from aiogram_dialog import DialogManager
-from aiogram_dialog.widgets.kbd import Multiselect
-
-from dataclasses import dataclass
+from aiogram_dialog.widgets.kbd import ManagedRadio
 
 from fluentogram import TranslatorRunner
 
-from app.db.requests import  get_user_tz
+from app.db.requests import get_user_tz
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
+
+
+TIMEZONES = [
+    ("Калининград", "Europe/Kaliningrad", 2),
+    ("Москва",      "Europe/Moscow",      3),
+    ("Самара",      "Europe/Samara",      4),
+    ("Екатеринбург","Asia/Yekaterinburg", 5),
+    ("Омск",        "Asia/Omsk",          6),
+    ("Красноярск",  "Asia/Krasnoyarsk",   7),
+    ("Иркутск",     "Asia/Irkutsk",       8),
+    ("Якутск",      "Asia/Yakutsk",       9),
+    ("Владивосток", "Asia/Vladivostok",  10),
+    ("Магадан",     "Asia/Magadan",      11),
+    ("Камчатка",    "Asia/Kamchatka",    12),
+]
 
 
 async def get_settings_data(
@@ -49,26 +62,24 @@ async def get_start_setting_tz_data(
     **kwargs,
 ) -> Dict[str, str]:
     session = dialog_manager.middleware_data.get("session")
-    user_timezone = await get_user_tz(session=session, telegram_id=event_from_user.id)
-    current_timezone = dialog_manager.dialog_data.get("user_timezone")
-    selected_timezone = current_timezone if current_timezone else user_timezone
-    local_time = datetime.datetime.now(selected_timezone).strftime("%H:%M")
+    user_timezone, tz_offset = await get_user_tz(
+        session=session, telegram_id=event_from_user.id
+    )
+    user_time = datetime.now(tz=timezone(timedelta(hours=tz_offset))).strftime("%d.%m | %H:%M")
+    utc_time: datetime = datetime.now(tz=UTC)
+    
+    radio: ManagedRadio = dialog_manager.find("selecting_timezones") 
+    await radio.set_checked(f"{user_timezone}|{tz_offset}")
+    
+    tz_buttons = []
+    for name, tz_label, offset in TIMEZONES:
+        dt = utc_time + (timedelta(hours=offset))
+        dt_formatted = dt.strftime("%d.%m | %H:%M")
+        tz_buttons.append((f"{name} {dt_formatted}", f"{tz_label}|{offset}"))
+
     return {
         "settings_select_timezone_message": i18n.settings.select.timezone(
-            current_timezone=selected_timezone, local_datetime=local_time
+            current_timezone=user_timezone, local_datetime=user_time
         ),
-        "timezones": [
-            ("Калининград", "Europe/Kaliningrad"),
-            ("Москва", "Europe/Moscow"),
-            ("Самара", "Europe/Samara"),
-            ("Екатеринбург", "Asia/Yekaterinburg"),
-            ("Омск", "Asia/Omsk"),
-            ("Красноярск", "Asia/Krasnoyarsk"),
-            ("Иркутск", "Asia/Irkutsk"),
-            ("Якутск", "Asia/Yakutsk"),
-            ("Владивосток", "Asia/Vladivostok"),
-            ("Магадан", "Asia/Magadan"),
-            ("Камчатка", "Asia/Kamchatka"),
-        ],
-
+        "timezones": tz_buttons,
     }

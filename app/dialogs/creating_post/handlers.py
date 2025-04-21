@@ -1,5 +1,3 @@
-import pytz
-
 from typing import TYPE_CHECKING
 
 from aiogram.types import (
@@ -19,7 +17,7 @@ from app.db.requests import get_user_tz
 from app.dialogs.creating_post.services import get_delay
 from app.states.creating_post import PostingSG
 
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from logging import getLogger
 
@@ -255,15 +253,16 @@ async def process_set_time(
         18300408 - 18:30 04.08
     """
     session = dialog_manager.middleware_data.get("session")
-    tz = await get_user_tz(session, message.from_user.id)
-    dt = dt.replace(tzinfo=pytz.timezone(tz))  # Устанавливаем часовой пояс из БД
+    tz, tz_offset = await get_user_tz(session, message.from_user.id)
+    dt = dt.replace(
+        tzinfo=timezone(timedelta(hours=tz_offset))
+    )  # Устанавливаем часовой пояс из БД
     logger.info(
         f"Пользователь {message.from_user.username} устанавливает время публикации на {dt}"
     )
     try:
         weekday = ("пн", "вт", "ср", "чт", "пт", "сб", "вс")[dt.weekday()]
         dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
-        dialog_manager.dialog_data["user_timezone"] = tz
         dialog_manager.dialog_data["dt_posting_view"] = (
             f"{weekday}, {dt.strftime('%d.%m, %H:%M')}"
         )
@@ -284,7 +283,7 @@ async def invalid_set_time(
 ) -> None:
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
-    tz = await get_user_tz(session=session, telegram_id=message.from_user.id)
+    tz, tz_offset = await get_user_tz(session=session, telegram_id=message.from_user.id)
     await message.answer(i18n.cr.instruction.invalid.time(tz=tz))
     await message.delete()
 

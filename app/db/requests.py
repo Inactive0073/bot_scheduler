@@ -50,18 +50,27 @@ async def upsert_user(
 async def get_user_tz(
     session: AsyncSession,
     telegram_id: int,
-) -> str:
-    """Возвращает часовой пояс пользователя. По умолчанию у всех пользователей выставлен Europe/Moscow"""
-    stmt = select(User.utc).where(User.telegram_id == telegram_id)
+) -> tuple[Literal["Europe/Moscow"], int]:
+    """Возвращает часовой пояс пользователя. По умолчанию у всех пользователей выставлен Europe/Moscow, offset=3"""
+    stmt = select(User.timezone, User.timezone_offset).where(
+        User.telegram_id == telegram_id
+    )
     result = await session.execute(stmt)
-    tz = result.first()[0]
-    return tz
+    tz, tz_offset = result.first()
+    print(tz, tz_offset)
+    return tz, tz_offset
 
 
-async def set_user_tz(session: AsyncSession, telegram_id: int, new_utc: str) -> bool:
+async def set_user_tz(
+    session: AsyncSession, telegram_id: int, tz_offset: int, timezone: str
+) -> bool:
     """Устанавливает часовой пояс пользователя.
     По умолчанию у всех пользователей выставлен Europe/Moscow"""
-    stmt = update(User).where(User.telegram_id == telegram_id).values(utc=new_utc)
+    stmt = (
+        update(User)
+        .where(User.telegram_id == telegram_id)
+        .values(timezone=timezone, timezone_offset=tz_offset)
+    )
     result = await session.execute(stmt)
     await session.commit()
     return result.rowcount > 0

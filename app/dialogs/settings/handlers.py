@@ -6,8 +6,16 @@ from app.db.requests import set_user_tz
 
 
 async def on_timezone_selected(
-    callback: CallbackQuery, button: Button, dialog_manager: DialogManager, timezone_data: str
+    callback: CallbackQuery,
+    button: Button,
+    dialog_manager: DialogManager,
+    timezone_data: str,
 ):
+    timezone, tz_offset = timezone_data.split("|")
+    tz_offset = int(tz_offset)
     session = dialog_manager.middleware_data.get("session")
-    dialog_manager.dialog_data['user_timezone'] = timezone_data
-    await set_user_tz(session=session, telegram_id=callback.from_user.id, new_utc=timezone_data)
+    dialog_manager.dialog_data["user_timezone"] = timezone_data
+    dialog_manager.dialog_data["tz_offset"] = tz_offset
+    await set_user_tz(
+        session=session, telegram_id=callback.from_user.id, tz_offset=tz_offset,timezone=timezone
+    )

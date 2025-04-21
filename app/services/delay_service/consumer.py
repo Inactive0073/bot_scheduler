@@ -52,15 +52,18 @@ class DelayedMessageConsumer:
             post_message = payload.get("text")
             keyboard_data = payload.get("keyboard")
             delay = payload.get("delay", 0)
+            tz_label = payload.get("tz_label")
+            tz_offset = payload.get("tz_offset")
 
             # Время публикации
             sent_time_str = payload.get("timestamp")
-            sent_time = datetime.fromisoformat(sent_time_str).astimezone(timezone.utc)
+            tz_info = tzinfo=timezone(timedelta(hours=tz_offset))
+            sent_time = datetime.fromisoformat(sent_time_str).replace(tzinfo=tz_info)
 
             # Проверяем, нужно ли отложить повторно
-            if sent_time + timedelta(seconds=delay) > datetime.now(timezone.utc):
+            if sent_time + timedelta(seconds=delay) > datetime.now(tz=tz_info):
                 new_delay = (
-                    sent_time + timedelta(seconds=delay) - datetime.now(timezone.utc)
+                    sent_time + timedelta(seconds=delay) - datetime.now(tz=tz_info)
                 ).total_seconds()
                 await msg.nak(delay=new_delay)
                 return

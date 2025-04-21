@@ -1,5 +1,5 @@
 from nats.js import JetStreamContext
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from aiogram.types import InlineKeyboardMarkup
 import logging
@@ -36,5 +36,5 @@ async def delay_message_sending(
     await js.publish(subject=subject, headers=headers, payload=payload)
     logger.info(
         f"Сообщение с текстом {text[:30]} отправлено в очередь на {subject=}"
-        f" Пост должен быть опубликован в {datetime.now() + timedelta(seconds=delay)}"
+        f" Пост должен быть опубликован в {datetime.now(tzinfo=timezone(timedelta(hours=tz_offset))) + timedelta(seconds=delay)}"
     )

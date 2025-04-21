@@ -8,9 +8,10 @@ from app.db.models.mixins import TimestampMixin
 class User(TimestampMixin, Base):
     __tablename__ = "users"
 
-    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    username: Mapped[str] = mapped_column(String, nullable=False)
-    first_name: Mapped[str] = mapped_column(String, nullable=False)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
+    phone: Mapped[str] = mapped_column(String(18), unique=True, nullable=True)
+    username: Mapped[str]
+    first_name: Mapped[str]
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     # created_at добавляется из миксина
     timezone_offset: Mapped[int] = mapped_column(

@@ -421,10 +421,13 @@ async def process_send_to_channel_later(
 ) -> None:
     js: JetStreamContext = dialog_manager.middleware_data.get("js")
     delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject")
-
+    session = dialog_manager.middleware_data.get("session")
     posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
     posting_time = datetime.fromisoformat(posting_time_iso)
+    timezone_label, tz_offset = await get_user_tz(session=session,telegram_id=message.from_user.id)
+    posting_time.replace(tzinfo=timezone(timedelta(hours=tz_offset)))
     delay = int(get_delay(post_time=posting_time))
+    
     selected_channels = dialog_manager.dialog_data["selected_channels"]
     post_message = dialog_manager.dialog_data.get("post_message")
     keyboard = dialog_manager.dialog_data.get("keyboard")
@@ -435,9 +438,11 @@ async def process_send_to_channel_later(
             js=js,
             chat_id=channel_name,
             text=post_message,
-            keyboard=keyboard,
             subject=delay_send_subject,
             delay=delay,
+            tz_label=timezone_label,
+            tz_offset=tz_offset,
+            keyboard=keyboard,
         )
     await dialog_manager.switch_to(
         state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND

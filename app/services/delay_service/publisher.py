@@ -15,7 +15,8 @@ async def delay_message_sending(
     text: str,
     subject: str,
     delay: int = 0,
-    tz: str = "Europe/Moscow",
+    tz_label: str = "Europe/Moscow",
+    tz_offset: int = 3,
     keyboard: InlineKeyboardMarkup = None,
 ) -> None:
     payload = json.dumps(
@@ -25,7 +26,8 @@ async def delay_message_sending(
             "chat_id": chat_id,
             "delay": delay,
             "timestamp": datetime.now().isoformat(),
-            "timezone": tz,
+            "tz_label": tz_label,
+            "tz_offset": tz_offset,
         }
     ).encode("utf-8")
     headers = {

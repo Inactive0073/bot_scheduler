@@ -50,7 +50,7 @@ async def upsert_user(
 async def get_user_tz(
     session: AsyncSession,
     telegram_id: int,
-) -> tuple[Literal["Europe/Moscow"], int]:
+) -> tuple[str, int]:
     """Возвращает часовой пояс пользователя. По умолчанию у всех пользователей выставлен Europe/Moscow, offset=3"""
     stmt = select(User.timezone, User.timezone_offset).where(
         User.telegram_id == telegram_id

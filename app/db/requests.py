@@ -57,7 +57,6 @@ async def get_user_tz(
     )
     result = await session.execute(stmt)
     tz, tz_offset = result.first()
-    print(tz, tz_offset)
     return tz, tz_offset
 
 

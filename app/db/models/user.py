@@ -1,21 +1,25 @@
-from sqlalchemy import BigInteger, String, SmallInteger
+import enum
+from sqlalchemy import BigInteger, String, SmallInteger, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
-from app.db.models.mixins import TimestampMixin
+from app.db.models.mixins import TimestampMixin, TelegramProfileMixin
 
 
-class User(TimestampMixin, Base):
+
+
+
+class User(TimestampMixin,TelegramProfileMixin, Base):
     __tablename__ = "users"
 
-    telegram_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
-    phone: Mapped[str] = mapped_column(String(18), unique=True, nullable=True)
-    username: Mapped[str]
-    first_name: Mapped[str]
-    last_name: Mapped[str] = mapped_column(String, nullable=True)
+    role: Mapped[str] = mapped_column(
+        default="manager",
+        server_default=text("'guest'"),
+        nullable=True,
+    )
     # created_at добавляется из миксина
     timezone_offset: Mapped[int] = mapped_column(
-        SmallInteger, default=3, nullable=True, comment="Сдвиг таймзоны"
+        SmallInteger, default=3, server_default=text("3"), nullable=True
     )
     timezone: Mapped[int] = mapped_column(
         String, default="Europe/Moscow", nullable=True
@@ -30,3 +34,5 @@ class User(TimestampMixin, Base):
         else:
             name = f"{self.first_name} {self.last_name}"
         return f"[{self.telegram_id} | {self.username}] {name} | {self.utc}. Список каналов: [{self.managed_channels}]"
+
+

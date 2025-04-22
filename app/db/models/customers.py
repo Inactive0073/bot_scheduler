@@ -1,4 +1,3 @@
-import enum
 from sqlalchemy import SmallInteger, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

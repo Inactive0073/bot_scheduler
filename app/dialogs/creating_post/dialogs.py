@@ -35,6 +35,7 @@ from .handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
+    process_push_now_to_bot_button,
     process_push_now_to_channel_button,
     process_remove_media,
     process_send_to_channel_later,
@@ -60,7 +61,7 @@ create_post_dialog = Dialog(
             on_click=process_to_select_bot_mailing,
         ),
         Multiselect(
-            checked_text=Format("✓ {item[1]}"),
+            checked_text=Format("✅ {item[1]}"),
             unchecked_text=Format("{item[1]}"),
             id="selected_channel_for_publication",
             item_id_getter=lambda item: item[2],
@@ -99,6 +100,7 @@ create_post_dialog = Dialog(
         # Время отправки / Редактировать время     | С уведомлением / Без уведомления
         # Добавить медиа / Удалить медиа     | Отключить комментарии
         # Отправить сейчас
+        # Назад
         # =============================================================
         Format("{reply_title}\n"),
         Group(
@@ -178,6 +180,11 @@ create_post_dialog = Dialog(
             ),
             width=2,
         ),
+        SwitchTo(
+            Format("{back}"),
+            id="__back__",
+            state=PostingSG.select_channels
+        ),
         state=PostingSG.creating_post,
         getter=get_creating_post_data,
     ),
@@ -238,6 +245,13 @@ create_post_dialog = Dialog(
                 Format("{yes_caption}"),
                 id="push_now_pressed",
                 on_click=process_push_now_to_channel_button,
+                when=F["dialog_data"]["recipient_type"] != "bot"
+            ),
+            Button(
+                Format("{yes_caption}"),
+                id="push_now_bot_pressed",
+                on_click=process_push_now_to_bot_button,
+                when=F["dialog_data"]["recipient_type"] == "bot"
             ),
             width=2,
         ),

@@ -54,10 +54,13 @@ class DelayedMessageConsumer:
             delay = payload.get("delay", 0)
             tz_label = payload.get("tz_label")
             tz_offset = payload.get("tz_offset")
+            notify_status = payload.get("notify_status")
+            has_spoiler = payload.get("has_spoiler")
+            recipient_type = payload.get("recipient_type")
 
             # Время публикации
             sent_time_str = payload.get("timestamp")
-            tz_info = tzinfo=timezone(timedelta(hours=tz_offset))
+            tz_info = timezone(timedelta(hours=tz_offset))
             sent_time = datetime.fromisoformat(sent_time_str).replace(tzinfo=tz_info)
 
             # Проверяем, нужно ли отложить повторно
@@ -77,9 +80,11 @@ class DelayedMessageConsumer:
 
             # Отправляем сообщение
             with suppress(TelegramBadRequest):
-                await self.bot.send_message(
-                    chat_id=chat_id, text=post_message, reply_markup=reply_markup
+                message = await self.bot.send_message(
+                    chat_id=chat_id, text=post_message, reply_markup=reply_markup,
+                    disable_notification=notify_status, 
                 )
+                logger.info(f"Сообщение {message.message_id} успешно отправлено.")
 
             await msg.ack()
 

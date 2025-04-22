@@ -16,7 +16,8 @@ class NatsConfig:
 
 @dataclass
 class NatsDelayedConsumerConfig:
-    subject: str
+    subject_channel: str
+    subject_subscriber: str
     stream: str
     durable_name: str
 
@@ -42,7 +43,8 @@ def load_config(path: str | None = None) -> Config:
         tg_bot=TgBot(token=env("BOT_TOKEN")),
         nats=NatsConfig(servers=env.list("NATS_SERVERS")),
         delayed_consumer=NatsDelayedConsumerConfig(
-            subject=env("NATS_DELAYED_CONSUMER_SUBJECT"),
+            subject_channel=env("NATS_DELAYED_CONSUMER_SUBJECT_CHANNEL"),
+            subject_subscriber=env("NATS_DELAYED_CONSUMER_SUBJECT_SUBSCRIBER"),
             stream=env("NATS_DELAYED_CONSUMER_STREAM"),
             durable_name=env("NATS_DELAYED_CONSUMER_DURABLE_NAME"),
         ),

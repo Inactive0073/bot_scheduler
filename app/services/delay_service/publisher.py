@@ -18,6 +18,11 @@ async def delay_message_sending(
     tz_label: str = "Europe/Moscow",
     tz_offset: int = 3,
     keyboard: InlineKeyboardMarkup = None,
+    file_id: str = None,
+    notify_status: bool = True,
+    has_spoiler: bool = False,
+    recipient_type: str = "bot"
+    
 ) -> None:
     payload = json.dumps(
         {
@@ -28,6 +33,10 @@ async def delay_message_sending(
             "timestamp": datetime.now().isoformat(),
             "tz_label": tz_label,
             "tz_offset": tz_offset,
+            "notify_status": notify_status,
+            "has_spoiler": has_spoiler,
+            "recipient_type": recipient_type,
+            
         }
     ).encode("utf-8")
     headers = {
@@ -36,5 +45,5 @@ async def delay_message_sending(
     await js.publish(subject=subject, headers=headers, payload=payload)
     logger.info(
         f"Сообщение с текстом {text[:30]} отправлено в очередь на {subject=}"
-        f" Пост должен быть опубликован в {datetime.now(tzinfo=timezone(timedelta(hours=tz_offset))) + timedelta(seconds=delay)}"
+        f" Пост должен быть опубликован в {datetime.now(tz=timezone(timedelta(hours=tz_offset))) + timedelta(seconds=delay)}"
     )

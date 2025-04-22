@@ -13,6 +13,7 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle, Multiselect, ManagedMultiselect
 
+from app.db.customer_requests import get_all_customers
 from app.db.requests import get_user_tz
 from app.dialogs.creating_post.services import get_delay
 from app.states.creating_post import PostingSG
@@ -32,7 +33,7 @@ logger = getLogger(__name__)
 
 
 async def process_to_select_bot_mailing(
-    message: Message, widget: Button, dialog_manager: DialogManager, _
+    message: Message, widget: Button, dialog_manager: DialogManager
 ) -> None:
     """Сеттер для типа получателя бот"""
     dialog_manager.dialog_data["recipient_type"] = "bot"
@@ -383,34 +384,78 @@ async def process_push_now_to_channel_button(
     post_message = dialog_manager.dialog_data.get("post_message")
     notify_on = dialog_manager.dialog_data.get("notify_on")
     file_id = dialog_manager.dialog_data.get("media_content")
-    recipient_type = dialog_manager.dialog_data.get("recipient_type")
     multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
     channels: list[str] = multiselect.get_checked()
 
     logger.info(
         f"Полученные данные:{chat_id=}, {post_message=}, "
-        f"{recipient_type=}, {notify_on=}"
+        f"{notify_on=}"
     )
 
-    if recipient_type == "channel":
-        if file_id is None:
-            for channel_name in channels:
-                channel_name = "@" + channel_name
-                try:
-                    await message.bot.send_message(
-                        chat_id=channel_name,
-                        text=post_message,
-                        reply_markup=keyboard,
-                        disable_notification=notify_on,
-                    )
-                    logger.info(f"Сообщение отправлено в канал: {channel_name}")
-                except TelegramBadRequest as e:
-                    logger.info(
-                        f"Ошибка во время выполнения рассылки в {channel_name}.\n{e!r}"
-                    )
-                    await message.answer(f"{i18n.error()}")
-                finally:
-                    await dialog_manager.switch_to(state=PostingSG.show_posted_status)
+    if file_id is None:
+        for channel_name in channels:
+            channel_name = "@" + channel_name
+            try:
+                await message.bot.send_message(
+                    chat_id=channel_name,
+                    text=post_message,
+                    reply_markup=keyboard,
+                    disable_notification=notify_on,
+                )
+                logger.info(f"Сообщение отправлено в канал: {channel_name}")
+            except TelegramBadRequest as e:
+                logger.info(
+                    f"Ошибка во время выполнения рассылки в {channel_name}.\n{e!r}"
+                )
+                await message.answer(f"{i18n.error()}")
+            finally:
+                await dialog_manager.switch_to(state=PostingSG.show_posted_status)
+
+
+# Отправка по пользователям бота
+async def process_push_now_to_bot_button(
+    message: Message, widget: Button, dialog_manager: DialogManager
+):
+    """Отправка среди подписчиков бота"""
+    js: JetStreamContext = dialog_manager.middleware_data.get("js")
+    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject_subscriber")
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    session = dialog_manager.dialog_data.get("session")
+    
+    # получение списка ID пользователей
+    telegram_ids = await get_all_customers(session=session) 
+    timezone_label, tz_offset = await get_user_tz(session=session,telegram_id=message.from_user.id)
+    
+    # Пользовательские данные со временем
+    tzinfo = timezone(timedelta(hours=tz_offset))
+    posting_time_iso: str = dialog_manager.dialog_data.get("dt_posting_iso", datetime.now(tz=tzinfo))
+    posting_time = datetime.fromisoformat(posting_time_iso)
+    delay = int(get_delay(post_time=posting_time))
+
+    # Пользовательские данные для сообщения
+    keyboard = dialog_manager.dialog_data.get("keyboard")
+    post_message = dialog_manager.dialog_data.get("post_message")
+    notify_on = dialog_manager.dialog_data.get("notify_on")
+    file_id = dialog_manager.dialog_data.get("media_content")
+    has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
+    recipient_type = dialog_manager.dialog_data.get("recipient_type")
+    
+    for telegram_id in telegram_ids:
+        await delay_message_sending(
+            js=js,
+            chat_id=telegram_id,
+            text=post_message,
+            subject=delay_send_subject,
+            delay=delay,
+            tz_label=timezone_label,
+            tz_offset=tz_offset,
+            keyboard=keyboard,
+            file_id=file_id,
+            notify_status=notify_on,
+            has_spoiler=has_spoiler,
+            recipient_type=recipient_type,
+        )
+
 
 
 # Отправка по расписанию
@@ -420,18 +465,27 @@ async def process_send_to_channel_later(
     dialog_manager: DialogManager,
 ) -> None:
     js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject")
+    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject_channel")
     session = dialog_manager.middleware_data.get("session")
+    
+    # Предварительная подготовка
+    timezone_label, tz_offset = await get_user_tz(session=session,telegram_id=message.from_user.id)
+    
+    # Пользовательские данные со временем
     posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
     posting_time = datetime.fromisoformat(posting_time_iso)
-    timezone_label, tz_offset = await get_user_tz(session=session,telegram_id=message.from_user.id)
     posting_time.replace(tzinfo=timezone(timedelta(hours=tz_offset)))
     delay = int(get_delay(post_time=posting_time))
     
+    # Пользовательские данные для сообщения
     selected_channels = dialog_manager.dialog_data["selected_channels"]
     post_message = dialog_manager.dialog_data.get("post_message")
     keyboard = dialog_manager.dialog_data.get("keyboard")
-
+    notify_status = dialog_manager.dialog_data.get("notify_on")
+    has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
+    file_id = dialog_manager.dialog_data.get("media_content")
+    recipient_type = dialog_manager.dialog_data.get("recipient_type")
+    
     for channel in selected_channels:
         channel_name = "@" + channel[0]
         await delay_message_sending(
@@ -443,6 +497,10 @@ async def process_send_to_channel_later(
             tz_label=timezone_label,
             tz_offset=tz_offset,
             keyboard=keyboard,
+            file_id=file_id,
+            notify_status=notify_status,
+            has_spoiler=has_spoiler,
+            recipient_type=recipient_type,
         )
     await dialog_manager.switch_to(
         state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND

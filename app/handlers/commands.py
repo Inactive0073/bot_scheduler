@@ -1,3 +1,4 @@
+import logging
 from aiogram import Router
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message
@@ -5,11 +6,15 @@ from aiogram_dialog import DialogManager, ShowMode, StartMode
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.customer_requests import upsert_customer
+from app.states.settings import SettingsSG
 from app.states.start import StartSG
 from app.db.requests import upsert_user
+from app.db.common_requests import get_user_role
 
 commands_router = Router(name=__name__)
 
+logger = logging.getLogger(__name__)
 
 @commands_router.message(CommandStart())
 async def process_start_command(
@@ -17,15 +22,31 @@ async def process_start_command(
     dialog_manager: DialogManager,
     session: AsyncSession,
 ) -> None:
-    await upsert_user(
-        session=session,
-        telegram_id=message.from_user.id,
-        username=message.from_user.username,
-        first_name=message.from_user.first_name,
-        last_name=message.from_user.last_name,
-    )
-    await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
-
+    username = message.from_user.username
+    telegram_id = message.from_user.id
+    first_name = message.from_user.first_name
+    last_name = message.from_user.last_name
+    roles = await get_user_role(session=session, telegram_id=telegram_id)
+    logger.info(f"Пользователь {first_name}|{username} с ролью {roles}, нажал кнопку /start")
+    
+    if roles not in ["admin", "manager"]:
+        await upsert_customer(
+            session=session,
+            telegram_id=telegram_id,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,            
+        )
+    else:
+        await upsert_user(
+            session=session,
+            telegram_id=telegram_id,
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
+    
 
 @commands_router.message(Command("demo"))
 async def process_demo_command(
@@ -41,3 +62,11 @@ async def process_cancel_command(
     dialog_manager: DialogManager,
 ) -> None:
     await dialog_manager.back(show_mode=ShowMode.DELETE_AND_SEND)
+
+
+@commands_router.message(Command("settings"))
+async def process_settings_command(
+    message: Message,
+    dialog_manager: DialogManager,
+) -> None:
+    await dialog_manager.start(state=SettingsSG.start)

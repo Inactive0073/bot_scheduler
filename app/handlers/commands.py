@@ -26,10 +26,10 @@ async def process_start_command(
     telegram_id = message.from_user.id
     first_name = message.from_user.first_name
     last_name = message.from_user.last_name
-    roles = await get_user_role(session=session, telegram_id=telegram_id)
+    roles = set(await get_user_role(session=session, telegram_id=telegram_id))
     logger.info(f"Пользователь {first_name}|{username} с ролью {roles}, нажал кнопку /start")
     
-    if roles not in ["admin", "manager"]:
+    if not roles.intersection({"admin", "manager"}):
         await upsert_customer(
             session=session,
             telegram_id=telegram_id,

@@ -19,7 +19,11 @@ async def main():
     # Настройка стрима с заданными параметрами
     stream_config = StreamConfig(
         name=config.delayed_consumer.stream,  # Название стрима
-        subjects=config.delayed_consumer.subject,  # Список сабжектов
+        # Список сабжектов
+        subjects=[
+            config.delayed_consumer.subject_channel, 
+            config.delayed_consumer.subject_subscriber
+        ],
         retention=RetentionPolicy.LIMITS,  # Политика удержания
         max_bytes=3000 * 1024 * 1024,  # 3000 MiB
         max_msg_size=10 * 1024 * 1024,  # 10 MiB

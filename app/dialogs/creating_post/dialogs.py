@@ -35,7 +35,7 @@ from .handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
-    process_push_now_to_bot_button,
+    process_push_to_bot_button,
     process_push_now_to_channel_button,
     process_remove_media,
     process_send_to_channel_later,
@@ -250,7 +250,7 @@ create_post_dialog = Dialog(
             Button(
                 Format("{yes_caption}"),
                 id="push_now_bot_pressed",
-                on_click=process_push_now_to_bot_button,
+                on_click=process_push_to_bot_button,
                 when=F["dialog_data"]["recipient_type"] == "bot"
             ),
             width=2,
@@ -274,8 +274,15 @@ create_post_dialog = Dialog(
             SwitchTo(Format("{back}"), id="__back__", state=PostingSG.creating_post),
             Button(
                 Format("{schedule_button_caption}"),
-                id="push_later_pressed",
+                id="push_later_channel_pressed",
                 on_click=process_send_to_channel_later,
+                when=F["dialog_data"]["recipient_type"] != "bot"
+            ),
+            Button(
+                Format("{schedule_button_caption}"),
+                id="push_later_bot_pressed",
+                on_click=process_push_to_bot_button,
+                when=F["dialog_data"]["recipient_type"] == "bot"
             ),
             width=2,
         ),

@@ -2,7 +2,9 @@ import logging
 import json
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
+from environs import Env
 
+from aiolimiter import AsyncLimiter
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 
@@ -11,9 +13,12 @@ from nats.aio.msg import Msg
 from nats.js import JetStreamContext
 
 logger = logging.getLogger(__name__)
+env = Env()
 
 
 class DelayedMessageConsumer:
+    limiter = AsyncLimiter(max_rate=25, time_period=1)
+    
     def __init__(
         self,
         nc: Client,
@@ -29,19 +34,30 @@ class DelayedMessageConsumer:
         self.subject = subject
         self.stream = stream
         self.durable_name = durable_name
+        
 
     async def start(self) -> None:
-        self.stream_sub = await self.js.subscribe(
-            subject=self.subject,
-            stream=self.stream,
-            cb=self.on_message,
-            durable=self.durable_name,
-            manual_ack=True,
-        )
-
-    async def on_message(self, msg: Msg):
+        if self.subject == env("NATS_DELAYED_CONSUMER_SUBJECT_CHANNEL"):
+            self.stream_sub = await self.js.subscribe(
+                subject=self.subject,
+                stream=self.stream,
+                cb=self.on_message_channel,
+                durable=self.durable_name + "_channel",
+                manual_ack=True,
+            )
+        elif self.subject == env("NATS_DELAYED_CONSUMER_SUBJECT_SUBSCRIBER"):
+            self.stream_sub = await self.js.subscribe(
+                subject=self.subject,
+                stream=self.stream,
+                cb=self.on_message_bot,
+                durable=self.durable_name + "_bot",
+                manual_ack=True,
+            )
+            
+            
+    async def on_message_channel(self, msg: Msg):
         logger.info(
-            f"Получено сообщение из очереди. Заголовки: {msg.headers=}, Данные: {msg.data=}"
+            f"Получено сообщение из потока. Заголовки: {msg.headers=}, Данные: {msg.data=}"
         )
 
         try:
@@ -56,13 +72,12 @@ class DelayedMessageConsumer:
             tz_offset = payload.get("tz_offset")
             notify_status = payload.get("notify_status")
             has_spoiler = payload.get("has_spoiler")
-            recipient_type = payload.get("recipient_type")
 
             # Время публикации
             sent_time_str = payload.get("timestamp")
             tz_info = timezone(timedelta(hours=tz_offset))
             sent_time = datetime.fromisoformat(sent_time_str).replace(tzinfo=tz_info)
-
+            
             # Проверяем, нужно ли отложить повторно
             if sent_time + timedelta(seconds=delay) > datetime.now(tz=tz_info):
                 new_delay = (
@@ -71,17 +86,10 @@ class DelayedMessageConsumer:
                 await msg.nak(delay=new_delay)
                 return
 
-            # Восстанавливаем клавиатуру, если она есть
-            reply_markup = None
-            if keyboard_data:
-                from aiogram.types import InlineKeyboardMarkup
-
-                reply_markup = InlineKeyboardMarkup.model_validate(keyboard_data)
-
             # Отправляем сообщение
             with suppress(TelegramBadRequest):
                 message = await self.bot.send_message(
-                    chat_id=chat_id, text=post_message, reply_markup=reply_markup,
+                    chat_id=chat_id, text=post_message, reply_markup=keyboard_data,
                     disable_notification=notify_status, 
                 )
                 logger.info(f"Сообщение {message.message_id} успешно отправлено.")
@@ -91,6 +99,57 @@ class DelayedMessageConsumer:
         except Exception as e:
             logger.exception(f"Ошибка при обработке сообщения: {e}")
             await msg.term()  # Или retry / nak, в зависимости от логики
+
+
+    async def on_message_bot(self, msg: Msg):
+        logger.info(
+            f"Получено сообщение из потока. Заголовки: {msg.headers=}, Данные: {msg.data=}"
+        )
+
+        try:
+            # Декодируем payload как JSON
+            payload: dict[str, str] = json.loads(msg.data.decode("utf-8"))
+
+            chat_id = payload.get("chat_id")
+            post_message = payload.get("text")
+            keyboard_data = payload.get("keyboard")
+            delay = payload.get("delay", 0)
+            tz_label = payload.get("tz_label")
+            tz_offset = payload.get("tz_offset")
+            notify_status = payload.get("notify_status")
+            has_spoiler = payload.get("has_spoiler")
+
+            # Время публикации
+            sent_time_str = payload.get("timestamp")
+            tz_info = timezone(timedelta(hours=tz_offset))
+            sent_time = datetime.fromisoformat(sent_time_str).replace(tzinfo=tz_info)
+            
+            # Проверяем, нужно ли отложить повторно
+            if sent_time + timedelta(seconds=delay) > datetime.now(tz=tz_info):
+                new_delay = (
+                    sent_time + timedelta(seconds=delay) - datetime.now(tz=tz_info)
+                ).total_seconds()
+                await msg.nak(delay=new_delay)
+                return
+
+            # Отправляем сообщение
+            async with self.limiter:
+                try:
+                    message = await self.bot.send_message(
+                        chat_id=chat_id, text=post_message, reply_markup=keyboard_data,
+                        disable_notification=notify_status, 
+                    )
+                    logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+                    await msg.ack()
+                except TelegramBadRequest as e:
+                    logger.error(f"Сообщение не было доставлено до пользователя {chat_id=}\n{e}")
+                    await msg.nak(delay=0.1)
+                    
+                    
+        except Exception as e:
+            logger.exception(f"Ошибка при обработке сообщения: {e}")
+            await msg.term()  # Или retry / nak, в зависимости от логики
+
 
     async def unsubscribe(self) -> None:
         if self.stream_sub:

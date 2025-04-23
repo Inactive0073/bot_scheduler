@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from jsonformatter import JsonFormatter
 import sys
 
 from aiogram import Bot, Dispatcher
@@ -32,16 +33,15 @@ from app.utils import (
     setup_bot_commands,
     start_delayed_consumer,
 )
+from app.config_data.logging_config import DEFAULT_FORMAT
 
 # Настраиваем базовую конфигурацию логирования
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="[%(asctime)s] #%(levelname)-8s %(filename)s:"
-    "%(lineno)d - %(name)s - %(message)s",
-)
-
-# Инициализируем логгер модуля
+logging.basicConfig(level=logging.DEBUG)
+formatter = JsonFormatter(DEFAULT_FORMAT)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
 logger = logging.getLogger(__name__)
+logger.addHandler(stream_handler)
 
 
 # Функция конфигурирования и запуска бота

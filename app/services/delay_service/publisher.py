@@ -1,5 +1,6 @@
-from nats.js import JetStreamContext
 from datetime import datetime, timedelta, timezone
+from nats.js import JetStreamContext
+from nats.js.errors import NoStreamResponseError
 
 from aiogram.types import InlineKeyboardMarkup
 import logging
@@ -21,7 +22,6 @@ async def delay_message_sending(
     file_id: str = None,
     notify_status: bool = True,
     has_spoiler: bool = False,
-    recipient_type: str = "bot"
     
 ) -> None:
     payload = json.dumps(
@@ -35,15 +35,18 @@ async def delay_message_sending(
             "tz_offset": tz_offset,
             "notify_status": notify_status,
             "has_spoiler": has_spoiler,
-            "recipient_type": recipient_type,
             
         }
     ).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
     }
-    await js.publish(subject=subject, headers=headers, payload=payload)
-    logger.info(
-        f"Сообщение с текстом {text[:30]} отправлено в очередь на {subject=}"
-        f" Пост должен быть опубликован в {datetime.now(tz=timezone(timedelta(hours=tz_offset))) + timedelta(seconds=delay)}"
-    )
+    try: 
+        await js.publish(subject=subject, payload=payload, headers=headers )
+    except (NoStreamResponseError, Exception) as e:
+        logger.exception((
+            f"Произошла ошибка во время публикации сообщения в стрим.\n"
+            f"Сообщение об ошибке: {e}\n"
+            f"Содержание запроса: {subject=}\n{headers=}\n{payload=}\n"
+        ))
+        raise

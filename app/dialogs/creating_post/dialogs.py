@@ -180,11 +180,7 @@ create_post_dialog = Dialog(
             ),
             width=2,
         ),
-        SwitchTo(
-            Format("{back}"),
-            id="__back__",
-            state=PostingSG.select_channels
-        ),
+        SwitchTo(Format("{back}"), id="__back__", state=PostingSG.select_channels),
         state=PostingSG.creating_post,
         getter=get_creating_post_data,
     ),
@@ -245,13 +241,13 @@ create_post_dialog = Dialog(
                 Format("{yes_caption}"),
                 id="push_now_pressed",
                 on_click=process_push_now_to_channel_button,
-                when=F["dialog_data"]["recipient_type"] != "bot"
+                when=F["dialog_data"]["recipient_type"] != "bot",
             ),
             Button(
                 Format("{yes_caption}"),
                 id="push_now_bot_pressed",
                 on_click=process_push_to_bot_button,
-                when=F["dialog_data"]["recipient_type"] == "bot"
+                when=F["dialog_data"]["recipient_type"] == "bot",
             ),
             width=2,
         ),
@@ -276,13 +272,13 @@ create_post_dialog = Dialog(
                 Format("{schedule_button_caption}"),
                 id="push_later_channel_pressed",
                 on_click=process_send_to_channel_later,
-                when=F["dialog_data"]["recipient_type"] != "bot"
+                when=F["dialog_data"]["recipient_type"] != "bot",
             ),
             Button(
                 Format("{schedule_button_caption}"),
                 id="push_later_bot_pressed",
                 on_click=process_push_to_bot_button,
-                when=F["dialog_data"]["recipient_type"] == "bot"
+                when=F["dialog_data"]["recipient_type"] == "bot",
             ),
             width=2,
         ),

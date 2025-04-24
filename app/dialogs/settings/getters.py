@@ -16,16 +16,16 @@ if TYPE_CHECKING:
 
 TIMEZONES = [
     ("Калининград", "Europe/Kaliningrad", 2),
-    ("Москва",      "Europe/Moscow",      3),
-    ("Самара",      "Europe/Samara",      4),
-    ("Екатеринбург","Asia/Yekaterinburg", 5),
-    ("Омск",        "Asia/Omsk",          6),
-    ("Красноярск",  "Asia/Krasnoyarsk",   7),
-    ("Иркутск",     "Asia/Irkutsk",       8),
-    ("Якутск",      "Asia/Yakutsk",       9),
-    ("Владивосток", "Asia/Vladivostok",  10),
-    ("Магадан",     "Asia/Magadan",      11),
-    ("Камчатка",    "Asia/Kamchatka",    12),
+    ("Москва", "Europe/Moscow", 3),
+    ("Самара", "Europe/Samara", 4),
+    ("Екатеринбург", "Asia/Yekaterinburg", 5),
+    ("Омск", "Asia/Omsk", 6),
+    ("Красноярск", "Asia/Krasnoyarsk", 7),
+    ("Иркутск", "Asia/Irkutsk", 8),
+    ("Якутск", "Asia/Yakutsk", 9),
+    ("Владивосток", "Asia/Vladivostok", 10),
+    ("Магадан", "Asia/Magadan", 11),
+    ("Камчатка", "Asia/Kamchatka", 12),
 ]
 
 
@@ -65,12 +65,14 @@ async def get_start_setting_tz_data(
     user_timezone, tz_offset = await get_user_tz(
         session=session, telegram_id=event_from_user.id
     )
-    user_time = datetime.now(tz=timezone(timedelta(hours=tz_offset))).strftime("%d.%m | %H:%M")
+    user_time = datetime.now(tz=timezone(timedelta(hours=tz_offset))).strftime(
+        "%d.%m | %H:%M"
+    )
     utc_time: datetime = datetime.now(tz=UTC)
-    
-    radio: ManagedRadio = dialog_manager.find("selecting_timezones") 
+
+    radio: ManagedRadio = dialog_manager.find("selecting_timezones")
     await radio.set_checked(f"{user_timezone}|{tz_offset}")
-    
+
     tz_buttons = []
     for name, tz_label, offset in TIMEZONES:
         dt = utc_time + (timedelta(hours=offset))

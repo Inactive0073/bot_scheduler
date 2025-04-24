@@ -2,13 +2,7 @@ import operator
 from aiogram import F
 from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, List
-from aiogram_dialog.widgets.kbd import (
-    Group,
-    SwitchTo,
-    Radio,
-    Start,
-    Column
-)
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Radio, Start, Column
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.states.start import StartSG
@@ -58,7 +52,6 @@ settings_dialog = Dialog(
         Format("{settings_support_message}"),
         SwitchTo(Format("{back}"), id="__back__", state=SettingsSG.start),
         state=SettingsSG.support,
-        
     ),
     getter=get_settings_data,
 )

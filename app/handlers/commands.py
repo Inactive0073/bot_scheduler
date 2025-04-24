@@ -16,6 +16,7 @@ commands_router = Router(name=__name__)
 
 logger = logging.getLogger(__name__)
 
+
 @commands_router.message(CommandStart())
 async def process_start_command(
     message: Message,
@@ -27,15 +28,17 @@ async def process_start_command(
     first_name = message.from_user.first_name
     last_name = message.from_user.last_name
     roles = set(await get_user_role(session=session, telegram_id=telegram_id))
-    logger.info(f"Пользователь {first_name}|{username} с ролью {roles}, нажал кнопку /start")
-    
+    logger.info(
+        f"Пользователь {first_name}|{username} с ролью {roles}, нажал кнопку /start"
+    )
+
     if not roles.intersection({"admin", "manager"}):
         await upsert_customer(
             session=session,
             telegram_id=telegram_id,
             username=username,
             first_name=first_name,
-            last_name=last_name,            
+            last_name=last_name,
         )
     else:
         await upsert_user(
@@ -46,7 +49,7 @@ async def process_start_command(
             last_name=last_name,
         )
         await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
-    
+
 
 @commands_router.message(Command("demo"))
 async def process_demo_command(

@@ -22,7 +22,6 @@ async def delay_message_sending(
     file_id: str = None,
     notify_status: bool = True,
     has_spoiler: bool = False,
-    
 ) -> None:
     payload = json.dumps(
         {
@@ -35,18 +34,19 @@ async def delay_message_sending(
             "tz_offset": tz_offset,
             "notify_status": notify_status,
             "has_spoiler": has_spoiler,
-            
         }
     ).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
     }
-    try: 
-        await js.publish(subject=subject, payload=payload, headers=headers )
+    try:
+        await js.publish(subject=subject, payload=payload, headers=headers)
     except (NoStreamResponseError, Exception) as e:
-        logger.exception((
-            f"Произошла ошибка во время публикации сообщения в стрим.\n"
-            f"Сообщение об ошибке: {e}\n"
-            f"Содержание запроса: {subject=}\n{headers=}\n{payload=}\n"
-        ))
+        logger.exception(
+            (
+                f"Произошла ошибка во время публикации сообщения в стрим.\n"
+                f"Сообщение об ошибке: {e}\n"
+                f"Содержание запроса: {subject=}\n{headers=}\n{payload=}\n"
+            )
+        )
         raise

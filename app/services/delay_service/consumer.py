@@ -18,7 +18,7 @@ env = Env()
 
 class DelayedMessageConsumer:
     limiter = AsyncLimiter(max_rate=25, time_period=1)
-    
+
     def __init__(
         self,
         nc: Client,
@@ -34,7 +34,6 @@ class DelayedMessageConsumer:
         self.subject = subject
         self.stream = stream
         self.durable_name = durable_name
-        
 
     async def start(self) -> None:
         if self.subject == env("NATS_DELAYED_CONSUMER_SUBJECT_CHANNEL"):
@@ -53,8 +52,7 @@ class DelayedMessageConsumer:
                 durable=self.durable_name + "_bot",
                 manual_ack=True,
             )
-            
-            
+
     async def on_message_channel(self, msg: Msg):
         logger.info(
             f"Получено сообщение из потока. Заголовки: {msg.headers=}, Данные: {msg.data=}"
@@ -77,7 +75,7 @@ class DelayedMessageConsumer:
             sent_time_str = payload.get("timestamp")
             tz_info = timezone(timedelta(hours=tz_offset))
             sent_time = datetime.fromisoformat(sent_time_str).replace(tzinfo=tz_info)
-            
+
             # Проверяем, нужно ли отложить повторно
             if sent_time + timedelta(seconds=delay) > datetime.now(tz=tz_info):
                 new_delay = (
@@ -89,8 +87,10 @@ class DelayedMessageConsumer:
             # Отправляем сообщение
             with suppress(TelegramBadRequest):
                 message = await self.bot.send_message(
-                    chat_id=chat_id, text=post_message, reply_markup=keyboard_data,
-                    disable_notification=notify_status, 
+                    chat_id=chat_id,
+                    text=post_message,
+                    reply_markup=keyboard_data,
+                    disable_notification=notify_status,
                 )
                 logger.info(f"Сообщение {message.message_id} успешно отправлено.")
 
@@ -99,7 +99,6 @@ class DelayedMessageConsumer:
         except Exception as e:
             logger.exception(f"Ошибка при обработке сообщения: {e}")
             await msg.term()  # Или retry / nak, в зависимости от логики
-
 
     async def on_message_bot(self, msg: Msg):
         logger.info(
@@ -123,7 +122,7 @@ class DelayedMessageConsumer:
             sent_time_str = payload.get("timestamp")
             tz_info = timezone(timedelta(hours=tz_offset))
             sent_time = datetime.fromisoformat(sent_time_str).replace(tzinfo=tz_info)
-            
+
             # Проверяем, нужно ли отложить повторно
             if sent_time + timedelta(seconds=delay) > datetime.now(tz=tz_info):
                 new_delay = (
@@ -136,20 +135,22 @@ class DelayedMessageConsumer:
             async with self.limiter:
                 try:
                     message = await self.bot.send_message(
-                        chat_id=chat_id, text=post_message, reply_markup=keyboard_data,
-                        disable_notification=notify_status, 
+                        chat_id=chat_id,
+                        text=post_message,
+                        reply_markup=keyboard_data,
+                        disable_notification=notify_status,
                     )
                     logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
                     await msg.ack()
                 except TelegramBadRequest as e:
-                    logger.error(f"Сообщение не было доставлено до пользователя {chat_id=}\n{e}")
+                    logger.error(
+                        f"Сообщение не было доставлено до пользователя {chat_id=}\n{e}"
+                    )
                     await msg.nak(delay=0.1)
-                    
-                    
+
         except Exception as e:
             logger.exception(f"Ошибка при обработке сообщения: {e}")
             await msg.term()  # Или retry / nak, в зависимости от логики
-
 
     async def unsubscribe(self) -> None:
         if self.stream_sub:

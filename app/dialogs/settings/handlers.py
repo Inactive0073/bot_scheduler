@@ -17,5 +17,8 @@ async def on_timezone_selected(
     dialog_manager.dialog_data["user_timezone"] = timezone_data
     dialog_manager.dialog_data["tz_offset"] = tz_offset
     await set_user_tz(
-        session=session, telegram_id=callback.from_user.id, tz_offset=tz_offset,timezone=timezone
+        session=session,
+        telegram_id=callback.from_user.id,
+        tz_offset=tz_offset,
+        timezone=timezone,
     )

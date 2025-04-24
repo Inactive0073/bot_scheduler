@@ -1,16 +1,12 @@
-from sqlalchemy import  String, SmallInteger, text
+from sqlalchemy import String, SmallInteger, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
 from app.db.models.mixins import TimestampMixin, TelegramProfileMixin
 
 
-
-
-
-class User(TimestampMixin,TelegramProfileMixin, Base):
+class User(TimestampMixin, TelegramProfileMixin, Base):
     __tablename__ = "users"
-
 
     # created_at добавляется из миксина
     timezone_offset: Mapped[int] = mapped_column(
@@ -22,7 +18,7 @@ class User(TimestampMixin,TelegramProfileMixin, Base):
     managed_channels: Mapped[list["TgChannel"]] = relationship(  # type: ignore
         secondary="user_channels", back_populates="admins", lazy="dynamic"
     )
-    roles: Mapped[list["Role"]] = relationship(     # type: ignore
+    roles: Mapped[list["Role"]] = relationship(  # type: ignore
         secondary="user_roles", back_populates="users", lazy="dynamic"
     )
 
@@ -35,5 +31,3 @@ class User(TimestampMixin,TelegramProfileMixin, Base):
             f"[{self.telegram_id} | {self.username}] {name} | {self.utc}. Список каналов: [{self.managed_channels}]"
             f"Роли пользователя: {self.roles}"
         )
-
-

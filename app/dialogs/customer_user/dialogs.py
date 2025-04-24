@@ -15,8 +15,6 @@ from aiogram_dialog.widgets.input import TextInput, MessageInput
 from app.states.customer.start import StartCustomerSG
 
 customer_dialog = Dialog(
-    Window(
-        state=StartCustomerSG.start
-    ),
+    Window(state=StartCustomerSG.start),
     getter=...,
 )

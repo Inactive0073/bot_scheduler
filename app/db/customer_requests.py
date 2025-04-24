@@ -6,6 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db.models import Customer
 
+
 async def upsert_customer(
     session: AsyncSession,
     telegram_id: int,
@@ -25,7 +26,7 @@ async def upsert_customer(
     Example:
         await upsert_customer(session, 12345, 'john_doe', 'John', 'Doe')
     """
-    values =  {
+    values = {
         "telegram_id": telegram_id,
         "username": username,
         "first_name": first_name,
@@ -42,11 +43,9 @@ async def upsert_customer(
     except IntegrityError as e:
         await session.rollback()
         raise ValueError("Ошибка: {e!r}")
-    
-    
-async def get_all_customers(
-    session: AsyncSession
-) -> list[int]:
+
+
+async def get_all_customers(session: AsyncSession) -> list[int]:
     """Возвращает список Telegram-ID пользователей-клиентов.
 
     Args:

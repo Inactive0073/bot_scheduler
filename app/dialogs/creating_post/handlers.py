@@ -387,10 +387,7 @@ async def process_push_now_to_channel_button(
     multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
     channels: list[str] = multiselect.get_checked()
 
-    logger.info(
-        f"Полученные данные:{chat_id=}, {post_message=}, "
-        f"{notify_on=}"
-    )
+    logger.info(f"Полученные данные:{chat_id=}, {post_message=}, {notify_on=}")
 
     if file_id is None:
         for channel_name in channels:
@@ -417,28 +414,33 @@ async def process_push_now_to_bot_button(
 ):
     """Моментальная отправка по пользователям бота"""
     js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject_subscriber")
+    delay_send_subject: str = dialog_manager.middleware_data.get(
+        "delay_send_subject_subscriber"
+    )
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    
+
 
 async def process_push_to_bot_button(
     message: Message, widget: Button, dialog_manager: DialogManager
 ):
     """Отправка среди подписчиков бота"""
     js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject_subscriber")
+    delay_send_subject: str = dialog_manager.middleware_data.get(
+        "delay_send_subject_subscriber"
+    )
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
-    
+
     # получение списка ID пользователей
-    telegram_ids = await get_all_customers(session=session) 
-    timezone_label, tz_offset = await get_user_tz(session=session,telegram_id=message.from_user.id)
+    telegram_ids = await get_all_customers(session=session)
+    timezone_label, tz_offset = await get_user_tz(
+        session=session, telegram_id=message.from_user.id
+    )
 
     # Пользовательские данные со временем
     tzinfo = timezone(timedelta(hours=tz_offset))
     posting_time_iso: str = dialog_manager.dialog_data.get(
-        "dt_posting_iso", 
-        datetime.now(tz=tzinfo).isoformat()
+        "dt_posting_iso", datetime.now(tz=tzinfo).isoformat()
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
     delay = int(get_delay(post_time=posting_time))
@@ -449,7 +451,7 @@ async def process_push_to_bot_button(
     notify_on = dialog_manager.dialog_data.get("notify_on")
     file_id = dialog_manager.dialog_data.get("media_content")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
-    
+
     for telegram_id in telegram_ids:
         await delay_message_sending(
             js=js,
@@ -466,7 +468,6 @@ async def process_push_to_bot_button(
         )
 
 
-
 # Отправка по расписанию
 async def process_send_to_channel_later(
     message: Message,
@@ -474,18 +475,22 @@ async def process_send_to_channel_later(
     dialog_manager: DialogManager,
 ) -> None:
     js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get("delay_send_subject_channel")
+    delay_send_subject: str = dialog_manager.middleware_data.get(
+        "delay_send_subject_channel"
+    )
     session = dialog_manager.middleware_data.get("session")
-    
+
     # Предварительная подготовка
-    timezone_label, tz_offset = await get_user_tz(session=session,telegram_id=message.from_user.id)
-    
+    timezone_label, tz_offset = await get_user_tz(
+        session=session, telegram_id=message.from_user.id
+    )
+
     # Пользовательские данные со временем
     posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
     posting_time = datetime.fromisoformat(posting_time_iso)
     posting_time.replace(tzinfo=timezone(timedelta(hours=tz_offset)))
     delay = int(get_delay(post_time=posting_time))
-    
+
     # Пользовательские данные для сообщения
     selected_channels = dialog_manager.dialog_data["selected_channels"]
     post_message = dialog_manager.dialog_data.get("post_message")
@@ -493,9 +498,9 @@ async def process_send_to_channel_later(
     notify_status = dialog_manager.dialog_data.get("notify_on")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
     file_id = dialog_manager.dialog_data.get("media_content")
-    
+
     for channel in selected_channels:
-        channel_name = "@" + channel[0] # channel — это кортеж
+        channel_name = "@" + channel[0]  # channel — это кортеж
         await delay_message_sending(
             js=js,
             chat_id=channel_name,

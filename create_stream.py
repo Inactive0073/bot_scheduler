@@ -21,8 +21,8 @@ async def main():
         name=config.delayed_consumer.stream,  # Название стрима
         # Список сабжектов
         subjects=[
-            config.delayed_consumer.subject_channel, 
-            config.delayed_consumer.subject_subscriber
+            config.delayed_consumer.subject_channel,
+            config.delayed_consumer.subject_subscriber,
         ],
         retention=RetentionPolicy.LIMITS,  # Политика удержания
         max_bytes=3000 * 1024 * 1024,  # 3000 MiB

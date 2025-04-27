@@ -35,6 +35,7 @@ from .handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
+    process_push_now_to_bot_button,
     process_push_to_bot_button,
     process_push_now_to_channel_button,
     process_remove_media,
@@ -246,7 +247,7 @@ create_post_dialog = Dialog(
             Button(
                 Format("{yes_caption}"),
                 id="push_now_bot_pressed",
-                on_click=process_push_to_bot_button,
+                on_click=process_push_now_to_bot_button,
                 when=F["dialog_data"]["recipient_type"] == "bot",
             ),
             width=2,

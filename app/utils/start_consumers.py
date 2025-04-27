@@ -20,5 +20,12 @@ async def start_delayed_consumer(
     consumer = DelayedMessageConsumer(
         nc=nc, js=js, bot=bot, subject=subject, stream=stream, durable_name=durable_name
     )
-    logger.info("Start delayed message consumer")
+    logger.info(
+        f"Запуск консьюмера отложенных сообщений",
+        extra={
+            "subject": subject,
+            "stream": stream,
+            "durable_name": durable_name,
+        },
+    )
     await consumer.start()

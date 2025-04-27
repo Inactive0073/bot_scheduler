@@ -4,9 +4,11 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Message
 from cachetools import TTLCache
 from sqlalchemy.ext.asyncio import AsyncSession
+from logging import getLogger
 
 from app.db.requests import upsert_user
 
+logger = getLogger(__name__)
 
 class TrackAllUsersMiddleware(BaseMiddleware):
     def __init__(self):
@@ -29,6 +31,14 @@ class TrackAllUsersMiddleware(BaseMiddleware):
         # Надо обновить данные пользователя, если он не в кэше
         if user_id not in self.cache:
             session: AsyncSession = data["session"]
+            logger.info(
+                "Обновление данных пользователя",
+                extra={
+                    "user_id": user_id,
+                    "username": event.from_user.username,
+                    "first_name": event.from_user.first_name,
+                },
+            )
             await upsert_user(
                 session=session,
                 telegram_id=event.from_user.id,

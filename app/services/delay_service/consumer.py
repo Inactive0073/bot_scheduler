@@ -37,6 +37,14 @@ class DelayedMessageConsumer:
 
     async def start(self) -> None:
         if self.subject == env("NATS_DELAYED_CONSUMER_SUBJECT_CHANNEL"):
+            logger.info(
+                "Создание подписки на поток для каналов",
+                extra={
+                    "subject": self.subject,
+                    "stream": self.stream,
+                    "durable": f"{self.durable_name}_channel",
+                },
+            )
             self.stream_sub = await self.js.subscribe(
                 subject=self.subject,
                 stream=self.stream,
@@ -45,6 +53,14 @@ class DelayedMessageConsumer:
                 manual_ack=True,
             )
         elif self.subject == env("NATS_DELAYED_CONSUMER_SUBJECT_SUBSCRIBER"):
+            logger.info(
+                "Создание подписки на поток для подписчиков",
+                extra={
+                    "subject": self.subject,
+                    "stream": self.stream,
+                    "durable": f"{self.durable_name}_bot",
+                },
+            )
             self.stream_sub = await self.js.subscribe(
                 subject=self.subject,
                 stream=self.stream,
@@ -55,7 +71,11 @@ class DelayedMessageConsumer:
 
     async def on_message_channel(self, msg: Msg):
         logger.info(
-            f"Получено сообщение из потока. Заголовки: {msg.headers=}, Данные: {msg.data=}"
+            "Получено новое сообщение для канала",
+            extra={
+                "subject": msg.subject,
+                "headers": dict(msg.headers),
+            }
         )
 
         try:
@@ -81,6 +101,14 @@ class DelayedMessageConsumer:
                 new_delay = (
                     sent_time + timedelta(seconds=delay) - datetime.now(tz=tz_info)
                 ).total_seconds()
+                logger.info(
+                    "Сообщение отложено",
+                    extra={
+                        "chat_id": chat_id,
+                        "new_delay": new_delay,
+                        "sent_time": sent_time.isoformat(),
+                    },
+                )
                 await msg.nak(delay=new_delay)
                 return
 
@@ -92,12 +120,24 @@ class DelayedMessageConsumer:
                     reply_markup=keyboard_data,
                     disable_notification=notify_status,
                 )
-                logger.info(f"Сообщение {message.message_id} успешно отправлено.")
+                logger.info(
+                    "Сообщение успешно отправлено в канал",
+                    extra={
+                        "message_id": message.message_id,
+                        "chat_id": chat_id,
+                    },
+                )
 
             await msg.ack()
 
         except Exception as e:
-            logger.exception(f"Ошибка при обработке сообщения: {e}")
+            logger.exception(
+                "Ошибка при обработке сообщения для канала",
+                extra={
+                    "error": str(e),
+                    "subject": msg.subject,
+                },
+            )
             await msg.term()  # Или retry / nak, в зависимости от логики
 
     async def on_message_bot(self, msg: Msg):
@@ -155,4 +195,10 @@ class DelayedMessageConsumer:
     async def unsubscribe(self) -> None:
         if self.stream_sub:
             await self.stream_sub.unsubscribe()
-            logger.info("Consumer unsubscribed")
+            logger.info(
+                "Отписка от потока сообщений",
+                extra={
+                    "subject": self.subject,
+                    "stream": self.stream,
+                },
+            )

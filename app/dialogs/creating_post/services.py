@@ -58,7 +58,7 @@ def parse_time(time: str):
     и возвращает datetime с замененными значениями.
 
     Args:
-        time_str (str): Строка времени (только цифры)
+        time (str): Строка времени (только цифры)
 
     Returns:
         datetime: Объект datetime
@@ -117,3 +117,5 @@ def get_delay(post_time: dt) -> float:
         raise ValueError("Время публикации должно быть в будущем")
 
     return delay
+
+

@@ -75,7 +75,7 @@ class DelayedMessageConsumer:
             extra={
                 "subject": msg.subject,
                 "headers": dict(msg.headers),
-            }
+            },
         )
 
         try:
@@ -129,7 +129,6 @@ class DelayedMessageConsumer:
                 )
 
             await msg.ack()
-
         except Exception as e:
             logger.exception(
                 "Ошибка при обработке сообщения для канала",
@@ -173,7 +172,7 @@ class DelayedMessageConsumer:
 
             # Отправляем сообщение
             async with self.limiter:
-                try:
+                with suppress(TelegramBadRequest):
                     message = await self.bot.send_message(
                         chat_id=chat_id,
                         text=post_message,
@@ -182,11 +181,6 @@ class DelayedMessageConsumer:
                     )
                     logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
                     await msg.ack()
-                except TelegramBadRequest as e:
-                    logger.error(
-                        f"Сообщение не было доставлено до пользователя {chat_id=}\n{e}"
-                    )
-                    await msg.nak(delay=0.1)
 
         except Exception as e:
             logger.exception(f"Ошибка при обработке сообщения: {e}")

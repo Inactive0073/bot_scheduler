@@ -2,10 +2,10 @@ from sqlalchemy import SmallInteger, Integer, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
-from app.db.models.mixins import TelegramProfileMixin, TimestampMixin
+from app.db.models.mixins import TelegramProfileMixin, TimestampMixin, DetailProfileMixin
 
 
-class Customer(TimestampMixin, TelegramProfileMixin, Base):
+class Customer(TimestampMixin, TelegramProfileMixin, DetailProfileMixin, Base):
     __tablename__ = "customers"
     gender: Mapped[str] = mapped_column(String(1), nullable=True)
     bonus: Mapped[int] = mapped_column(Integer, default=0, server_default=text("0"))

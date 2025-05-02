@@ -10,6 +10,7 @@ from app.db.requests import upsert_user
 
 logger = getLogger(__name__)
 
+
 class TrackAllUsersMiddleware(BaseMiddleware):
     def __init__(self):
         super().__init__()

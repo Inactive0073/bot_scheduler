@@ -117,5 +117,3 @@ def get_delay(post_time: dt) -> float:
         raise ValueError("Время публикации должно быть в будущем")
 
     return delay
-
-

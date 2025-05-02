@@ -1,7 +1,7 @@
 from .i18n import create_translator_hub
 from .nats_connect import connect_to_nats
 from .start_consumers import start_delayed_consumer
-from .set_commands import setup_bot_commands
+from .prestart import setup_bot_commands
 
 __all__ = [
     "create_translator_hub",

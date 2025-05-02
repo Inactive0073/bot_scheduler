@@ -57,3 +57,18 @@ async def get_all_customers(session: AsyncSession) -> list[int]:
     stmt = select(Customer.telegram_id)
     result = await session.execute(stmt)
     return result.scalars().all()
+
+
+async def record_personal_user_data(session: AsyncSession, telegram_id: int, name: str, surname: str, phone: str, email: str, birthday: str, gender: str) -> bool:
+    """Добавляет персональные данные пользователя к его профилю в таблице"""
+    values = {
+        "i_name": name,
+        "i_surname": surname,
+        "phone": phone,
+        "email": email,
+        "birthday": birthday,
+        "gender": gender
+    }
+    stmt = update(Customer).where(Customer.telegram_id == telegram_id).values(values)
+    result = await session.execute(stmt)
+    return result.rowcount() > 0

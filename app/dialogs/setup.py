@@ -5,6 +5,7 @@ from .start.dialogs import start_dialog
 from .creating_post.dialogs import create_post_dialog
 from .addition_channel.dialogs import dialog_addition_channel
 from .settings.dialogs import settings_dialog
+from .customer_user.dialogs import customer_dialog
 
 
 def get_dialogs() -> List[Dialog]:

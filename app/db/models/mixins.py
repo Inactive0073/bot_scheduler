@@ -19,3 +19,12 @@ class TelegramProfileMixin:
     first_name: Mapped[str]
     username: Mapped[str | None]
     last_name: Mapped[str | None]
+
+
+class DetailProfileMixin:
+    """Профиль для подробного описания пользователя с данными введеными вручную от пользователя"""
+    i_name: Mapped[str | None]
+    i_surname: Mapped[str | None]
+    email: Mapped[str | None]
+    birthday: Mapped[str | None] = mapped_column(String(10))
+    gender: Mapped[str | None] = mapped_column(String(1))

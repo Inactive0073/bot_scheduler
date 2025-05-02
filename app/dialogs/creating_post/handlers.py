@@ -38,10 +38,7 @@ async def process_to_select_bot_mailing(
     """Сеттер для типа получателя бот"""
     logger.info(
         "Пользователь выбрал рассылку по ботам",
-        extra={
-            "user_id": message.from_user.id,
-            "action": "select_bot_mailing"
-        }
+        extra={"user_id": message.from_user.id, "action": "select_bot_mailing"},
     )
     dialog_manager.dialog_data["recipient_type"] = "bot"
 
@@ -52,10 +49,7 @@ async def process_to_select_channel(
     """Сеттер для типа получателя канал"""
     logger.info(
         "Пользователь выбрал отправку в каналы",
-        extra={
-            "user_id": message.from_user.id,
-            "action": "select_channel"
-        }
+        extra={"user_id": message.from_user.id, "action": "select_channel"},
     )
     dialog_manager.dialog_data["recipient_type"] = "channel"
 
@@ -73,8 +67,8 @@ async def process_post_msg(
         extra={
             "user_id": message.from_user.id,
             "action": "create_post",
-            "message_type": message.content_type
-        }
+            "message_type": message.content_type,
+        },
     )
     try:
         copy_msg = await message.send_copy(chat_id=message.chat.id)
@@ -90,8 +84,8 @@ async def process_post_msg(
             extra={
                 "user_id": message.from_user.id,
                 "message_id": copy_msg.message_id,
-                "text_preview": copy_msg.text[:50] if copy_msg.text else "Нет текста"
-            }
+                "text_preview": copy_msg.text[:50] if copy_msg.text else "Нет текста",
+            },
         )
     except Exception as e:
         logger.error(
@@ -99,9 +93,9 @@ async def process_post_msg(
             extra={
                 "user_id": message.from_user.id,
                 "error": str(e),
-                "error_type": type(e).__name__
+                "error_type": type(e).__name__,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise
     # удаляем старое сообщение, чтобы сохранить историю чище
@@ -146,8 +140,8 @@ async def process_button_case(
         extra={
             "user_id": message.from_user.id,
             "action": "add_url_buttons",
-            "message_id": dialog_manager.dialog_data.get("message_id")
-        }
+            "message_id": dialog_manager.dialog_data.get("message_id"),
+        },
     )
     try:
         # Получаем данные из dialog_data для создания кнопки
@@ -186,8 +180,8 @@ async def process_button_case(
             extra={
                 "user_id": message.from_user.id,
                 "message_id": msg_id,
-                "keyboard_count": len(keyboard.inline_keyboard)
-            }
+                "keyboard_count": len(keyboard.inline_keyboard),
+            },
         )
     except Exception as e:
         logger.error(
@@ -195,9 +189,9 @@ async def process_button_case(
             extra={
                 "user_id": message.from_user.id,
                 "error": str(e),
-                "error_type": type(e).__name__
+                "error_type": type(e).__name__,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise
 
@@ -353,8 +347,8 @@ async def process_addition_media(
         extra={
             "user_id": message.from_user.id,
             "action": "add_media",
-            "media_type": message.content_type
-        }
+            "media_type": message.content_type,
+        },
     )
     try:
         file_id = message.photo[-1].file_id
@@ -380,8 +374,8 @@ async def process_addition_media(
             extra={
                 "user_id": message.from_user.id,
                 "message_id": msg_id,
-                "media_type": message.content_type
-            }
+                "media_type": message.content_type,
+            },
         )
         dialog_manager.dialog_data["has_media"] = True
     except Exception as e:
@@ -390,9 +384,9 @@ async def process_addition_media(
             extra={
                 "user_id": message.from_user.id,
                 "error": str(e),
-                "error_type": type(e).__name__
+                "error_type": type(e).__name__,
             },
-            exc_info=True
+            exc_info=True,
         )
         raise
     await dialog_manager.switch_to(state=PostingSG.creating_post)
@@ -466,8 +460,8 @@ async def process_push_now_to_channel_button(
             "action": "push_to_channels",
             "channels_count": len(channels),
             "has_media": bool(dialog_manager.dialog_data.get("media_content")),
-            "has_keyboard": bool(dialog_manager.dialog_data.get("keyboard"))
-        }
+            "has_keyboard": bool(dialog_manager.dialog_data.get("keyboard")),
+        },
     )
 
     if file_id is None:
@@ -485,8 +479,8 @@ async def process_push_now_to_channel_button(
                     extra={
                         "user_id": message.from_user.id,
                         "channel": channel_name,
-                        "status": "success"
-                    }
+                        "status": "success",
+                    },
                 )
             except TelegramBadRequest as e:
                 logger.error(
@@ -495,8 +489,8 @@ async def process_push_now_to_channel_button(
                         "user_id": message.from_user.id,
                         "channel": channel_name,
                         "error": str(e),
-                        "error_type": "TelegramBadRequest"
-                    }
+                        "error_type": "TelegramBadRequest",
+                    },
                 )
                 await message.answer(f"{i18n.error()}")
             finally:
@@ -518,9 +512,9 @@ async def process_push_now_to_bot_button(
     telegram_ids = await get_all_customers(session=session)
     timezone_label, tz_offset = await get_user_tz(
         session=session, telegram_id=message.from_user.id
-    )    
-    
-     # Пользовательские данные со временем
+    )
+
+    # Пользовательские данные со временем
     delay = 0
 
     # Пользовательские данные для сообщения
@@ -544,6 +538,8 @@ async def process_push_now_to_bot_button(
             notify_status=notify_on,
             has_spoiler=has_spoiler,
         )
+
+    logger.info(f"Запланировано к отправке {len(telegram_ids)} сообщений")
 
 
 async def process_push_to_bot_button(
@@ -569,7 +565,7 @@ async def process_push_to_bot_button(
         "dt_posting_iso", datetime.now(tz=tzinfo).isoformat()
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
-    delay = int(get_delay(post_time=posting_time)) 
+    delay = int(get_delay(post_time=posting_time))
 
     # Пользовательские данные для сообщения
     keyboard = dialog_manager.dialog_data.get("keyboard")

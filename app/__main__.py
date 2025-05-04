@@ -18,15 +18,15 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 # Локальные импорты
 from app.config_data.config import Config, load_config
-from app.dialogs.setup import get_dialogs
-from app.db.base import Base
-from app.handlers.commands import commands_router
-from app.middlewares import (
+from app.bot.dialogs.setup import get_dialogs
+from app.bot.db.base import Base
+from app.bot.handlers.commands import commands_router
+from app.bot.middlewares import (
     DbSessionMiddleware,
     TrackAllUsersMiddleware,
     TranslatorRunnerMiddleware,
 )
-from app.utils import (
+from app.bot.utils import (
     create_translator_hub,
     connect_to_nats,
     setup_bot_commands,

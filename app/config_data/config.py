@@ -7,7 +7,7 @@ from typing import List
 @dataclass
 class TgBot:
     token: str  # Токен для доступа к телеграм-боту
-
+    url: str # URL для вебхука
 
 @dataclass
 class NatsConfig:
@@ -35,12 +35,17 @@ class Config:
     delayed_consumer: NatsDelayedConsumerConfig
     db: DataBase
 
+    @property
+    def tg_url(self)-> str:
+        return f"{self.tg_bot.url}/webhook"
+
+
 
 def load_config(path: str | None = None) -> Config:
     env = Env()
     env.read_env(path)
     return Config(
-        tg_bot=TgBot(token=env("BOT_TOKEN")),
+        tg_bot=TgBot(token=env("BOT_TOKEN"), url=env("BASE_URL")),
         nats=NatsConfig(servers=env.list("NATS_SERVERS")),
         delayed_consumer=NatsDelayedConsumerConfig(
             subject_channel=env("NATS_DELAYED_CONSUMER_SUBJECT_CHANNEL"),

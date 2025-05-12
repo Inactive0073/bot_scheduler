@@ -141,7 +141,11 @@ class DelayedMessageConsumer:
 
     async def on_message_bot(self, msg: Msg):
         logger.info(
-            f"Получено сообщение из потока. Заголовки: {msg.headers=}, Данные: {msg.data=}"
+            "Получено новое сообщение для рассылки в боте",
+            extra={
+                "subject": msg.subject,
+                "headers": dict(msg.headers),
+            },
         )
 
         try:

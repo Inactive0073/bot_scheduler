@@ -10,6 +10,7 @@ from aiogram_dialog.widgets.kbd import (
     Multiselect,
     Row,
     Start,
+    Url,
     RequestContact,
 )
 from aiogram_dialog.widgets.input import TextInput, MessageInput
@@ -19,7 +20,14 @@ from app.bot.states.customer.start import CustomerSG
 from .getters import get_common_data, get_customer_menu_data
 from .filters import ContactFilter
 from .handlers import (
+    on_about_selected,
     on_balance_selected,
+    on_card_selected,
+    on_delivery_selected,
+    on_gifts_selected,
+    on_help_selected,
+    on_loayalty_selected,
+    on_partnership_selected,
     process_gender_selected,
     process_invalid_birthday,
     process_invalid_phone,
@@ -81,29 +89,68 @@ customer_dialog = Dialog(
     Window(
         Format("{meeting_gender_message}"),
         Row(
-            Button(Format("{meeting_gender_m_button}"), id="m_gender_selected", on_click=process_gender_selected),
-            Button(Format("{meeting_gender_f_button}"), id="f_gender_selected", on_click=process_gender_selected),
+            Button(
+                Format("{meeting_gender_m_button}"),
+                id="m_gender_selected",
+                on_click=process_gender_selected,
             ),
+            Button(
+                Format("{meeting_gender_f_button}"),
+                id="f_gender_selected",
+                on_click=process_gender_selected,
+            ),
+        ),
         state=CustomerSG.gender,
     ),
-
     # Раздел меню
     Window(
         Format("{menu_info_message}"),
         Group(
-            Button(Format("{menu_balance_button}"), id="balance_selected", on_click=on_balance_selected),
-            Button(Format("{menu_card_button}"), id="card_selected", on_click=),
-            Button(Format("{menu_gifts_button}"), id="gifts_selected", on_click=),
-            Button(Format("{menu_delivery_button}"), id="delivery_selected", on_click=),
-            width=2
+            Button(
+                Format("{menu_balance_button}"),
+                id="balance_selected",
+                on_click=on_balance_selected,
+            ),
+            Button(
+                Format("{menu_card_button}"),
+                id="card_selected",
+                on_click=on_card_selected,
+            ),
+            Button(
+                Format("{menu_gifts_button}"),
+                id="gifts_selected",
+                on_click=on_gifts_selected,
+            ),
+            Button(
+                Format("{menu_delivery_button}"),
+                id="delivery_selected",
+                on_click=on_delivery_selected,
+            ),
+            width=2,
         ),
-        Button(Format("{menu_loayalty_button}"), id="loayalty_selected", on_click=),
+        Button(
+            Format("{menu_loayalty_button}"),
+            id="loayalty_selected",
+            on_click=on_loayalty_selected,
+        ),
         Group(
-            Button(Format("{menu_partnership_button}"), id="partnership_selected", on_click=),
-            Button(Format("{menu_help_button}"), id="help_selected", on_click=),
-            width=2
+            Button(
+                Format("{menu_partnership_button}"),
+                id="partnership_selected",
+                on_click=on_partnership_selected,
+            ),
+            Button(
+                Format("{menu_help_button}"),
+                id="help_selected",
+                on_click=on_help_selected,
+            ),
+            width=2,
         ),
-        Button(Format("{menu_about_button}"), id="about_us_selected", on_click=),
+        Button(
+            Format("{menu_about_button}"),
+            id="about_us_selected",
+            on_click=on_about_selected,
+        ),
         state=CustomerSG.menu,
         markup_factory=ReplyKeyboardFactory(
             resize_keyboard=True,

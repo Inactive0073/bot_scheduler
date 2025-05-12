@@ -1,10 +1,10 @@
 from typing import Literal
 
-    
 class TranslatorRunner:
     def get(self, path: str, **kwargs) -> str: ...
-    
+
     customer: Customer
+    waiter: Waiter
     start: Start
     cr: Cr
     channel: Channel
@@ -12,34 +12,26 @@ class TranslatorRunner:
 
     @staticmethod
     def next() -> Literal["""⏭ Далее"""]: ...
-
     @staticmethod
     def cancel() -> Literal["""❌Отмена"""]: ...
-
     @staticmethod
     def back() -> Literal["""🔙 Назад"""]: ...
-
     @staticmethod
     def error() -> Literal["""⚠ Произошла ошибка"""]: ...
-
     @staticmethod
     def yes() -> Literal["""✔ Да"""]: ...
-
     @staticmethod
     def no() -> Literal["""Нет"""]: ...
-
     @staticmethod
     def edit() -> Literal["""✍ Изменить"""]: ...
-
     @staticmethod
     def delete() -> Literal["""🧹 Удалить"""]: ...
-
     @staticmethod
     def add() -> Literal["""➕ Добавить"""]: ...
-
     @staticmethod
-    def caption() -> Literal["""Сделано через &lt;a href=&#34;https://sale-keeper.ru&#34;&gt;&lt;b&gt;💵Sale Keeper&lt;/b&gt;&lt;/a&gt;"""]: ...
-
+    def caption() -> Literal[
+        """Сделано через &lt;a href=&#34;https://sale-keeper.ru&#34;&gt;&lt;b&gt;💵Sale Keeper&lt;/b&gt;&lt;/a&gt;"""
+    ]: ...
 
 class Customer:
     hello: CustomerHello
@@ -55,158 +47,171 @@ class Customer:
     about: CustomerAbout
     support: CustomerSupport
 
-
 class CustomerHello:
     @staticmethod
-    def message() -> Literal["""Добро пожаловать в чат-бот программы лояльности «Других ресторанов»! 😊
+    def message() -> Literal[
+        """Добро пожаловать в чат-бот программы лояльности «Других ресторанов»! 😊
 
 Поделитесь, пожалуйста, Вашим номером телефона. Просто нажмите на кнопку «Отправить контакт».👇
 
-Поделившись своим номером, вы подтверждаете свое согласие с политикой конфиденциальности и офертой программы лояльности. 👉&lt;a href=&#34;https://ya.ru&#34;&gt;Тут подробно&lt;/a&gt;:"""]: ...
-
+Поделившись своим номером, вы подтверждаете свое согласие с политикой конфиденциальности и офертой программы лояльности. 👉&lt;a href=&#34;https://ya.ru&#34;&gt;Тут подробно&lt;/a&gt;:"""
+    ]: ...
 
 class CustomerMeeting:
     gender: CustomerMeetingGender
 
     @staticmethod
     def phone() -> Literal["""Отправить контакт"""]: ...
-
     @staticmethod
     def name() -> Literal["""Отлично, теперь введите Ваше имя"""]: ...
-
     @staticmethod
-    def surname() -> Literal["""Продолжим наше знакомство? 😉
-Введите свою фамилию, чтобы мы могли начать заполнять Вашу анкету."""]: ...
-
+    def surname() -> Literal[
+        """Продолжим наше знакомство? 😉
+Введите свою фамилию, чтобы мы могли начать заполнять Вашу анкету."""
+    ]: ...
     @staticmethod
-    def email() -> Literal["""Еще нам понадобится Ваш e-mail 💌
-Иногда будем отправлять Вам полезную информацию на почту об акциях, скидках и сезонных предложениях."""]: ...
-
+    def email() -> Literal[
+        """Еще нам понадобится Ваш e-mail 💌
+Иногда будем отправлять Вам полезную информацию на почту об акциях, скидках и сезонных предложениях."""
+    ]: ...
     @staticmethod
-    def birthday() -> Literal["""Укажите Вашу дату рождения в формате дд.мм.гггг. А мы порадуем Вас подарком.🎁"""]: ...
-
+    def birthday() -> Literal[
+        """Укажите Вашу дату рождения в формате дд.мм.гггг. А мы порадуем Вас подарком.🎁"""
+    ]: ...
     @staticmethod
     def thanks() -> Literal["""Отлично! Спасибо❤️"""]: ...
 
-
 class CustomerError:
     @staticmethod
-    def phone() -> Literal["""Отправленный номер не соответствует вашему номеру с аккаунта которого вы пишите. Нажмите на кнопку &lt;b&gt;Отправить контакт&lt;/b&gt;"""]: ...
-
+    def phone() -> Literal[
+        """Отправленный номер не соответствует вашему номеру с аккаунта которого вы пишите. Нажмите на кнопку &lt;b&gt;Отправить контакт&lt;/b&gt;"""
+    ]: ...
     @staticmethod
-    def name() -> Literal["""Не смог обработать Ваше сообщение. Введите Ваше имя"""]: ...
-
+    def name() -> Literal[
+        """Не смог обработать Ваше сообщение. Введите Ваше имя"""
+    ]: ...
     @staticmethod
-    def surname() -> Literal["""Не смог обработать Ваше сообщение. Введите Вашу фамилию"""]: ...
-
+    def surname() -> Literal[
+        """Не смог обработать Ваше сообщение. Введите Вашу фамилию"""
+    ]: ...
     @staticmethod
-    def birthday() -> Literal["""Не удалось записать Ваш день рождения. Введите его в формате &lt;b&gt;дд.мм.гггг&lt;/b&gt;"""]: ...
-
+    def birthday() -> Literal[
+        """Не удалось записать Ваш день рождения. Введите его в формате &lt;b&gt;дд.мм.гггг&lt;/b&gt;"""
+    ]: ...
 
 class CustomerMeetingGender:
     @staticmethod
-    def __call__() -> Literal["""🤩 Здорово! Осталось совсем чуть-чуть — укажите Ваш пол."""]: ...
-
+    def __call__() -> Literal[
+        """🤩 Здорово! Осталось совсем чуть-чуть — укажите Ваш пол."""
+    ]: ...
     @staticmethod
     def m() -> Literal["""Мужской"""]: ...
-
     @staticmethod
     def f() -> Literal["""Женский"""]: ...
-
 
 class CustomerMenu:
     info: CustomerMenuInfo
     balance: CustomerMenuBalance
     about: CustomerMenuAbout
-    map: CustomerMenuMap
+    card: CustomerMenuCard
     gifts: CustomerMenuGifts
     delivery: CustomerMenuDelivery
     loyalty: CustomerMenuLoyalty
     partnership: CustomerMenuPartnership
     help: CustomerMenuHelp
 
+    @staticmethod
+    def placeholder() -> Literal["""Выберите пункт меню"""]: ...
 
 class CustomerMenuInfo:
     @staticmethod
-    def message() -> Literal["""Нажмите на интересующие Вас разделы в главном меню чат-бота. 
+    def message() -> Literal[
+        """Нажмите на интересующие Вас разделы в главном меню чат-бота. 
 Тут все просто! 
-Жмите на иконку 🎛 в правом нижнем углу."""]: ...
-
+Жмите на иконку 🎛 в правом нижнем углу."""
+    ]: ...
 
 class CustomerMenuBalance:
     @staticmethod
     def button() -> Literal["""Баланс и Уровень"""]: ...
 
-
 class CustomerMenuAbout:
     @staticmethod
     def button() -> Literal["""Наши заведения ❤️"""]: ...
 
-
-class CustomerMenuMap:
+class CustomerMenuCard:
     @staticmethod
     def button() -> Literal["""Показать карту"""]: ...
-
 
 class CustomerMenuGifts:
     @staticmethod
     def button() -> Literal["""Каталог подарков"""]: ...
 
-
 class CustomerMenuDelivery:
     @staticmethod
     def button() -> Literal["""Доставка"""]: ...
-
 
 class CustomerMenuLoyalty:
     @staticmethod
     def button() -> Literal["""Правила программы лояльности"""]: ...
 
-
 class CustomerMenuPartnership:
     @staticmethod
     def button() -> Literal["""Сотрудничество"""]: ...
-
 
 class CustomerMenuHelp:
     @staticmethod
     def button() -> Literal["""Помощь"""]: ...
 
-
 class CustomerBalance:
     @staticmethod
-    def message(*, current_balance, date_expire, balance_to_expire) -> Literal["""Баланс бонусов: { $current_balance }
+    def message(
+        *, current_balance, date_expire, balance_to_expire
+    ) -> Literal[
+        """Баланс бонусов: { $current_balance }
 Ближайшая дата сгорания бонусов: { $date_expire }
 Количество бонусов к сгоранию: { $balance_to_expire }
 
-Если Вам недоступны бонусы и карта, поделитесь с нами Вашим номером телефона, вызвав команду /start"""]: ...
-
+Если Вам недоступны бонусы и карта, поделитесь с нами Вашим номером телефона, вызвав команду /start"""
+    ]: ...
 
 class CustomerCard:
     @staticmethod
-    def message(*, number_card) -> Literal["""Номер Вашей карты: &lt;b&gt;{ $number_card }&lt;/b&gt;"""]: ...
-
+    def message(
+        *, number_card
+    ) -> Literal["""Номер Вашей карты: &lt;b&gt;{ $number_card }&lt;/b&gt;"""]: ...
 
 class CustomerCatalog:
     @staticmethod
-    def message() -> Literal["""Для того, чтобы приобрести товары из Каталога подарков Вы можете: 
+    def message() -> Literal[
+        """Для того, чтобы приобрести товары из Каталога подарков Вы можете: 
 — Посетить свой любимый ресторан, сделать заказ с позицией из Каталога подарков и сообщить о нём официанту;
 — Позвонить в свой любимый ресторан и зарезервировать товар из Каталога подарков;
 — Написать нам в чат о том, что вы хотите забронировать позицию из Каталога подарков, назвать свой любимый ресторан и сообщить, когда Вам будет удобно забрать подарок. Мы сообщим о вашем бронировании! 
 
 Подарок пока можно забрать в зале заведений: «takeNseat» и «КофеTake», но скоро будет доступен самовывоз. Только тсс, никому не говорите!
 
-Обратите внимание, что подарочные сертификаты, приобретенные за бонусы, не подлежат возврату или обмену на денежные средства. Подарочные сертификаты необходимо бронировать не менее, чем за 3 дня до выдачи."""]: ...
-
+Обратите внимание, что подарочные сертификаты, приобретенные за бонусы, не подлежат возврату или обмену на денежные средства. Подарочные сертификаты необходимо бронировать не менее, чем за 3 дня до выдачи."""
+    ]: ...
+    @staticmethod
+    def button() -> Literal["""Позвонить в ресторан"""]: ...
+    @staticmethod
+    def link() -> Literal["""https://frankmeat.ru/#rec429896136"""]: ...
 
 class CustomerDelivery:
     @staticmethod
-    def message() -> Literal["""Вы можете заказать доставку от любимых заведений. Будьте внимательны, программа лояльности не действует за заказы на доставку и самовывоз."""]: ...
-
+    def message() -> Literal[
+        """Вы можете заказать доставку от любимых заведений. Будьте внимательны, программа лояльности не действует за заказы на доставку и самовывоз."""
+    ]: ...
+    @staticmethod
+    def button() -> Literal["""Заказать доставку Frank by Basta"""]: ...
+    @staticmethod
+    def link() -> Literal["""https://frankmeat.ru/#rec429878019"""]: ...
 
 class CustomerLoyalty:
     @staticmethod
-    def message() -> Literal["""Добро пожаловать в программу лояльности «takeNseat» 😎! 
+    def message() -> Literal[
+        """Добро пожаловать в программу лояльности «takeNseat» 😎! 
 
 Что даёт наша программа лояльности?
 
@@ -218,37 +223,88 @@ class CustomerLoyalty:
 Важная информация:
 - Баллы начисляются с каждого чека
 - В прогресс уровня учитывается сумма покупки от 400 р
-- Уровень 10% нужно подтверждать — 20 визитов в течение 365 дней с момента достижения уровня 10%"""]: ...
-
+- Уровень 10% нужно подтверждать — 20 визитов в течение 365 дней с момента достижения уровня 10%"""
+    ]: ...
+    @staticmethod
+    def button() -> Literal["""Открыть каталог подарков"""]: ...
+    @staticmethod
+    def link() -> Literal["""https://gifts.drugierestorany.ru/"""]: ...
 
 class CustomerPartnership:
     info: CustomerPartnershipInfo
 
-
 class CustomerPartnershipInfo:
     @staticmethod
-    def message() -> Literal["""Если Вы хотите стать нашим партнером, или у Вас есть предложения по другим видам сотрудничества с takeNseat, пожалуйста, напишите на по адресу &lt;a href=&#34;mailto:taken@seat.ru&gt;taken@seat.ru&lt;/a&gt;"""]: ...
-
+    def message() -> Literal[
+        """Если Вы хотите стать нашим партнером, или у Вас есть предложения по другим видам сотрудничества с takeNseat, пожалуйста, напишите на по адресу &lt;a href=&#34;mailto:taken@seat.ru&gt;taken@seat.ru&lt;/a&gt;"""
+    ]: ...
 
 class CustomerAbout:
     info: CustomerAboutInfo
+    message: CustomerAboutMessage
     link: CustomerAboutLink
-
 
 class CustomerAboutInfo:
     @staticmethod
-    def message() -> Literal["""takeNseat – большая семья современных ресторанов, где любят душевно встречать, шумно поздравлять, и, главное, вкусно кормить!"""]: ...
+    def message() -> Literal[
+        """takeNseat – большая семья современных ресторанов, где любят душевно встречать, шумно поздравлять, и, главное, вкусно кормить!"""
+    ]: ...
 
+class CustomerAboutMessage:
+    @staticmethod
+    def menu() -> Literal["""Посмотреть меню"""]: ...
+    @staticmethod
+    def take() -> Literal["""Забронировать"""]: ...
+    @staticmethod
+    def delivery() -> Literal["""Доставка &amp; Самовывоз"""]: ...
+    @staticmethod
+    def schedule() -> Literal["""Режим работы"""]: ...
+    @staticmethod
+    def route() -> Literal["""Как добраться"""]: ...
+    @staticmethod
+    def social() -> Literal["""takeNseat в социальных сетях"""]: ...
 
 class CustomerAboutLink:
     @staticmethod
-    def menu() -> Literal["""takeNseat в социальных сетях"""]: ...
-
+    def menu() -> Literal["""https://antresol.drugierestorany.ru/menu"""]: ...
+    @staticmethod
+    def take() -> Literal[
+        """https://eda.yandex.ru/r/antresol?placeSlug=antresol_uonxj"""
+    ]: ...
+    @staticmethod
+    def delivery() -> Literal[
+        """https://eda.yandex.ru/r/antresol?placeSlug=antresol_uonxj"""
+    ]: ...
+    @staticmethod
+    def schedule() -> Literal["""https://antresol.drugierestorany.ru/#adresa"""]: ...
+    @staticmethod
+    def route() -> Literal[
+        """https://yandex.com/maps/195/ulyanovsk/chain/antresol_/105211848933/?ll=48.473725%2C54.338800&amp;sll=48.395548%2C54.319786&amp;source=serp_navig&amp;sspn=0.018024%2C0.007940&amp;utm_source=share&amp;z=12.22"""
+    ]: ...
+    @staticmethod
+    def social() -> Literal["""https://vk.com/antresolfamily"""]: ...
 
 class CustomerSupport:
     @staticmethod
-    def info() -> Literal["""Свяжитесь с &lt;a href=&#34;@inactive0073&#34;&gt;нами&lt;/a&gt;, если у вас возникли трудности при использовании сервиса."""]: ...
+    def message() -> Literal[
+        """Свяжитесь с &lt;a href=&#34;@inactive0073&#34;&gt;нами&lt;/a&gt;, если у вас возникли трудности при использовании сервиса."""
+    ]: ...
 
+class Waiter:
+    hello: WaiterHello
+    menu: WaiterMenu
+
+class WaiterHello:
+    @staticmethod
+    def message() -> Literal[
+        """Добро пожаловать в чат-бот программы лояльности! 😊
+
+Для получения инструкции по работе с ботом, нажмите &lt;a href=&#34;/instruction&#34;&gt;/instruction&lt;/a&gt;"""
+    ]: ...
+
+class WaiterMenu:
+    @staticmethod
+    def scan() -> Literal["""Сканировать"""]: ...
 
 class Start:
     hello: StartHello
@@ -259,36 +315,34 @@ class Start:
     @staticmethod
     def settings() -> Literal["""Настройки"""]: ...
 
-
 class StartHello:
     @staticmethod
-    def admin(*, username) -> Literal["""Привет, { $username }👋
+    def admin(
+        *, username
+    ) -> Literal[
+        """Привет, { $username }👋
 
 Я могу:
 ✍Составить описание товара✍
 📅Запланировать пост📅
 ✍Подготовить карточку товара✍
 
-✨Для демонстрации возможностей нажми /demo ✨"""]: ...
-
+✨Для демонстрации возможностей нажми /demo ✨"""
+    ]: ...
 
 class StartCreate:
     @staticmethod
     def post() -> Literal["""Создать пост"""]: ...
-
     @staticmethod
     def description() -> Literal["""Создать описание"""]: ...
-
 
 class StartEdit:
     @staticmethod
     def post() -> Literal["""Редактировать пост"""]: ...
 
-
 class StartAdd:
     @staticmethod
     def channel() -> Literal["""Мои каналы"""]: ...
-
 
 class Cr:
     select: CrSelect
@@ -306,96 +360,82 @@ class Cr:
     approve: CrApprove
     success: CrSuccess
 
-
 class CrSelect:
     channel: CrSelectChannel
     bot: CrSelectBot
     channels: CrSelectChannels
 
-
 class CrSelectChannel:
     to: CrSelectChannelTo
-
 
 class CrSelectChannelTo:
     send: CrSelectChannelToSend
 
-
 class CrSelectChannelToSend:
     @staticmethod
-    def message() -> Literal["""Выберите место публикации вашего поста. 
+    def message() -> Literal[
+        """Выберите место публикации вашего поста. 
 
-&lt;i&gt;Общая рассылка — это рассылка сообщения по пользователям бота&lt;/i&gt;"""]: ...
-
+&lt;i&gt;Общая рассылка — это рассылка сообщения по пользователям бота&lt;/i&gt;"""
+    ]: ...
 
 class CrSelectBot:
     to: CrSelectBotTo
 
-
 class CrSelectBotTo:
     send: CrSelectBotToSend
-
 
 class CrSelectBotToSend:
     @staticmethod
     def message() -> Literal["""🤖 Общая рассылка"""]: ...
 
-
 class CrWatch:
     @staticmethod
-    def text() -> Literal["""✍ Отправьте текст поста, который необходимо опубликовать"""]: ...
-
+    def text() -> Literal[
+        """✍ Отправьте текст поста, который необходимо опубликовать"""
+    ]: ...
 
 class CrInvalid:
     @staticmethod
-    def data() -> Literal["""❌ Не поддерживаю такой тип данных ❌  
+    def data() -> Literal[
+        """❌ Не поддерживаю такой тип данных ❌  
 
-Для демонстрации бота нажмите /demo или напишите в поддержку бота"""]: ...
-
+Для демонстрации бота нажмите /demo или напишите в поддержку бота"""
+    ]: ...
 
 class CrReply:
     @staticmethod
     def text() -> Literal["""👆 Проверьте текст, перед публикацей"""]: ...
 
-
 class CrEdit:
     @staticmethod
     def text() -> Literal["""✍Изменить текст"""]: ...
 
-
 class CrUrl:
     @staticmethod
     def btns() -> Literal["""☑️URL Кнопки"""]: ...
-
     @staticmethod
     def delete() -> Literal["""❌ Удалить кнопки"""]: ...
-
 
 class CrSet:
     @staticmethod
     def time() -> Literal["""🕙Время отправки"""]: ...
-
     @staticmethod
     def notify() -> Literal["""🔔С уведомлением"""]: ...
-
 
 class CrUnset:
     @staticmethod
     def notify() -> Literal["""🔕Без уведомления"""]: ...
-
     @staticmethod
     def comments() -> Literal["""☑️Отключить комментарии"""]: ...
-
 
 class CrAdd:
     @staticmethod
     def media() -> Literal["""➕Добавить медиа"""]: ...
 
-
 class CrRemove:
     @staticmethod
     def media() -> Literal["""❌Удалить медиа"""]: ...
-
 
 class CrPush:
     later: CrPushLater
@@ -403,18 +443,19 @@ class CrPush:
     @staticmethod
     def now() -> Literal["""🚀Отправить сейчас"""]: ...
 
-
 class CrPushLater:
     button: CrPushLaterButton
 
     @staticmethod
     def __call__() -> Literal["""📅Запланировать пост"""]: ...
-
     @staticmethod
-    def message(*, current_date) -> Literal["""Планирование поста на &lt;b&gt; { $current_date } &lt;/b&gt;
+    def message(
+        *, current_date
+    ) -> Literal[
+        """Планирование поста на &lt;b&gt; { $current_date } &lt;/b&gt;
 
-Нажмите &lt;b&gt;Планировать 📌&lt;/b&gt;, чтобы подтвердить и запланировать пост в каналы:"""]: ...
-
+Нажмите &lt;b&gt;Планировать 📌&lt;/b&gt;, чтобы подтвердить и запланировать пост в каналы:"""
+    ]: ...
 
 class CrInstruction:
     delayed: CrInstructionDelayed
@@ -422,17 +463,21 @@ class CrInstruction:
     media: CrInstructionMedia
 
     @staticmethod
-    def url() -> Literal["""⚠ Отправьте кнопки в формате:
+    def url() -> Literal[
+        """⚠ Отправьте кнопки в формате:
 Link - https://ya.ru | Link 2 - https://no.com
 Link 3 - http://ac.ru | Link 4 - http://mail.ru
 
 Каждую новую кнопку отправьте с новой строки.
-Если хотите разместить несколько кнопок в одной строке используйте разделитель « | »"""]: ...
-
+Если хотите разместить несколько кнопок в одной строке используйте разделитель « | »"""
+    ]: ...
 
 class CrInstructionDelayed:
     @staticmethod
-    def post(*, tz) -> Literal["""&lt;b&gt;Отправьте время выхода поста в часовом поясе { $tz } в любом удобном формате, например:&lt;/b&gt;
+    def post(
+        *, tz
+    ) -> Literal[
+        """&lt;b&gt;Отправьте время выхода поста в часовом поясе { $tz } в любом удобном формате, например:&lt;/b&gt;
 &lt;blockquote&gt;
 18 - текущие сутки 18:00
 0830 - текущие сутки 08:30
@@ -440,12 +485,15 @@ class CrInstructionDelayed:
 1830 - текущие сутки 18:30
 18300408 - 18:30 04.08
 18 30 04 08 - 18:30 04.08
-&lt;/blockquote&gt;"""]: ...
-
+&lt;/blockquote&gt;"""
+    ]: ...
 
 class CrInstructionInvalid:
     @staticmethod
-    def time(*, tz) -> Literal["""Не поддерживаю такой формат ввода данных 🤷‍♂️
+    def time(
+        *, tz
+    ) -> Literal[
+        """Не поддерживаю такой формат ввода данных 🤷‍♂️
 &lt;b&gt;Отправьте время выхода поста в часовом поясе { $tz } в любом удобном формате, например:&lt;/b&gt;
 &lt;blockquote&gt;
 18 - текущие сутки 18:00
@@ -454,72 +502,65 @@ class CrInstructionInvalid:
 1830 - текущие сутки 18:30
 18300408 - 18:30 04.08
 18 30 04 08 - 18:30 04.08
-&lt;/blockquote&gt;"""]: ...
-
+&lt;/blockquote&gt;"""
+    ]: ...
 
 class CrInstructionMedia:
     invalid: CrInstructionMediaInvalid
 
     @staticmethod
     def post() -> Literal["""📷 Пришлите медиа файлы"""]: ...
-
     @staticmethod
     def approve() -> Literal["""Все медиа файлы отправлены ❓"""]: ...
-
     @staticmethod
     def yes() -> Literal["""✅ Да"""]: ...
-
     @staticmethod
     def no() -> Literal["""❌ Нет"""]: ...
 
-
 class CrInstructionMediaInvalid:
     @staticmethod
-    def type() -> Literal["""❌ Не поддерживаю такой тип данных ❌  
+    def type() -> Literal[
+        """❌ Не поддерживаю такой тип данных ❌  
 Допустимые форматы:
 - Фото
 - Видео
 
-Для демонстрации бота нажмите /demo или напишите в &lt;a href=&#34;@inactive0073&#34;&gt;поддержку бота&lt;/a&gt;"""]: ...
-
+Для демонстрации бота нажмите /demo или напишите в &lt;a href=&#34;@inactive0073&#34;&gt;поддержку бота&lt;/a&gt;"""
+    ]: ...
 
 class CrSelectChannels:
     to: CrSelectChannelsTo
 
-
 class CrSelectChannelsTo:
     push: CrSelectChannelsToPush
-
 
 class CrSelectChannelsToPush:
     @staticmethod
     def message() -> Literal["""Выберите каналы для публикации поста."""]: ...
 
-
 class CrApprove:
     media: CrApproveMedia
 
-
 class CrApproveMedia:
     push: CrApproveMediaPush
-
 
 class CrApproveMediaPush:
     @staticmethod
     def now() -> Literal["""Отправить сейчас?"""]: ...
 
-
 class CrPushLaterButton:
     @staticmethod
     def caption() -> Literal["""Планировать 📌"""]: ...
 
-
 class CrSuccess:
     @staticmethod
-    def pushed(*, post_message, date_posting) -> Literal["""Пост &#34;{ $post_message }&#34;
+    def pushed(
+        *, post_message, date_posting
+    ) -> Literal[
+        """Пост &#34;{ $post_message }&#34;
 успешно запланирован на &lt;b&gt;{ $date_posting }&lt;/b&gt;
-в каналах:"""]: ...
-
+в каналах:"""
+    ]: ...
 
 class Channel:
     add: ChannelAdd
@@ -535,62 +576,65 @@ class Channel:
     @staticmethod
     def exists() -> Literal["""Ниже представлен список ваших каналов."""]: ...
 
-
 class ChannelAdd:
     channel: ChannelAddChannel
 
     @staticmethod
     def caption() -> Literal["""✍ Добавить автоподпись"""]: ...
 
-
 class ChannelAddChannel:
     @staticmethod
     def button() -> Literal["""Добавить канал"""]: ...
-
 
 class Channel_not:
     @staticmethod
     def exists() -> Literal["""У вас не добавлен ни один канал."""]: ...
 
-
 class ChannelInstruction:
     @staticmethod
-    def add() -> Literal["""Для добавления бота сделайте бота администратором в канале и дайте ему права на управление сообщениями и управление историями. 
-После добавления бота отправьте ссылку на канал в формате &lt;b&gt;@channelusername&lt;/b&gt;"""]: ...
-
+    def add() -> Literal[
+        """Для добавления бота сделайте бота администратором в канале и дайте ему права на управление сообщениями и управление историями. 
+После добавления бота отправьте ссылку на канал в формате &lt;b&gt;@channelusername&lt;/b&gt;"""
+    ]: ...
 
 class ChannelLink:
     wrong: ChannelLinkWrong
     after: ChannelLinkAfter
 
     @staticmethod
-    def addition() -> Literal["""https://t.me/saler_scheduler_bot?startchannel&amp;admin=post_messages+edit_messages+delete_messages+invite_users"""]: ...
-
+    def addition() -> Literal[
+        """https://t.me/saler_scheduler_bot?startchannel&amp;admin=post_messages+edit_messages+delete_messages+invite_users"""
+    ]: ...
     @staticmethod
-    def invalid() -> Literal["""Что-то не так с ссылкой на канал, проверьте её и отправьте в формате &lt;b&gt;@channelusername&lt;/b&gt;"""]: ...
-
+    def invalid() -> Literal[
+        """Что-то не так с ссылкой на канал, проверьте её и отправьте в формате &lt;b&gt;@channelusername&lt;/b&gt;"""
+    ]: ...
 
 class ChannelLinkWrong:
     @staticmethod
-    def type() -> Literal["""🤖 Бот может работать только с каналами. 
-Типы приватных чатов, групп и форумов не поддерживаются."""]: ...
-
+    def type() -> Literal[
+        """🤖 Бот может работать только с каналами. 
+Типы приватных чатов, групп и форумов не поддерживаются."""
+    ]: ...
 
 class ChannelLinkAfter:
     joining: ChannelLinkAfterJoining
 
-
 class ChannelLinkAfterJoining:
     @staticmethod
-    def channel() -> Literal["""🙌 Бот успешно добавлен в администраторы канала."""]: ...
-
+    def channel() -> Literal[
+        """🙌 Бот успешно добавлен в администраторы канала."""
+    ]: ...
 
 class ChannelSettings:
     @staticmethod
-    def desc(*, channel_name, caption) -> Literal["""🛠 Настройки канала &lt;b&gt;{ $channel_name }&lt;/b&gt;
+    def desc(
+        *, channel_name, caption
+    ) -> Literal[
+        """🛠 Настройки канала &lt;b&gt;{ $channel_name }&lt;/b&gt;
 
-Подпись: { $caption }"""]: ...
-
+Подпись: { $caption }"""
+    ]: ...
 
 class ChannelDelete:
     _from: ChannelDelete_from
@@ -599,51 +643,47 @@ class ChannelDelete:
     @staticmethod
     def button() -> Literal["""Удалить бота 🤖"""]: ...
 
-
 class ChannelDelete_from:
     @staticmethod
     def bot() -> Literal["""❌ Удалить канал из телеграм бота"""]: ...
 
-
 class ChannelDeleteChannel:
     @staticmethod
-    def instruction() -> Literal["""⚠ Вы удаляете бота из канала ⚠
+    def instruction() -> Literal[
+        """⚠ Вы удаляете бота из канала ⚠
 
-Если вы уверены нажмите &lt;b&gt;Удалить бота 🤖&lt;/b&gt;"""]: ...
-
+Если вы уверены нажмите &lt;b&gt;Удалить бота 🤖&lt;/b&gt;"""
+    ]: ...
 
 class ChannelSuccess:
     @staticmethod
     def deleted() -> Literal["""Бот успешно удален"""]: ...
 
-
 class ChannelUnsuccessful:
     @staticmethod
-    def deleted() -> Literal["""Бот не был удален, попробуйте повторить попытку позже. 
+    def deleted() -> Literal[
+        """Бот не был удален, попробуйте повторить попытку позже. 
 
-Если проблема повторяется - напишите в техническую поддержку 💻."""]: ...
-
+Если проблема повторяется - напишите в техническую поддержку 💻."""
+    ]: ...
 
 class ChannelCaption:
     _not: ChannelCaption_not
 
     @staticmethod
     def on() -> Literal["""✔ Автоподпись включена"""]: ...
-
     @staticmethod
     def off() -> Literal["""❌ Автоподпись выключена"""]: ...
-
     @staticmethod
-    def error() -> Literal["""📝В качестве подписи к тексту принимается только текст."""]: ...
-
+    def error() -> Literal[
+        """📝В качестве подписи к тексту принимается только текст."""
+    ]: ...
     @staticmethod
     def wait() -> Literal["""Пришлите новую подпись к постам"""]: ...
-
 
 class ChannelCaption_not:
     @staticmethod
     def exists() -> Literal["""У этого канала на данный момент нет автоподписи"""]: ...
-
 
 class Settings:
     main: SettingsMain
@@ -651,33 +691,35 @@ class Settings:
     support: SettingsSupport
     select: SettingsSelect
 
-
 class SettingsMain:
     @staticmethod
-    def menu() -> Literal["""&lt;b&gt;Настройки&lt;/b&gt;
+    def menu() -> Literal[
+        """&lt;b&gt;Настройки&lt;/b&gt;
 
-Настройте конфигурацию вашего бота."""]: ...
-
+Настройте конфигурацию вашего бота."""
+    ]: ...
 
 class SettingsTimezone:
     @staticmethod
     def button() -> Literal["""🌍 Часовой пояс"""]: ...
 
-
 class SettingsSupport:
     @staticmethod
     def button() -> Literal["""🤝 Онлайн-поддержка"""]: ...
-
     @staticmethod
-    def message() -> Literal["""Для вопросов и предложений: &lt;a href=&#34;@inactive0073&#34;&gt;@inactive0073&lt;/a&gt;
+    def message() -> Literal[
+        """Для вопросов и предложений: &lt;a href=&#34;@inactive0073&#34;&gt;@inactive0073&lt;/a&gt;
 
-Всегда открыты и заинтересованы в решении ваших задач!"""]: ...
-
+Всегда открыты и заинтересованы в решении ваших задач!"""
+    ]: ...
 
 class SettingsSelect:
     @staticmethod
-    def timezone(*, current_timezone, local_datetime) -> Literal["""Выберете ваш часовой пояс.
+    def timezone(
+        *, current_timezone, local_datetime
+    ) -> Literal[
+        """Выберете ваш часовой пояс.
 
 Ваш выбранный часовой пояс: &lt;b&gt;{ $current_timezone }&lt;/b&gt;.
-Локальное время: &lt;b&gt;{ $local_datetime }&lt;/b&gt;"""]: ...
-
+Локальное время: &lt;b&gt;{ $local_datetime }&lt;/b&gt;"""
+    ]: ...

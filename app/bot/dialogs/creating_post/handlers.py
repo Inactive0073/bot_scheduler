@@ -523,7 +523,6 @@ async def process_push_now_to_bot_button(
     notify_on = dialog_manager.dialog_data.get("notify_on")
     file_id = dialog_manager.dialog_data.get("media_content")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
-
     for telegram_id in telegram_ids:
         await delay_message_sending(
             js=js,

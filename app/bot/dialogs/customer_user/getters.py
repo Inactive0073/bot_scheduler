@@ -28,9 +28,10 @@ async def get_common_data(
         "meeting_thanks_message": i18n.customer.meeting.thanks(),
     }
 
+
 async def get_customer_menu_data(
     dialog_manager: DialogManager,
-    i18n: TranslatorRunner, 
+    i18n: TranslatorRunner,
     **kwargs,
 ) -> Dict[str, str]:
     return {

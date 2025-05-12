@@ -7,6 +7,7 @@ from aiogram_dialog import DialogManager, ShowMode, StartMode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.db.customer_requests import upsert_customer
+from app.bot.states.customer.start import CustomerSG
 from app.bot.states.settings import SettingsSG
 from app.bot.states.start import StartSG
 from app.bot.db.requests import upsert_user
@@ -29,7 +30,7 @@ async def process_start_command(
     last_name = message.from_user.last_name
     roles = set(await get_user_role(session=session, telegram_id=telegram_id))
     logger.info(
-        f"Пользователь {first_name}|{username} с ролью {roles}, нажал кнопку /start"
+        f"Пользователь {first_name}|{username} с ролями {roles}, нажал кнопку /start"
     )
 
     if not roles.intersection({"admin", "manager", "waiter", "owner"}):
@@ -40,6 +41,7 @@ async def process_start_command(
             first_name=first_name,
             last_name=last_name,
         )
+        await dialog_manager.start(state=CustomerSG.start, mode=StartMode.RESET_STACK)
     else:
         await upsert_user(
             session=session,

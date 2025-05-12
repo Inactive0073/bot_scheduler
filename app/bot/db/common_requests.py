@@ -14,5 +14,6 @@ async def get_user_role(session: AsyncSession, telegram_id: int) -> list[str]:
         .join(UserRole, Role.role_id == UserRole.role_id)
         .where(UserRole.user_id == telegram_id)
     )
-    result = await session.execute(stmt)
-    return result.scalars().all()
+    async with session.begin():
+        result = await session.execute(stmt)
+        return result.scalars().all()

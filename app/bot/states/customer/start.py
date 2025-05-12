@@ -12,4 +12,5 @@ class CustomerSG(StatesGroup):
     thanks = State()
 
     # Меню
-    menu = State() 
+    menu = State()
+    catalog = State()

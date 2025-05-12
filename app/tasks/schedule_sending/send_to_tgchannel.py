@@ -1,0 +1,35 @@
+import asyncio
+from ...taskiq_broker.broker import broker
+
+import logging
+
+from aiogram import Bot
+from app.bot.services.delay_service.consumer import DelayedMessageConsumer
+
+from nats.aio.client import Client
+from nats.js.client import JetStreamContext
+
+logger = logging.getLogger(__name__)
+
+
+@broker.task()
+async def schedule_message_to_channel(
+    nc: Client,
+    js: JetStreamContext,
+    bot: Bot,
+    subject: str,
+    stream: str,
+    durable_name: str,
+) -> None:
+    consumer = DelayedMessageConsumer(
+        nc=nc, js=js, bot=bot, subject=subject, stream=stream, durable_name=durable_name
+    )
+    logger.info(
+        f"Запуск консьюмера отложенных сообщений",
+        extra={
+            "subject": subject,
+            "stream": stream,
+            "durable_name": durable_name,
+        },
+    )
+    await consumer.start()

@@ -1,5 +1,12 @@
+from datetime import datetime
 import logging
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import (
+    Message,
+    CallbackQuery,
+    BufferedInputFile,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.input import MessageInput, ManagedTextInput
@@ -8,14 +15,22 @@ from fluentogram import TranslatorRunner
 
 from typing import TYPE_CHECKING
 
-from app.bot.states.customer.start import StartCustomerSG
-from app.bot.db.customer_requests import record_personal_user_data
+from app.bot.states.customer.start import CustomerSG
+from app.bot.db.customer_requests import (
+    get_bonus_info,
+    get_card_info,
+    record_personal_user_data,
+    update_qr_code_file_id,
+)
+from app.bot.utils.generate_qrcode import QRCode
+from .keyboards import get_kb
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
 
 
 logger = logging.getLogger(__name__)
+
 
 async def process_succes_contact(
     message: Message,
@@ -26,7 +41,7 @@ async def process_succes_contact(
     dialog_manager.dialog_data["phone"] = message.contact.phone_number
     await message.delete()
     await dialog_manager.switch_to(
-        state=StartCustomerSG.name, show_mode=ShowMode.DELETE_AND_SEND
+        state=CustomerSG.name, show_mode=ShowMode.DELETE_AND_SEND
     )
 
 
@@ -46,8 +61,9 @@ async def process_succes_name(
 ):
     await message.delete()
     dialog_manager.dialog_data["name"] = text
-    await dialog_manager.switch_to(state=StartCustomerSG.surname, show_mode=ShowMode.DELETE_AND_SEND)
-
+    await dialog_manager.switch_to(
+        state=CustomerSG.surname, show_mode=ShowMode.DELETE_AND_SEND
+    )
 
 
 async def process_succes_surname(
@@ -55,8 +71,9 @@ async def process_succes_surname(
 ):
     await message.delete()
     dialog_manager.dialog_data["surname"] = text
-    await dialog_manager.switch_to(state=StartCustomerSG.email, show_mode=ShowMode.DELETE_AND_SEND)
-
+    await dialog_manager.switch_to(
+        state=CustomerSG.email, show_mode=ShowMode.DELETE_AND_SEND
+    )
 
 
 async def process_succes_email(
@@ -64,8 +81,9 @@ async def process_succes_email(
 ):
     await message.delete()
     dialog_manager.dialog_data["email"] = text
-    await dialog_manager.switch_to(state=StartCustomerSG.birthday, show_mode=ShowMode.DELETE_AND_SEND)
-
+    await dialog_manager.switch_to(
+        state=CustomerSG.birthday, show_mode=ShowMode.DELETE_AND_SEND
+    )
 
 
 async def process_succes_birthday(
@@ -73,7 +91,9 @@ async def process_succes_birthday(
 ):
     await message.delete()
     dialog_manager.dialog_data["birthday"] = text
-    await dialog_manager.switch_to(state=StartCustomerSG.gender, show_mode=ShowMode.DELETE_AND_SEND)
+    await dialog_manager.switch_to(
+        state=CustomerSG.gender, show_mode=ShowMode.DELETE_AND_SEND
+    )
 
 
 async def process_invalid_birthday(
@@ -93,7 +113,7 @@ async def process_gender_selected(
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
     dialog_manager.dialog_data["gender"] = callback.data
-    await callback.answer(i18n.customer.meeting.thanks())
+    await callback.message.answer(i18n.customer.meeting.thanks())
 
     # Сохранение введеных данных в БД
     telegram_id = callback.from_user.id
@@ -102,27 +122,128 @@ async def process_gender_selected(
     phone = dialog_manager.dialog_data.get("phone")
     email = dialog_manager.dialog_data.get("email")
     birthday = dialog_manager.dialog_data.get("birthday")
-    gender = dialog_manager.dialog_data.get("gender", 'N')[0]
-    
+    gender = dialog_manager.dialog_data.get("gender", "N")[0]
+
     if await record_personal_user_data(
-            session=session,
-            telegram_id=telegram_id,
-            name=name,
-            surname=surname,
-            phone=phone,
-            email=email,
-            birthday=birthday,
-            gender=gender
-        ):
+        session=session,
+        telegram_id=telegram_id,
+        name=name,
+        surname=surname,
+        phone=phone,
+        email=email,
+        birthday=birthday,
+        gender=gender,
+    ):
         logger.info(f"Запись успешно добавлена по юзеру {phone}")
-        await dialog_manager.switch_to(state=StartCustomerSG.menu)
+        await dialog_manager.switch_to(state=CustomerSG.menu)
     else:
         logger.error(f"Не удалось добавить запись при регистрации клиента")
-        
+
 
 async def on_balance_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
-    
+
+    bonuses, date_expire, bonus_to_expire = await get_bonus_info(
+        session=session, telegram_id=callback.from_user.id
+    )
+    date_expire: datetime = date_expire.strftime("%d.%m.%Y")
+    await callback.message.answer(
+        i18n.customer.balance.message(
+            current_balance=bonuses,
+            date_expire=date_expire,
+            balance_to_expire=bonus_to_expire,
+        )
+    )
+
+
+async def on_card_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    session = dialog_manager.middleware_data.get("session")
+    telegram_id = callback.from_user.id
+
+    qr_token, qr_code_file_id = await get_card_info(
+        session=session, telegram_id=telegram_id
+    )
+    if qr_code_file_id is None:
+        with QRCode.generate_qrcode(token=qr_token) as qr_buffer:
+            photo = BufferedInputFile(
+                qr_buffer.getvalue(),  # Важно! Получаем bytes из BytesIO
+                filename="qr_code.png",
+            )
+    else:
+        photo = qr_code_file_id
+    result: Message = await callback.message.answer_photo(
+        photo=photo, caption=i18n.customer.card.message(number_card=qr_token)
+    )
+
+    # сохраняем в бд, если еще не было file_id QR Code`а
+    if qr_code_file_id is None:
+        file_id = result.photo[-1].file_id
+        await update_qr_code_file_id(
+            session=session, telegram_id=telegram_id, file_id=file_id
+        )
+
+
+async def on_gifts_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    text = i18n.customer.catalog.message()
+    button = i18n.customer.catalog.button()
+    link = i18n.customer.catalog.link()
+    kb = get_kb([button, link])
+    await callback.message.answer(text=text, reply_markup=kb)
+
+
+async def on_delivery_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    text = i18n.customer.delivery.message()
+    button = i18n.customer.delivery.button()
+    link = i18n.customer.delivery.link()
+    kb = get_kb([button, link])
+    await callback.message.answer(text=text, reply_markup=kb)
+
+
+async def on_loayalty_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    text = i18n.customer.loyalty.message()
+    button = i18n.customer.delivery.button()
+    link = i18n.customer.delivery.link()
+    kb = get_kb([button, link])
+    await callback.message.answer(text=text, reply_markup=kb)
+
+
+async def on_partnership_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    text = i18n.customer.partnership.info.message()
+    await callback.message.answer(text=text)
+
+
+async def on_help_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    text = i18n.customer.support.message()
+    await callback.message.answer(text=text)
+
+
+async def on_about_selected(
+    callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
+):
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    text = i18n.customer.about.info.message()
+    button = i18n.customer.delivery.button()
+    link = i18n.customer.delivery.link()
+    kb = get_kb([button, link])
+    await callback.message.answer(text=text, reply_markup=kb)

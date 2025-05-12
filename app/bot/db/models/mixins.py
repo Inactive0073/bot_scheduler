@@ -23,6 +23,7 @@ class TelegramProfileMixin:
 
 class DetailProfileMixin:
     """Профиль для подробного описания пользователя с данными введеными вручную от пользователя"""
+
     i_name: Mapped[str | None]
     i_surname: Mapped[str | None]
     email: Mapped[str | None]

@@ -9,4 +9,10 @@ from .customer_user.dialogs import customer_dialog
 
 
 def get_dialogs() -> List[Dialog]:
-    return [start_dialog, create_post_dialog, dialog_addition_channel, settings_dialog]
+    return [
+        start_dialog,
+        create_post_dialog,
+        dialog_addition_channel,
+        settings_dialog,
+        customer_dialog,
+    ]

@@ -1,8 +1,12 @@
 from sqlalchemy import SmallInteger, Integer, String, text
-from sqlalchemy.orm import Mapped, mapped_column, relationship 
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.bot.db import Base
-from app.bot.db.models.mixins import TelegramProfileMixin, TimestampMixin, DetailProfileMixin
+from app.bot.db.models.mixins import (
+    TelegramProfileMixin,
+    TimestampMixin,
+    DetailProfileMixin,
+)
 
 
 class Customer(TimestampMixin, TelegramProfileMixin, DetailProfileMixin, Base):
@@ -18,4 +22,5 @@ class Customer(TimestampMixin, TelegramProfileMixin, DetailProfileMixin, Base):
         SmallInteger, default=0, server_default=text("0")
     )
     qr_code_file_id: Mapped[str | None]
-    bonuses: Mapped["Bonus"] = relationship(back_populates="user") # type: ignore
+    qr_code_token: Mapped[int | None]
+    bonuses: Mapped["Bonus"] = relationship(back_populates="customer")  # type: ignore

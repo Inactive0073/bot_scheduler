@@ -38,13 +38,15 @@ from app.taskiq_broker.broker import broker
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class SetupDependeciesConfig:
     config: Config
 
-
     async def setup_database(self) -> tuple[AsyncEngine, AsyncSession]:
-        engine = create_async_engine(url=self.config.db.dsn, echo=self.config.db.is_echo)
+        engine = create_async_engine(
+            url=self.config.db.dsn, echo=self.config.db.is_echo
+        )
         async with engine.begin() as conn:
             await conn.execute(text("SELECT 1"))  # Проверка соединения
             await conn.run_sync(Base.metadata.create_all)
@@ -72,9 +74,9 @@ class SetupDependeciesConfig:
 
     @staticmethod
     def register_middlewares_and_routers(
-        dp: Dispatcher, 
+        dp: Dispatcher,
         Sessionmaker: AsyncSession,
-        js, 
+        js,
         translator_hub,
         config: Config,
         redis_source: RedisScheduleSource,
@@ -100,5 +102,3 @@ class SetupDependeciesConfig:
 
         # Запускаем функцию настройки проекта для работы с диалогами
         setup_dialogs(dp)
-
-    

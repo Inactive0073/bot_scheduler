@@ -12,7 +12,7 @@ class ContextMiddleware(BaseMiddleware):
         delay_send_subject_channel,
         delay_send_subject_subscriber,
         web_app_url,
-        redis_source
+        redis_source,
     ) -> None:
         super().__init__()
         self.js = js

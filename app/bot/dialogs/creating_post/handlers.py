@@ -26,7 +26,6 @@ from nats.js.client import JetStreamContext
 
 from app.bot.services.delay_service.publisher import delay_message_sending
 from app.tasks import BotSending, ChannelSending
-from app.taskiq_broker.broker import redis_source
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
@@ -522,8 +521,8 @@ async def process_push_now_to_bot_button(
             keyboard=keyboard,
             file_id=file_id,
             notify_status=notify_status,
-            has_spoiler=has_spoiler
-            )
+            has_spoiler=has_spoiler,
+        )
     logger.info(f"Запланировано к отправке {len(telegram_ids)} сообщений")
 
 
@@ -532,6 +531,7 @@ async def process_push_to_bot_button(
 ):
     """Отправка среди подписчиков бота"""
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    redis_source = dialog_manager.middleware_data.get("redis_source")
     session = dialog_manager.middleware_data.get("session")
 
     # получение списка ID пользователей
@@ -547,7 +547,7 @@ async def process_push_to_bot_button(
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
     time_to_send = posting_time
-    
+
     # Пользовательские данные для сообщения
     keyboard = dialog_manager.dialog_data.get("keyboard")
     post_message = dialog_manager.dialog_data.get("post_message")
@@ -566,7 +566,7 @@ async def process_push_to_bot_button(
             file_id=file_id,
             type_media=type_media,
             notify_status=notify_status,
-            has_spoiler=has_spoiler,            
+            has_spoiler=has_spoiler,
         )
 
 

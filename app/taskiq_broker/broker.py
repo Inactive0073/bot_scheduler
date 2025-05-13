@@ -11,7 +11,9 @@ config: Config = load_config()
 broker = PullBasedJetStreamBroker(servers=config.nats.servers, queue="taskiq_queue")
 # redis_result = RedisAsyncResultBackend(config.redis.url)
 redis_source = RedisScheduleSource(config.redis.url)
-scheduler = TaskiqScheduler(broker=broker, sources=[config.redis.url, LabelScheduleSource(broker)])
+scheduler = TaskiqScheduler(
+    broker=broker, sources=[config.redis.url, LabelScheduleSource(broker)]
+)
 
 
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)

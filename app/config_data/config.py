@@ -9,6 +9,7 @@ class TgBot:
     token: str  # Токен для доступа к телеграм-боту
     url: str  # URL для вебхука
 
+
 @dataclass
 class RedisConfig:
     url: str
@@ -47,7 +48,7 @@ class Config:
 
 def load_config(path: str | None = None) -> Config:
     env = Env()
-    env.read_env(path)
+    env.read_env(path, override=True)
     return Config(
         tg_bot=TgBot(token=env("BOT_TOKEN"), url=env("BOT_WEBHOOK_URL")),
         nats=NatsConfig(servers=env.list("NATS_SERVERS")),
@@ -58,5 +59,5 @@ def load_config(path: str | None = None) -> Config:
             durable_name=env("NATS_DELAYED_CONSUMER_DURABLE_NAME"),
         ),
         db=DataBase(dsn=env("DSN"), is_echo=env.bool(("IS_ECHO"))),
-        redis=RedisConfig(url=env("REDIS_SOURCE"))
+        redis=RedisConfig(url=env("REDIS_SOURCE")),
     )

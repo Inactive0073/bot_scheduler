@@ -23,9 +23,10 @@ taskiq_aiogram.init(
     # You can specify more bots here.
 )
 
+
 class BotSending:
     bot_limit_message = AsyncLimiter(20, 1)
-    
+
     @classmethod
     @broker.task(task_name="push_msg_to_bot_now")
     async def send_message_bot_subscribers(
@@ -63,6 +64,3 @@ class BotSending:
                         disable_notification=notify_status,
                     )
                     logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
-    
-
-        

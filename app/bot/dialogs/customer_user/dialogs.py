@@ -46,7 +46,7 @@ customer_dialog = Dialog(
         MessageInput(
             func=process_succes_contact,
             content_types=ContentType.CONTACT,
-            filter=ContactFilter,
+            filter=ContactFilter(),
         ),
         MessageInput(func=process_invalid_phone, content_types=ContentType.ANY),
         state=CustomerSG.start,

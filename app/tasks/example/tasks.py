@@ -20,12 +20,7 @@ taskiq_aiogram.init(
 
 
 @broker.task(task_name="bot_send_test")
-async def simple_task(
-    chat_id: int, 
-    msg: str,
-    bot: Bot = TaskiqDepends()
-)-> None:
+async def simple_task(chat_id: int, msg: str, bot: Bot = TaskiqDepends()) -> None:
     print("ITS WORKING")
     print("ITS WORKING")
     await bot.send_message(chat_id=chat_id, text=msg)
-

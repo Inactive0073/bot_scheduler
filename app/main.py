@@ -42,19 +42,18 @@ bot, dp = dependecies_config.setup_bot()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
-    nc, js = await connect_to_nats(servers=config.nats.servers) # Connect to NATS
+    nc, js = await connect_to_nats(servers=config.nats.servers)  # Connect to NATS
     translator_hub: TranslatorHub = create_translator_hub()
-    engine, Sessionmaker = await dependecies_config.setup_database() # Get session
+    engine, Sessionmaker = await dependecies_config.setup_database()  # Get session
 
-    await broker.startup() 
-    dependecies_config.register_middlewares_and_routers( 
+    await broker.startup()
+    dependecies_config.register_middlewares_and_routers(
         dp=dp,
         Sessionmaker=Sessionmaker,
         js=js,
         translator_hub=translator_hub,
         config=config,
-        redis_source=redis_source
+        redis_source=redis_source,
     )
 
     webhook_url = config.get_webhook_url()
@@ -64,7 +63,6 @@ async def lifespan(app: FastAPI):
         drop_pending_updates=True,
     )
     logger.info(f"Webhook now on {webhook_url}")
-
 
     await setup_bot_commands(bot)
 

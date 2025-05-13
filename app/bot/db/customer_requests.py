@@ -107,7 +107,7 @@ async def get_bonus_info(
     customer = await session.get(
         Customer, {"telegram_id": telegram_id}, options=[selectinload(Customer.bonuses)]
     )
-
+    
     bonuses: list[Bonus] = customer.bonuses
     bonuses = sum(bonus.amount for bonus in bonuses)
 

@@ -13,6 +13,7 @@ broker = PullBasedJetStreamBroker(servers=config.nats.servers, queue="taskiq_que
 redis_source = RedisScheduleSource(config.redis.url)
 scheduler = TaskiqScheduler(broker=broker, sources=[config.redis.url, LabelScheduleSource(broker)])
 
+
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)
 async def startup(state: TaskiqState) -> None:
     logging.basicConfig(
@@ -24,6 +25,7 @@ async def startup(state: TaskiqState) -> None:
     logger.info("Starting scheduler...")
 
     state.logger = logger
+    await redis_source.startup()
 
 
 @broker.on_event(TaskiqEvents.WORKER_SHUTDOWN)

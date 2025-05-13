@@ -12,7 +12,6 @@ from fluentogram import TranslatorHub
 
 from .taskiq_broker.broker import broker
 from .config_data.config import Config, load_config
-import taskiq_aiogram
 
 from .bot.utils import (
     create_translator_hub,
@@ -38,10 +37,7 @@ dependecies_config: SetupDependeciesConfig = SetupDependeciesConfig(config)
 
 bot: Bot
 dp: Dispatcher
-
 bot, dp = dependecies_config.setup_bot()
-
-
 
 
 @asynccontextmanager
@@ -68,10 +64,7 @@ async def lifespan(app: FastAPI):
         drop_pending_updates=True,
     )
     logger.info(f"Webhook now on {webhook_url}")
-    from app.tasks.example.tasks import simple_task
-    task = await simple_task.kiq(
-        chat_id=510351049, msg="NBYEE!!!", 
-    )
+
 
     await setup_bot_commands(bot)
 

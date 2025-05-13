@@ -25,6 +25,8 @@ from logging import getLogger
 from nats.js.client import JetStreamContext
 
 from app.bot.services.delay_service.publisher import delay_message_sending
+from app.tasks import BotSending, ChannelSending
+from app.taskiq_broker.broker import redis_source
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
@@ -378,6 +380,7 @@ async def process_addition_media(
             },
         )
         dialog_manager.dialog_data["has_media"] = True
+        dialog_manager.dialog_data["type_media"] = message.content_type
     except Exception as e:
         logger.error(
             "Ошибка при добавлении медиа",
@@ -501,43 +504,26 @@ async def process_push_now_to_bot_button(
     message: Message, widget: Button, dialog_manager: DialogManager
 ):
     """Моментальная отправка по пользователям бота"""
-    js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get(
-        "delay_send_subject_subscriber"
-    )
-    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
 
     # получение списка ID пользователей
     telegram_ids = await get_all_customers(session=session)
-    timezone_label, tz_offset = await get_user_tz(
-        session=session, telegram_id=message.from_user.id
-    )
-
-    # Пользовательские данные со временем
-    delay = 0
 
     # Пользовательские данные для сообщения
     keyboard = dialog_manager.dialog_data.get("keyboard")
     post_message = dialog_manager.dialog_data.get("post_message")
-    notify_on = dialog_manager.dialog_data.get("notify_on")
     file_id = dialog_manager.dialog_data.get("media_content")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
+    notify_status = dialog_manager.dialog_data.get("notify_on")
     for telegram_id in telegram_ids:
-        await delay_message_sending(
-            js=js,
+        await BotSending.send_message_bot_subscribers.kiq(
             chat_id=telegram_id,
             text=post_message,
-            subject=delay_send_subject,
-            delay=delay,
-            tz_label=timezone_label,
-            tz_offset=tz_offset,
             keyboard=keyboard,
             file_id=file_id,
-            notify_status=notify_on,
-            has_spoiler=has_spoiler,
-        )
-
+            notify_status=notify_status,
+            has_spoiler=has_spoiler
+            )
     logger.info(f"Запланировано к отправке {len(telegram_ids)} сообщений")
 
 
@@ -545,10 +531,6 @@ async def process_push_to_bot_button(
     message: Message, widget: Button, dialog_manager: DialogManager
 ):
     """Отправка среди подписчиков бота"""
-    js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get(
-        "delay_send_subject_subscriber"
-    )
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
 
@@ -564,28 +546,27 @@ async def process_push_to_bot_button(
         "dt_posting_iso", datetime.now(tz=tzinfo).isoformat()
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
-    delay = int(get_delay(post_time=posting_time))
-
+    time_to_send = posting_time
+    
     # Пользовательские данные для сообщения
     keyboard = dialog_manager.dialog_data.get("keyboard")
     post_message = dialog_manager.dialog_data.get("post_message")
-    notify_on = dialog_manager.dialog_data.get("notify_on")
+    notify_status = dialog_manager.dialog_data.get("notify_on")
     file_id = dialog_manager.dialog_data.get("media_content")
+    type_media = dialog_manager.dialog_data.get("type_media")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
 
     for telegram_id in telegram_ids:
-        await delay_message_sending(
-            js=js,
+        await BotSending.send_message_bot_subscribers.schedule_by_time(
+            source=redis_source,
+            time=time_to_send,
             chat_id=telegram_id,
             text=post_message,
-            subject=delay_send_subject,
-            delay=delay,
-            tz_label=timezone_label,
-            tz_offset=tz_offset,
             keyboard=keyboard,
             file_id=file_id,
-            notify_status=notify_on,
-            has_spoiler=has_spoiler,
+            type_media=type_media,
+            notify_status=notify_status,
+            has_spoiler=has_spoiler,            
         )
 
 

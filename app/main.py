@@ -11,6 +11,7 @@ from fastapi import FastAPI, Request
 from fluentogram import TranslatorHub
 
 from .taskiq_broker.broker import broker
+from .taskiq_broker.scheduler import scheduler
 from .config_data.config import Config, load_config
 
 from .bot.utils import (
@@ -47,6 +48,7 @@ async def lifespan(app: FastAPI):
     engine, Sessionmaker = await dependecies_config.setup_database()  # Get session
 
     await broker.startup()
+
     dependecies_config.register_middlewares_and_routers(
         dp=dp,
         Sessionmaker=Sessionmaker,

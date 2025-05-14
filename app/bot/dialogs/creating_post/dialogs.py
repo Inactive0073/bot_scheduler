@@ -20,6 +20,7 @@ from .getters import (
     get_preselect_channel_data,
     get_push_later_data,
     get_report_after_push_data,
+    get_report_after_sending_subscribers,
     get_time_instruction_data,
     get_watch_text,
     get_url_instruction,
@@ -285,6 +286,12 @@ create_post_dialog = Dialog(
         ),
         state=PostingSG.push_later,
         getter=get_push_later_data,
+    ),
+    Window(
+        Format("{report_message}"),
+        Format("\n\n{autocaption}"),
+        state=PostingSG.show_sended_status,
+        getter=get_report_after_sending_subscribers,
     ),
     getter=get_posting_sg_common_data,
 )

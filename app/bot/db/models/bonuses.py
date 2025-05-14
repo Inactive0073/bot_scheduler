@@ -3,10 +3,8 @@ from sqlalchemy import (
     BigInteger,
     DateTime,
     ForeignKey,
-    SmallInteger,
     Integer,
     String,
-    func,
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship

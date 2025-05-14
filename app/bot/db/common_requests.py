@@ -1,10 +1,7 @@
-from typing import cast, Literal
-from sqlalchemy import func, select, delete, update
-from sqlalchemy.dialects.postgresql import insert as upsert
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
 
-from app.bot.db.models import User, Role, UserRole
+from app.bot.db.models import Role, UserRole
 
 
 async def get_user_role(session: AsyncSession, telegram_id: int) -> list[str]:

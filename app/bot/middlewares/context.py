@@ -12,7 +12,7 @@ class ContextMiddleware(BaseMiddleware):
         delay_send_subject_channel,
         delay_send_subject_subscriber,
         web_app_url,
-        redis_source,
+        nats_source,
     ) -> None:
         super().__init__()
         self.js = js
@@ -20,7 +20,7 @@ class ContextMiddleware(BaseMiddleware):
         self.delay_send_subject_channel = delay_send_subject_channel
         self.delay_send_subject_subscriber = delay_send_subject_subscriber
         self.web_app_url = web_app_url
-        self.redis_source = redis_source
+        self.nats_source = nats_source
 
     async def __call__(
         self,
@@ -33,5 +33,5 @@ class ContextMiddleware(BaseMiddleware):
         data["delay_send_subject_channel"] = self.delay_send_subject_channel
         data["delay_send_subject_subscriber"] = self.delay_send_subject_subscriber
         data["web_app_url"] = self.web_app_url
-        data["redis_source"] = self.redis_source
+        data["nats_source"] = self.nats_source
         return await handler(event, data)

@@ -4,7 +4,7 @@ import taskiq_aiogram
 from aiolimiter import AsyncLimiter
 
 from aiogram import Bot
-from aiogram.types import InlineKeyboardMarkup, InputMediaPhoto, ContentType
+from aiogram.types import InlineKeyboardMarkup, ContentType
 from aiogram.exceptions import TelegramBadRequest
 
 from contextlib import suppress

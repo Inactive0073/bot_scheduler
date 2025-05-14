@@ -1,18 +1,8 @@
-from aiogram import F
-from aiogram.types import ContentType
-from aiogram_dialog import Dialog, Window, ShowMode
+from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import (
-    Group,
-    SwitchTo,
-    Button,
-    Multiselect,
-    Row,
-    Start,
     WebApp,
 )
-from aiogram_dialog.widgets.input import TextInput, MessageInput
-from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from .getters import get_common_data
 

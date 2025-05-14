@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, Dict
 
-from aiogram import html
-from aiogram.types import User
 from aiogram_dialog import DialogManager
 from fluentogram import TranslatorRunner
 

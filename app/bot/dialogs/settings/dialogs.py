@@ -1,9 +1,6 @@
-import operator
-from aiogram import F
-from aiogram_dialog import Dialog, Window, ShowMode
-from aiogram_dialog.widgets.text import Format, List
+from aiogram_dialog import Dialog, Window
+from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import Group, SwitchTo, Radio, Start, Column
-from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.bot.states.start import StartSG
 from app.bot.states.settings import SettingsSG

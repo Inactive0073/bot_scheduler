@@ -5,7 +5,6 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     CallbackQuery,
     InputMediaPhoto,
-    InputMediaVideo,
 )
 from aiogram.exceptions import TelegramBadRequest
 
@@ -25,7 +24,10 @@ from logging import getLogger
 from nats.js.client import JetStreamContext
 
 from app.bot.services.delay_service.publisher import delay_message_sending
-from app.tasks import send_message_bot_subscribers, send_message_to_channel, send_schedule_message_bot_subscribers
+from app.tasks import (
+    send_message_bot_subscribers,
+    send_schedule_message_bot_subscribers,
+)
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
@@ -514,7 +516,7 @@ async def process_push_now_to_bot_button(
     file_id = dialog_manager.dialog_data.get("media_content")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
     notify_status = dialog_manager.dialog_data.get("notify_on")
-    
+
     for telegram_id in telegram_ids:
         await send_message_bot_subscribers.kiq(
             chat_id=telegram_id,
@@ -529,12 +531,13 @@ async def process_push_now_to_bot_button(
         state=PostingSG.show_sended_status, show_mode=ShowMode.DELETE_AND_SEND
     )
 
+
 async def process_push_to_bot_button(
     message: Message, widget: Button, dialog_manager: DialogManager
 ):
     """Отправка среди подписчиков бота"""
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    redis_source = dialog_manager.middleware_data.get("redis_source")
+    nats_source = dialog_manager.middleware_data.get("nats_source")
     session = dialog_manager.middleware_data.get("session")
 
     # получение списка ID пользователей
@@ -550,7 +553,6 @@ async def process_push_to_bot_button(
         "dt_posting_iso", datetime.now(tz=tzinfo).isoformat()
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
-    time_to_send = posting_time
 
     # Пользовательские данные для сообщения
     keyboard = dialog_manager.dialog_data.get("keyboard")
@@ -562,8 +564,8 @@ async def process_push_to_bot_button(
 
     for telegram_id in telegram_ids:
         await send_schedule_message_bot_subscribers.schedule_by_time(
-            source=redis_source,
-            time=time_to_send,
+            source=nats_source,
+            time=posting_time,
             chat_id=telegram_id,
             text=post_message,
             keyboard=keyboard,

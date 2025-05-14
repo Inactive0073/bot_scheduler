@@ -1,5 +1,5 @@
-from sqlalchemy import BigInteger, String, Text, Boolean, Integer, Enum, JSON, DateTime
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import BigInteger, Text, Integer, Enum, JSON, DateTime
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.bot.db.models.mixins import TimestampMixin
 from app.bot.db import Base

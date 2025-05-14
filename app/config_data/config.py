@@ -11,11 +11,6 @@ class TgBot:
 
 
 @dataclass
-class RedisConfig:
-    url: str
-
-
-@dataclass
 class NatsConfig:
     servers: List[str]
 
@@ -40,7 +35,6 @@ class Config:
     nats: NatsConfig
     delayed_consumer: NatsDelayedConsumerConfig
     db: DataBase
-    redis: RedisConfig
 
     def get_webhook_url(self) -> str:
         return f"{self.tg_bot.url}/webhook"
@@ -59,5 +53,4 @@ def load_config(path: str | None = None) -> Config:
             durable_name=env("NATS_DELAYED_CONSUMER_DURABLE_NAME"),
         ),
         db=DataBase(dsn=env("DSN"), is_echo=env.bool(("IS_ECHO"))),
-        redis=RedisConfig(url=env("REDIS_SOURCE")),
     )

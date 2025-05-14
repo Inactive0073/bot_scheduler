@@ -1,5 +1,5 @@
 from aiogram.filters import BaseFilter
-from aiogram.types import Message, Contact
+from aiogram.types import Message
 
 
 class ContactFilter(BaseFilter):

@@ -15,32 +15,30 @@ from sqlalchemy.ext.asyncio import (
 
 from dataclasses import dataclass
 
-from redis.asyncio import Redis
-from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.enums import ParseMode
 
-from taskiq_redis import RedisAsyncResultBackend, RedisScheduleSource
+from taskiq_nats import NATSObjectStoreResultBackend, NATSKeyValueScheduleSource
 from taskiq import TaskiqScheduler
 
-from app.bot.db.base import Base
-from app.bot.middlewares import (
+from .bot.db.base import Base
+from .bot.middlewares import (
     DbSessionMiddleware,
     TrackAllUsersMiddleware,
     TranslatorRunnerMiddleware,
     ContextMiddleware,
 )
-from app.bot.dialogs.setup import get_dialogs
-from app.bot.handlers.commands import commands_router
-from app.config_data.config import Config
-
-from app.taskiq_broker.broker import broker
+from .bot.dialogs.setup import get_dialogs
+from .bot.handlers.commands import commands_router
+from .config_data.config import Config
+from .taskiq_broker.broker import broker
+from .storage.nats_storage import NatsStorage
 
 logger = logging.getLogger(__name__)
 
 
 @dataclass
-class SetupDependeciesConfig:
+class DependeciesConfig:
     config: Config
 
     async def setup_database(self) -> tuple[AsyncEngine, AsyncSession]:
@@ -54,23 +52,28 @@ class SetupDependeciesConfig:
         logger.info("Соединение к БД успешно проверено. ")
         return engine, Sessionmaker
 
-    def setup_bot(self) -> tuple[Bot, Dispatcher]:
-        redis = Redis()
-        storage = RedisStorage(
-            redis=redis,
-            key_builder=DefaultKeyBuilder(
-                with_destiny=True,
-                with_bot_id=True,
-            ),
-        )
-        dp = Dispatcher(storage=storage)
+    def setup_bot(self) -> Bot:
         bot = Bot(
             token=self.config.tg_bot.token,
             default=DefaultBotProperties(
                 parse_mode=ParseMode.HTML, link_preview_is_disabled=True
             ),
         )
-        return bot, dp
+        self.bot = bot
+        return bot
+
+    async def setup_dispatcher(self, nc, js) -> Dispatcher:
+        storage = await NatsStorage(
+            nc=nc,
+            js=js,
+            key_builder=DefaultKeyBuilder(
+                with_destiny=True,
+                with_bot_id=True,
+            ),
+        ).create_storage()
+        dp = Dispatcher(storage=storage)
+        self.dp = dp
+        return dp
 
     @staticmethod
     def register_middlewares_and_routers(
@@ -79,7 +82,7 @@ class SetupDependeciesConfig:
         js,
         translator_hub,
         config: Config,
-        redis_source: RedisScheduleSource,
+        nats_source: NATSKeyValueScheduleSource,
     ):
         # Регистриуем роутеры в диспетчере
         dp.include_router(commands_router)
@@ -95,7 +98,7 @@ class SetupDependeciesConfig:
                 delay_send_subject_channel=config.delayed_consumer.subject_channel,
                 delay_send_subject_subscriber=config.delayed_consumer.subject_subscriber,
                 web_app_url=config.tg_bot.url,
-                redis_source=redis_source,
+                nats_source=nats_source,
             )
         )
         dp.message.outer_middleware(TrackAllUsersMiddleware())

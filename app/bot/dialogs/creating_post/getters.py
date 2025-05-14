@@ -203,11 +203,11 @@ async def get_report_after_sending_subscribers(
         else schedule_time
     )
     report_message = i18n.cr.success.send.bot.subscribers(
-            post_message=post_message,
-            date_posting=date_posting,
-            count_people=count_acc, 
-            count_user=count_acc
-        )
+        post_message=post_message,
+        date_posting=date_posting,
+        count_people=count_acc,
+        count_user=count_acc,
+    )
     return {
         "report_message": report_message,
     }

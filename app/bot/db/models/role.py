@@ -1,4 +1,4 @@
-from sqlalchemy import String, SmallInteger, text
+from sqlalchemy import String, SmallInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.bot.db import Base

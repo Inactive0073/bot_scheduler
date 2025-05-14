@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
 from nats.js import JetStreamContext
 from nats.js.errors import NoStreamResponseError
 

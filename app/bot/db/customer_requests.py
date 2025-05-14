@@ -1,7 +1,6 @@
 from datetime import datetime
 import logging
-from typing import cast, Literal
-from sqlalchemy import func, select, delete, update
+from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -139,6 +138,6 @@ async def update_qr_code_file_id(
         result = await session.execute(stmt)
         await session.commit()
         return result.rowcount > 0
-    except Exception as e:
+    except Exception:
         await session.rollback()
-        logger.exception(f"Произошла ошибка при записи file_id")
+        logger.exception("Произошла ошибка при записи file_id")

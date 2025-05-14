@@ -21,7 +21,7 @@ async def start_delayed_consumer(
         nc=nc, js=js, bot=bot, subject=subject, stream=stream, durable_name=durable_name
     )
     logger.info(
-        f"Запуск консьюмера отложенных сообщений",
+        "Запуск консьюмера отложенных сообщений",
         extra={
             "subject": subject,
             "stream": stream,

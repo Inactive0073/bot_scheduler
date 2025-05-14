@@ -4,8 +4,6 @@ from aiogram.types import (
     Message,
     CallbackQuery,
     BufferedInputFile,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
 )
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.kbd import Button
@@ -137,7 +135,7 @@ async def process_gender_selected(
         logger.info(f"Запись успешно добавлена по юзеру {phone}")
         await dialog_manager.switch_to(state=CustomerSG.menu)
     else:
-        logger.error(f"Не удалось добавить запись при регистрации клиента")
+        logger.error("Не удалось добавить запись при регистрации клиента")
 
 
 async def on_balance_selected(

@@ -1,7 +1,7 @@
 import logging
-from taskiq_nats import PullBasedJetStreamBroker
-from taskiq_redis import RedisAsyncResultBackend, RedisScheduleSource
-from taskiq import TaskiqEvents, TaskiqState
+from taskiq_nats import PullBasedJetStreamBroker, NATSKeyValueScheduleSource
+from taskiq.schedule_sources import LabelScheduleSource
+from taskiq import TaskiqEvents, TaskiqState, TaskiqScheduler
 
 
 from app.config_data.config import load_config, Config
@@ -9,8 +9,8 @@ from app.config_data.config import load_config, Config
 config: Config = load_config()
 
 broker = PullBasedJetStreamBroker(servers=config.nats.servers, queue="taskiq_queue")
-# redis_result = RedisAsyncResultBackend(config.redis.url)
-redis_source = RedisScheduleSource(config.redis.url)
+nats_source = NATSKeyValueScheduleSource(config.nats.servers)
+scheduler = TaskiqScheduler(broker=broker, sources=[LabelScheduleSource(broker)])
 
 
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)

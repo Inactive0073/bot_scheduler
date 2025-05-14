@@ -170,7 +170,6 @@ async def get_report_after_push_data(
     channels_name = [
         channel for channel in dialog_manager.dialog_data.get("selected_channels", [])
     ]
-
     return {
         "report_message": report,
         "channels": channels_name,
@@ -188,4 +187,27 @@ async def get_push_later_data(
         "schedule_message": i18n.cr.push.later.message(current_date=date_posting),
         "selected_channels": selected_channels,
         "schedule_button_caption": i18n.cr.push.later.button.caption(),
+    }
+
+
+async def get_report_after_sending_subscribers(
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    **kwargs,
+) -> Dict[str, str]:
+    post_message = dialog_manager.dialog_data.get("post_message")
+    count_acc = dialog_manager.dialog_data.get("count_acc_to_send")
+    date_posting = (
+        dt.datetime.now().strftime("%d/%m, %H:%M")
+        if (schedule_time := dialog_manager.dialog_data.get("dt_posting_view")) is None
+        else schedule_time
+    )
+    report_message = i18n.cr.success.send.bot.subscribers(
+            post_message=post_message,
+            date_posting=date_posting,
+            count_people=count_acc, 
+            count_user=count_acc
+        )
+    return {
+        "report_message": report_message,
     }

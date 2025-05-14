@@ -1,5 +1,5 @@
-from .sending_bot.tasks import BotSending
-from .sending_channel.tasks import ChannelSending
+from .sending_bot.tasks import send_message_bot_subscribers, send_schedule_message_bot_subscribers
+from .sending_channel.tasks import send_message_to_channel
 
 
-__all__ = ["BotSending", "ChannelSending"]
+__all__ = ["send_message_bot_subscribers", "send_schedule_message_bot_subscribers", "send_message_to_channel"]

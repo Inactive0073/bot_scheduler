@@ -24,43 +24,40 @@ taskiq_aiogram.init(
 )
 
 
-class BotSending:
-    bot_limit_message = AsyncLimiter(20, 1)
+bot_limit_message = AsyncLimiter(20, 1)
 
-    @classmethod
-    @broker.task(task_name="push_msg_to_bot_now")
-    async def send_message_bot_subscribers(
-        cls,
-        chat_id: int,
-        text: str,
-        keyboard: InlineKeyboardMarkup = None,
-        file_id: str = None,
-        type_media: ContentType = ContentType.PHOTO,
-        notify_status: bool = True,
-        has_spoiler: bool = False,
-        bot: Bot = TaskiqDepends(),
-        **kwargs,
-    ) -> None:
-        # Отправляем сообщение
-        if file_id is None:
-            async with cls.bot_limit_message:
-                with suppress(TelegramBadRequest):
-                    message = await bot.send_message(
-                        chat_id=chat_id,
-                        text=text,
-                        reply_markup=keyboard,
-                        disable_notification=notify_status,
-                    )
-                    logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
-        elif file_id:
-            async with cls.bot_limit_message:
-                with suppress(TelegramBadRequest):
-                    message = await bot.send_photo(
-                        chat_id=chat_id,
-                        photo=file_id,
-                        caption=text,
-                        has_spoiler=has_spoiler,
-                        reply_markup=keyboard,
-                        disable_notification=notify_status,
-                    )
-                    logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+@broker.task(task_name="push_msg_to_bot_now")
+async def send_message_bot_subscribers(
+    chat_id: int,
+    text: str,
+    keyboard: InlineKeyboardMarkup = None,
+    file_id: str = None,
+    type_media: ContentType = ContentType.PHOTO,
+    notify_status: bool = True,
+    has_spoiler: bool = False,
+    bot: Bot = TaskiqDepends(),
+    **kwargs,
+) -> None:
+    # Отправляем сообщение
+    if file_id is None:
+        async with bot_limit_message:
+            with suppress(TelegramBadRequest):
+                message = await bot.send_message(
+                    chat_id=chat_id,
+                    text=text,
+                    reply_markup=keyboard,
+                    disable_notification=notify_status,
+                )
+                logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+    elif file_id:
+        async with bot_limit_message:
+            with suppress(TelegramBadRequest):
+                message = await bot.send_photo(
+                    chat_id=chat_id,
+                    photo=file_id,
+                    caption=text,
+                    has_spoiler=has_spoiler,
+                    reply_markup=keyboard,
+                    disable_notification=notify_status,
+                )
+                logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")

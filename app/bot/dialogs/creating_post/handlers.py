@@ -25,7 +25,7 @@ from logging import getLogger
 from nats.js.client import JetStreamContext
 
 from app.bot.services.delay_service.publisher import delay_message_sending
-from app.tasks import BotSending, ChannelSending
+from app.tasks import schedule_message_to_channel, send_message_bot_subscribers
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
@@ -515,7 +515,7 @@ async def process_push_now_to_bot_button(
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
     notify_status = dialog_manager.dialog_data.get("notify_on")
     for telegram_id in telegram_ids:
-        await BotSending.send_message_bot_subscribers.kiq(
+        await send_message_bot_subscribers.kiq(
             chat_id=telegram_id,
             text=post_message,
             keyboard=keyboard,
@@ -557,7 +557,7 @@ async def process_push_to_bot_button(
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
 
     for telegram_id in telegram_ids:
-        await BotSending.send_message_bot_subscribers.schedule_by_time(
+        await send_message_bot_subscribers.schedule_by_time(
             source=redis_source,
             time=time_to_send,
             chat_id=telegram_id,

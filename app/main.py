@@ -35,7 +35,7 @@ config: Config = load_config()
 dependecies_config = DependeciesConfig(config)
 
 bot: Bot
-dp: Dispatcher
+dp = Dispatcher(name="Taskiq_Dispatcher") # Для taskiq
 bot = dependecies_config.setup_bot()
 
 
@@ -43,11 +43,12 @@ bot = dependecies_config.setup_bot()
 async def lifespan(app: FastAPI):
     global dp
     nc, js = await connect_to_nats(servers=config.nats.servers)  # Connect to NATS
-    dp = await dependecies_config.setup_dispatcher(nc, js)
+    dp = await dependecies_config.setup_dispatcher(nc, js) # Для бота
     translator_hub: TranslatorHub = create_translator_hub()
-    engine, Sessionmaker = await dependecies_config.setup_database()  # Get session
+    engine, Sessionmaker = await dependecies_config.setup_database()
 
     await broker.startup()
+    await nats_source.startup()
 
     dependecies_config.register_middlewares_and_routers(
         dp=dp,

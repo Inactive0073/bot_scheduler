@@ -10,8 +10,7 @@ config: Config = load_config()
 
 broker = PullBasedJetStreamBroker(servers=config.nats.servers, queue="taskiq_queue")
 nats_source = NATSKeyValueScheduleSource(config.nats.servers)
-scheduler = TaskiqScheduler(broker=broker, sources=[LabelScheduleSource(broker)])
-
+scheduler = TaskiqScheduler(broker=broker, sources=[LabelScheduleSource(broker), nats_source])
 
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)
 async def startup(state: TaskiqState) -> None:

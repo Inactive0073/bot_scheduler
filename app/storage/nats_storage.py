@@ -9,12 +9,27 @@ from aiogram.fsm.storage.base import (
     KeyBuilder,
     StorageKey,
 )
-
 from nats.aio.client import Client
 from nats.js import JetStreamContext
 from nats.js.api import KeyValueConfig
 from nats.js.errors import NotFoundError
 from nats.js.kv import KeyValue
+
+
+class SanitizedKeyValue:
+    def __init__(self, kv: KeyValue):
+        self.kv = kv
+
+    def _sanitize_key(self, key: str) -> str:
+        return key.replace(":", "_")
+
+    async def put(self, key: str, value: bytes):
+        sanitized_key = self._sanitize_key(key)
+        await self.kv.put(sanitized_key, value)
+
+    async def get(self, key: str):
+        sanitized_key = self._sanitize_key(key)
+        return await self.kv.get(sanitized_key)
 
 
 class NatsStorage(BaseStorage):
@@ -27,7 +42,7 @@ class NatsStorage(BaseStorage):
         fsm_data_bucket: str = "fsm_data_aiogram",
     ) -> None:
         if key_builder is None:
-            key_builder = DefaultKeyBuilder()
+            key_builder = DefaultKeyBuilder(separator="_")
         self.nc = nc
         self.js = js
         self.fsm_states_bucket = fsm_states_bucket
@@ -40,18 +55,20 @@ class NatsStorage(BaseStorage):
         return self
 
     async def _get_kv_states(self) -> KeyValue:
-        return await self.js.create_key_value(
+        kv = await self.js.create_key_value(
             config=KeyValueConfig(
                 bucket=self.fsm_states_bucket, history=5, storage="file"
             )
         )
+        return SanitizedKeyValue(kv)
 
     async def _get_kv_data(self) -> KeyValue:
-        return await self.js.create_key_value(
+        kv = await self.js.create_key_value(
             config=KeyValueConfig(
                 bucket=self.fsm_data_bucket, history=5, storage="file"
             )
         )
+        return SanitizedKeyValue(kv)
 
     async def set_state(self, key: StorageKey, state: StateType = None) -> None:
         state = state.state if isinstance(state, State) else state

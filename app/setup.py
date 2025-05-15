@@ -67,8 +67,9 @@ class DependeciesConfig:
             nc=nc,
             js=js,
             key_builder=DefaultKeyBuilder(
+                separator='_',
                 with_destiny=True,
-                with_bot_id=True,
+                with_bot_id=True
             ),
         ).create_storage()
         dp = Dispatcher(storage=storage)

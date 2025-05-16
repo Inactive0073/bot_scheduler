@@ -13,6 +13,7 @@ from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle, Multiselect, ManagedMultiselect
 
 from app.bot.db.customer_requests import get_all_customers
+from app.bot.db.message_requests import upsert_post
 from app.bot.db.requests import get_user_tz
 from app.bot.dialogs.creating_post.services import get_delay
 from app.bot.states.creating_post import PostingSG
@@ -561,9 +562,10 @@ async def process_push_to_bot_button(
     file_id = dialog_manager.dialog_data.get("media_content")
     type_media = dialog_manager.dialog_data.get("type_media")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
+    recipient_type = dialog_manager.dialog_data.get("recipient_type")
 
     for telegram_id in telegram_ids:
-        await send_schedule_message_bot_subscribers.schedule_by_time(
+        task = await send_schedule_message_bot_subscribers.schedule_by_time(
             source=nats_source,
             time=posting_time,
             chat_id=telegram_id,
@@ -574,10 +576,18 @@ async def process_push_to_bot_button(
             notify_status=notify_status,
             has_spoiler=has_spoiler,
         )
+    await upsert_post(
+        session=session,
+        schedule_id=task.schedule_id,
+        target_type=recipient_type,
+        data_json={},
+        post_message=post_message,
+        author_id=message.from_user.id
+    )
     await dialog_manager.switch_to(
         state=PostingSG.show_sended_status, show_mode=ShowMode.DELETE_AND_SEND
     )
-
+    
 
 # Отправка по расписанию
 async def process_send_to_channel_later(

@@ -1,5 +1,9 @@
-from sqlalchemy import BigInteger, Text, Integer, Enum, JSON, DateTime
+from datetime import datetime
+
+from sqlalchemy import BigInteger, ForeignKey, Text, JSON
 from sqlalchemy.orm import Mapped, mapped_column
+
+from typing import Optional
 
 from app.bot.db.models.mixins import TimestampMixin
 from app.bot.db import Base
@@ -8,8 +12,13 @@ from app.bot.db import Base
 class SchedulePost(TimestampMixin, Base):
     __tablename__ = "schedule_posts"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    target_type: Mapped[Enum] = mapped_column(Enum, nullable=False)
-    scheduled_time: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    channel_json: Mapped[JSON] = mapped_column(BigInteger, nullable=False)
-    post_message: Mapped[Text] = mapped_column(Text, nullable=False)
+    schedule_id: Mapped[int] = mapped_column(
+        BigInteger, primary_key=True, unique=True
+    )
+    target_type: Mapped[str]
+    scheduled_time: Mapped[datetime]
+    data_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    post_message: Mapped[str] = mapped_column(Text, nullable=False)
+    author_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE")
+    )

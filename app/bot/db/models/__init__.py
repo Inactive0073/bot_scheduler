@@ -5,5 +5,15 @@ from .customers import Customer
 from .role import Role
 from .user_role import UserRole
 from .bonuses import Bonus
+from .schedule_post import SchedulePost
 
-__all__ = ["Bonus", "Customer", "TgChannel", "User", "UserChannel", "Role", "UserRole"]
+__all__ = [
+    "Bonus",
+    "Customer",
+    "TgChannel",
+    "User",
+    "UserChannel",
+    "Role",
+    "UserRole",
+    "SchedulePost",
+]

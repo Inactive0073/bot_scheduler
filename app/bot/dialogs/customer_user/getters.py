@@ -37,7 +37,7 @@ async def get_customer_menu_data(
         "customer_menu_placeholder": i18n.customer.menu.placeholder(),
         "menu_balance_button": i18n.customer.menu.balance.button(),
         "menu_about_button": i18n.customer.menu.about.button(),
-        "menu_card_button": i18n.customer.menu.map.button(),
+        "menu_card_button": i18n.customer.menu.card.button(),
         "menu_gifts_button": i18n.customer.menu.gifts.button(),
         "menu_delivery_button": i18n.customer.menu.delivery.button(),
         "menu_loayalty_button": i18n.customer.menu.loyalty.button(),

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import BigInteger, ForeignKey, Text, JSON
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from typing import Optional
 
@@ -22,3 +22,6 @@ class SchedulePost(TimestampMixin, Base):
     author_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE")
     )
+
+
+    user: Mapped["User"] = relationship(back_populates="schedule_posts") # type: ignore

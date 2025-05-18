@@ -22,12 +22,10 @@ from datetime import datetime, timezone, timedelta
 
 from logging import getLogger
 
-from nats.js.client import JetStreamContext
-
-from app.bot.services.delay_service.publisher import delay_message_sending
 from app.tasks import (
     send_message_bot_subscribers,
     send_schedule_message_bot_subscribers,
+    send_message_to_channel
 )
 
 if TYPE_CHECKING:
@@ -595,10 +593,7 @@ async def process_send_to_channel_later(
     widget: Button,
     dialog_manager: DialogManager,
 ) -> None:
-    js: JetStreamContext = dialog_manager.middleware_data.get("js")
-    delay_send_subject: str = dialog_manager.middleware_data.get(
-        "delay_send_subject_channel"
-    )
+    nats_source = dialog_manager.middleware_data.get("nats_source")
     session = dialog_manager.middleware_data.get("session")
 
     # Предварительная подготовка
@@ -608,8 +603,7 @@ async def process_send_to_channel_later(
 
     # Пользовательские данные со временем
     posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
-    posting_time = datetime.fromisoformat(posting_time_iso)
-    posting_time.replace(tzinfo=timezone(timedelta(hours=tz_offset)))
+    posting_time = datetime.fromisoformat(posting_time_iso).replace(tzinfo=timezone(timedelta(hours=tz_offset)))
     delay = int(get_delay(post_time=posting_time))
 
     # Пользовательские данные для сообщения
@@ -622,18 +616,15 @@ async def process_send_to_channel_later(
 
     for channel in selected_channels:
         channel_name = "@" + channel[0]  # channel — это кортеж
-        await delay_message_sending(
-            js=js,
+        await send_message_to_channel.schedule_by_time(
+            source=nats_source,
+            time=posting_time,
             chat_id=channel_name,
             text=post_message,
-            subject=delay_send_subject,
-            delay=delay,
-            tz_label=timezone_label,
-            tz_offset=tz_offset,
             keyboard=keyboard,
             file_id=file_id,
             notify_status=notify_status,
-            has_spoiler=has_spoiler,
+            has_spoiler=has_spoiler
         )
     await dialog_manager.switch_to(
         state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND

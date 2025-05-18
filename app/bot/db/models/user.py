@@ -21,7 +21,7 @@ class User(TimestampMixin, TelegramProfileMixin, Base):
     roles: Mapped[list["Role"]] = relationship( # type: ignore
         secondary="user_roles", back_populates="users", lazy="dynamic"
     )
-    scheduled_posts: Mapped[list["SchedulePost"]] = relationship(back_populates="user") # type: ignore
+    schedule_posts: Mapped[list["SchedulePost"]] = relationship(back_populates="user") # type: ignore
 
     def __repr__(self) -> str:
         if self.last_name is None:

@@ -15,8 +15,8 @@ class QRCode:
         return token_int
 
     @staticmethod
-    def generate_qrcode(token=None, scale: int = 5) -> io.BytesIO:
-        qr = segno.make(token)
+    def generate_qrcode(token=None, scale: int = 50) -> io.BytesIO:
+        qr = segno.make_qr(token, error='H')
         output = io.BytesIO()
         qr.save(output, kind="png", scale=scale)
         output.seek(0)

@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+from aiogram import Bot
 from aiogram.types import (
     Message,
     CallbackQuery,
@@ -143,25 +144,31 @@ async def on_balance_selected(
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
 
-    bonuses, date_expire, bonus_to_expire = await get_bonus_info(
+    result = await get_bonus_info(
         session=session, telegram_id=callback.from_user.id
     )
-    date_expire: datetime = date_expire.strftime("%d.%m.%Y")
-    await callback.message.answer(
-        i18n.customer.balance.message(
-            current_balance=bonuses,
-            date_expire=date_expire,
-            balance_to_expire=bonus_to_expire,
+    if result:
+        bonuses, date_expire, bonus_to_expire = result
+        date_expire: datetime = date_expire.strftime("%d.%m.%Y")
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text=i18n.customer.balance.message(
+                current_balance=bonuses,
+                date_expire=date_expire,
+                balance_to_expire=bonus_to_expire,
+            )
         )
-    )
-
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
+        
 
 async def on_card_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     telegram_id = callback.from_user.id
 
     qr_token, qr_code_file_id = await get_card_info(
@@ -175,8 +182,9 @@ async def on_card_selected(
             )
     else:
         photo = qr_code_file_id
-    result: Message = await callback.message.answer_photo(
-        photo=photo, caption=i18n.customer.card.message(number_card=qr_token)
+
+    result: Message = await bot.send_photo(
+        chat_id=callback.message.chat.id, photo=photo, caption=i18n.customer.card.message(number_card=qr_token)
     )
 
     # сохраняем в бд, если еще не было file_id QR Code`а
@@ -185,6 +193,7 @@ async def on_card_selected(
         await update_qr_code_file_id(
             session=session, telegram_id=telegram_id, file_id=file_id
         )
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
 
 
 async def on_gifts_selected(

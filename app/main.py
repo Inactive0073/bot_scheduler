@@ -10,14 +10,13 @@ from fastapi.staticfiles import StaticFiles
 from fastapi import FastAPI, Request
 from fluentogram import TranslatorHub
 
+from .api.router import router as router_api
 from .taskiq_broker.broker import broker, nats_source
 from .config_data.config import Config, load_config
 
 from .bot.utils import (
     create_translator_hub,
     connect_to_nats,
-    setup_bot_commands,
-    start_delayed_consumer,
 )
 from .config_data.config import Config, load_config
 from .setup import DependeciesConfig
@@ -77,10 +76,15 @@ async def lifespan(app: FastAPI):
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 app = FastAPI(lifespan=lifespan)
+app.mount("/static", StaticFiles(directory="app/static"), "static")
 
 
 @app.post("/webhook")
 async def webhook(request: Request) -> None:
     update = Update.model_validate(await request.json(), context={"bot": bot})
     await dp.feed_update(bot, update)
+
+
+app.include_router(router_api)

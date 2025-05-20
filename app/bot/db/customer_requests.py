@@ -55,7 +55,7 @@ async def upsert_customer(
         await session.rollback()
         logger.error(f"Database error: {e}")
         return False
-        
+
 
 async def get_all_customers(session: AsyncSession) -> list[int]:
     """Возвращает список Telegram-ID пользователей-клиентов.

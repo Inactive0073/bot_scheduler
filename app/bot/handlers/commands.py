@@ -66,6 +66,7 @@ async def process_start_command(
         elif "waiter" in roles:
             await dialog_manager.start(state=WaiterSG.start, mode=StartMode.RESET_STACK)
 
+
 @commands_router.message(Command("demo"))
 async def process_demo_command(
     message: Message,

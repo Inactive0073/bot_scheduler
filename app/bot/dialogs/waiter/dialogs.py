@@ -11,8 +11,7 @@ waiter_dialog = Dialog(
     Window(
         Format("{hello_waiter}"),
         WebApp(Format("{waiter_menu_scan}"), url=Format("{waiter_menu_scan_url}")),
-        state=WaiterSG.start
+        state=WaiterSG.start,
     ),
     getter=get_common_data,
-    
 )

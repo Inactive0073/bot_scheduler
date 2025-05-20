@@ -6,10 +6,12 @@ from aiogram_dialog import DialogManager, ShowMode, StartMode
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from ..db.customer_requests import has_customer_detail_info, upsert_customer
 from ..states.customer.start import CustomerSG
 from ..states.settings import SettingsSG
 from ..states.start import StartSG
+from ..states.waiter.start import WaiterSG
 from ..db.requests import upsert_user
 from ..db.common_requests import get_user_role
 
@@ -51,7 +53,7 @@ async def process_start_command(
             await dialog_manager.start(
                 state=CustomerSG.menu, show_mode=ShowMode.DELETE_AND_SEND
             )
-    elif "manager" in roles:
+    else:
         await upsert_user(
             session=session,
             telegram_id=telegram_id,
@@ -59,8 +61,10 @@ async def process_start_command(
             first_name=first_name,
             last_name=last_name,
         )
-        await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
-
+        if "manager" in roles:
+            await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
+        elif "waiter" in roles:
+            await dialog_manager.start(state=WaiterSG.start, mode=StartMode.RESET_STACK)
 
 @commands_router.message(Command("demo"))
 async def process_demo_command(

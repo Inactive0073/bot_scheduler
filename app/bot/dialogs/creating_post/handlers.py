@@ -25,7 +25,7 @@ from logging import getLogger
 from app.tasks import (
     send_message_bot_subscribers,
     send_schedule_message_bot_subscribers,
-    send_message_to_channel
+    send_message_to_channel,
 )
 
 if TYPE_CHECKING:
@@ -580,12 +580,12 @@ async def process_push_to_bot_button(
         target_type=recipient_type,
         data_json={},
         post_message=post_message,
-        author_id=message.from_user.id
+        author_id=message.from_user.id,
     )
     await dialog_manager.switch_to(
         state=PostingSG.show_sended_status, show_mode=ShowMode.DELETE_AND_SEND
     )
-    
+
 
 # Отправка по расписанию
 async def process_send_to_channel_later(
@@ -603,7 +603,9 @@ async def process_send_to_channel_later(
 
     # Пользовательские данные со временем
     posting_time_iso: str = dialog_manager.dialog_data["dt_posting_iso"]
-    posting_time = datetime.fromisoformat(posting_time_iso).replace(tzinfo=timezone(timedelta(hours=tz_offset)))
+    posting_time = datetime.fromisoformat(posting_time_iso).replace(
+        tzinfo=timezone(timedelta(hours=tz_offset))
+    )
     delay = int(get_delay(post_time=posting_time))
 
     # Пользовательские данные для сообщения
@@ -624,7 +626,7 @@ async def process_send_to_channel_later(
             keyboard=keyboard,
             file_id=file_id,
             notify_status=notify_status,
-            has_spoiler=has_spoiler
+            has_spoiler=has_spoiler,
         )
     await dialog_manager.switch_to(
         state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND

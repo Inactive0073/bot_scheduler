@@ -6,12 +6,12 @@ from aiogram_dialog import DialogManager, ShowMode, StartMode
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.db.customer_requests import upsert_customer
-from app.bot.states.customer.start import CustomerSG
-from app.bot.states.settings import SettingsSG
-from app.bot.states.start import StartSG
-from app.bot.db.requests import upsert_user
-from app.bot.db.common_requests import get_user_role
+from ..db.customer_requests import has_customer_detail_info, upsert_customer
+from ..states.customer.start import CustomerSG
+from ..states.settings import SettingsSG
+from ..states.start import StartSG
+from ..db.requests import upsert_user
+from ..db.common_requests import get_user_role
 
 commands_router = Router(name=__name__)
 
@@ -34,15 +34,24 @@ async def process_start_command(
     )
 
     if not roles.intersection({"admin", "manager", "waiter", "owner"}):
-        await upsert_customer(
-            session=session,
-            telegram_id=telegram_id,
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-        )
-        await dialog_manager.start(state=CustomerSG.start, mode=StartMode.RESET_STACK)
-    else:
+        if not (await has_customer_detail_info(session, telegram_id)):
+            logger.debug(f"Проверка пройдена успешно!")
+            await upsert_customer(
+                session=session,
+                telegram_id=telegram_id,
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            logger.debug(f"Обновление данных пройдено успешно")
+            await dialog_manager.start(
+                state=CustomerSG.start, mode=StartMode.RESET_STACK
+            )
+        else:
+            await dialog_manager.start(
+                state=CustomerSG.menu, show_mode=ShowMode.DELETE_AND_SEND
+            )
+    elif "manager" in roles:
         await upsert_user(
             session=session,
             telegram_id=telegram_id,

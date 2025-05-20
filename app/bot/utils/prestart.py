@@ -7,9 +7,6 @@ async def setup_bot_commands(bot: Bot):
     # Список команд с описанием
     commands = [
         BotCommand(command="/start", description="Запустить бота"),
-        BotCommand(command="/help", description="Помощь"),
-        BotCommand(command="/settings", description="Настройки"),
-        BotCommand(command="/cancel", description="Отмена текущего действия"),
     ]
 
     # Устанавливаем команды для бота

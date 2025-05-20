@@ -12,9 +12,7 @@ from app.bot.db import Base
 class SchedulePost(TimestampMixin, Base):
     __tablename__ = "schedule_posts"
 
-    schedule_id: Mapped[int] = mapped_column(
-        BigInteger, primary_key=True, unique=True
-    )
+    schedule_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, unique=True)
     target_type: Mapped[str]
     scheduled_time: Mapped[datetime]
     data_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
@@ -23,5 +21,4 @@ class SchedulePost(TimestampMixin, Base):
         BigInteger, ForeignKey("users.telegram_id", ondelete="CASCADE")
     )
 
-
-    user: Mapped["User"] = relationship(back_populates="schedule_posts") # type: ignore
+    user: Mapped["User"] = relationship(back_populates="schedule_posts")  # type: ignore

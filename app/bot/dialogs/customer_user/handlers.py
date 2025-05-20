@@ -146,11 +146,9 @@ async def on_balance_selected(
     session = dialog_manager.middleware_data.get("session")
     bot: Bot = dialog_manager.middleware_data.get("bot")
 
-    result = await get_bonus_info(
-        session=session, telegram_id=callback.from_user.id
-    )
-    if result:
-        bonuses, date_expire, bonus_to_expire = result
+    result = await get_bonus_info(session=session, telegram_id=callback.from_user.id)
+    bonuses, date_expire, bonus_to_expire = result
+    if date_expire:
         date_expire: datetime = date_expire.strftime("%d.%m.%Y")
         await bot.send_message(
             chat_id=callback.from_user.id,
@@ -158,10 +156,14 @@ async def on_balance_selected(
                 current_balance=bonuses,
                 date_expire=date_expire,
                 balance_to_expire=bonus_to_expire,
-            )
+            ),
+        )
+    else:
+        await bot.send_message(
+            chat_id=callback.from_user.id, text=i18n.customer.no.balance.message()
         )
     dialog_manager.show_mode = ShowMode.NO_UPDATE
-        
+
 
 async def on_card_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
@@ -184,7 +186,9 @@ async def on_card_selected(
         photo = qr_code_file_id
 
     result: Message = await bot.send_photo(
-        chat_id=callback.message.chat.id, photo=photo, caption=i18n.customer.card.message(number_card=qr_token)
+        chat_id=callback.message.chat.id,
+        photo=photo,
+        caption=i18n.customer.card.message(number_card=qr_token),
     )
 
     # сохраняем в бд, если еще не было file_id QR Code`а
@@ -200,11 +204,15 @@ async def on_gifts_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     text = i18n.customer.catalog.message()
     button = i18n.customer.catalog.button()
     link = i18n.customer.catalog.link()
-    kb = get_kb([button, link])
-    await callback.message.answer(text=text, reply_markup=kb)
+    kb = get_kb(
+        ((button, link)),
+    )
+    await callback.message.answer(text=text, reply_markup=kb).as_(bot)
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
 
 
 async def on_delivery_selected(
@@ -212,45 +220,55 @@ async def on_delivery_selected(
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     text = i18n.customer.delivery.message()
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     button = i18n.customer.delivery.button()
     link = i18n.customer.delivery.link()
     kb = get_kb([button, link])
-    await callback.message.answer(text=text, reply_markup=kb)
+    await callback.message.answer(text=text, reply_markup=kb).as_(bot)
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
 
 
 async def on_loayalty_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     text = i18n.customer.loyalty.message()
     button = i18n.customer.delivery.button()
     link = i18n.customer.delivery.link()
     kb = get_kb([button, link])
-    await callback.message.answer(text=text, reply_markup=kb)
+    await callback.message.answer(text=text, reply_markup=kb).as_(bot)
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
 
 
 async def on_partnership_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     text = i18n.customer.partnership.info.message()
-    await callback.message.answer(text=text)
+    await callback.message.answer(text=text).as_(bot)
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
 
 
 async def on_help_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     text = i18n.customer.support.message()
-    await callback.message.answer(text=text)
+    await callback.message.answer(text=text).as_(bot)
+    dialog_manager.show_mode = ShowMode.NO_UPDATE
 
 
 async def on_about_selected(
     callback: CallbackQuery, widget: Button, dialog_manager: DialogManager
 ):
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    bot: Bot = dialog_manager.middleware_data.get("bot")
     text = i18n.customer.about.info.message()
     button = i18n.customer.delivery.button()
     link = i18n.customer.delivery.link()
     kb = get_kb([button, link])
-    await callback.message.answer(text=text, reply_markup=kb)
+    await callback.message.answer(text=text, reply_markup=kb).as_(bot)
+    dialog_manager.show_mode = ShowMode.NO_UPDATE

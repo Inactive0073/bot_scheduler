@@ -57,7 +57,7 @@ async def lifespan(app: FastAPI):
         translator_hub=translator_hub,
         config=config,
         nats_source=nats_source,
-)
+    )
 
     webhook_url = config.get_webhook_url()
     await bot.set_webhook(
@@ -66,8 +66,6 @@ async def lifespan(app: FastAPI):
         drop_pending_updates=True,
     )
     logger.info(f"Webhook now on {webhook_url}")
-
-    await setup_bot_commands(bot)
 
     yield
 

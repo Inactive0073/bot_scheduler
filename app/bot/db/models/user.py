@@ -15,13 +15,13 @@ class User(TimestampMixin, TelegramProfileMixin, Base):
     timezone: Mapped[int] = mapped_column(
         String, default="Europe/Moscow", nullable=True
     )
-    managed_channels: Mapped[list["TgChannel"]] = relationship( # type: ignore
+    managed_channels: Mapped[list["TgChannel"]] = relationship(  # type: ignore
         secondary="user_channels", back_populates="admins", lazy="dynamic"
     )
-    roles: Mapped[list["Role"]] = relationship( # type: ignore
+    roles: Mapped[list["Role"]] = relationship(  # type: ignore
         secondary="user_roles", back_populates="users", lazy="dynamic"
     )
-    schedule_posts: Mapped[list["SchedulePost"]] = relationship(back_populates="user") # type: ignore
+    schedule_posts: Mapped[list["SchedulePost"]] = relationship(back_populates="user")  # type: ignore
 
     def __repr__(self) -> str:
         if self.last_name is None:

@@ -148,7 +148,6 @@ customer_dialog = Dialog(
         state=CustomerSG.menu,
         markup_factory=ReplyKeyboardFactory(
             resize_keyboard=True,
-            one_time_keyboard=True,
             input_field_placeholder=Format("{customer_menu_placeholder}"),
         ),
         getter=get_customer_menu_data,

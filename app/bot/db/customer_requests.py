@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import select, update, func, case, and_
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.bot.db.models import Customer, Bonus
 from app.bot.utils.generate_qrcode import QRCode
@@ -49,11 +49,13 @@ async def upsert_customer(
         set_=dict(**update_values),
     )
     try:
-        async with session.begin():
-            await session.execute(stmt)
-    except IntegrityError as err:
-        raise ValueError(f"Ошибка: {err!r}")
-
+        await session.execute(stmt)
+        await session.commit()
+    except SQLAlchemyError as e:
+        await session.rollback()
+        logger.error(f"Database error: {e}")
+        return False
+        
 
 async def get_all_customers(session: AsyncSession) -> list[int]:
     """Возвращает список Telegram-ID пользователей-клиентов.
@@ -79,7 +81,7 @@ async def record_personal_user_data(
     birthday: str,
     gender: str,
 ) -> bool:
-    """Добавляет персональные данные пользователя к его профилю в таблице"""
+    """Добавляет персональные данные пользователя к его профилю в таблице и добавляет 100 приветственных бонусов к аккаунту"""
     values = {
         "i_name": name,
         "i_surname": surname,
@@ -88,10 +90,23 @@ async def record_personal_user_data(
         "birthday": birthday,
         "gender": gender,
     }
-    stmt = update(Customer).where(Customer.telegram_id == telegram_id).values(values)
-    result = await session.execute(stmt)
-    await session.commit()
-    return result.rowcount > 0
+    user_stmt = (
+        update(Customer).where(Customer.telegram_id == telegram_id).values(values)
+    )
+    bonus_stmt = upsert(Bonus).values(
+        {"customer_id": telegram_id, "amount": 100, "source_type": "bonus"}
+    )
+
+    try:
+        async with session.begin():
+            user_result = await session.execute(user_stmt)
+            await session.execute(bonus_stmt)
+        return user_result.rowcount > 0
+
+    except SQLAlchemyError as e:
+        await session.rollback()
+        logger.error(f"Database error: {e}")
+        return False
 
 
 async def get_bonus_info(
@@ -106,16 +121,17 @@ async def get_bonus_info(
             - bonus_to_expire: сумма баллов, истекающих в ближайшую дату
     """
     now = datetime.now()
-    min_expire_subquery = select(
-        func.coalesce(func.min(Bonus.expire_date), now + timedelta(weeks=52))
-    ).where(
-        and_(Bonus.customer_id == telegram_id, Bonus.expire_date > now)
-    ).scalar_subquery()
-
+    min_expire_subquery = (
+        select(func.coalesce(func.min(Bonus.expire_date), now + timedelta(weeks=52)))
+        .where(and_(Bonus.customer_id == telegram_id, Bonus.expire_date > now))
+        .scalar_subquery()
+    )
     stmt = select(
-        func.sum(Bonus.amount).label('total_points'),
-        min_expire_subquery.label('nearest_expiration_date'),
-        func.sum(case((Bonus.expire_date == min_expire_subquery, Bonus.amount), else_=0)).label('bonus_to_expire')
+        func.sum(Bonus.amount).label("total_points"),
+        min_expire_subquery.label("nearest_expiration_date"),
+        func.sum(
+            case((Bonus.expire_date == min_expire_subquery, Bonus.amount), else_=0)
+        ).label("bonus_to_expire"),
     ).where(Bonus.customer_id == telegram_id)
 
     result = await session.execute(stmt)
@@ -129,10 +145,10 @@ async def get_bonus_info(
         return (
             int(total_points or 0),
             nearest_expiration_date,
-            int(bonus_to_expire or 0)
+            int(bonus_to_expire or 0),
         )
     return None
-    
+
 
 async def get_card_info(
     session: AsyncSession, telegram_id: int
@@ -140,6 +156,12 @@ async def get_card_info(
     """Возвращает информацию по карте клиента"""
     customer = await session.get(Customer, {"telegram_id": telegram_id})
     return customer.qr_code_token, customer.qr_code_file_id
+
+
+async def has_customer_detail_info(session: AsyncSession, telegram_id: int) -> bool:
+    """Возвращает факт наличия данных в форме"""
+    customer = await session.get(Customer, {"telegram_id": telegram_id})
+    return bool(customer)
 
 
 async def update_qr_code_file_id(

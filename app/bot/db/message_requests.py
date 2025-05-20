@@ -5,6 +5,7 @@ from sqlalchemy import delete, select
 
 from .models.schedule_post import SchedulePost
 
+
 # ------------------- Schedule Post Operations -------------------
 async def upsert_post(
     session: AsyncSession,
@@ -12,7 +13,7 @@ async def upsert_post(
     target_type: Literal["channel", "customer"],
     data_json: dict,
     post_message: str,
-    author_id: int
+    author_id: int,
 ) -> bool:
     """Создает или обновляет запись о запланированном посте в базе данных.
 
@@ -32,15 +33,19 @@ async def upsert_post(
         "target_type": target_type,
         "data_json": data_json,
         "post_message": post_message,
-        "author_id": author_id
+        "author_id": author_id,
     }
     update_values = {
         "target_type": target_type,
         "data_json": data_json,
         "post_message": post_message,
     }
-    stmt = upsert(SchedulePost).values(values).on_conflict_do_update(
-        index_elements=["schedule_id"], set_=dict(**update_values)
+    stmt = (
+        upsert(SchedulePost)
+        .values(values)
+        .on_conflict_do_update(
+            index_elements=["schedule_id"], set_=dict(**update_values)
+        )
     )
     result = await session.execute(stmt)
     await session.commit()
@@ -58,10 +63,7 @@ async def get_post(
     return result.scalar_one_or_none()
 
 
-async def delete_post(
-    session: AsyncSession,
-    schedule_id: int
-) -> bool:
+async def delete_post(session: AsyncSession, schedule_id: int) -> bool:
     """Удаляет запись о запланированном посте из базы данных."""
     stmt = delete(SchedulePost).where(SchedulePost.schedule_id == schedule_id)
     result = await session.execute(stmt)

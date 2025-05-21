@@ -4,8 +4,11 @@ from aiogram.types import BufferedInputFile
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from .schemas import QRCodeScanner
-from app.main import bot
+from app.setup import DependeciesConfig
+from app.config_data.config import load_config, Config
 
+config: Config = load_config()
+bot = DependeciesConfig(config=config).setup_bot()
 
 router = APIRouter(prefix="/api", tags=["API"])
 

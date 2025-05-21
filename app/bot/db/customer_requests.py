@@ -158,10 +158,22 @@ async def get_card_info(
     return customer.qr_code_token, customer.qr_code_file_id
 
 
-async def has_customer_detail_info(session: AsyncSession, telegram_id: int) -> bool:
-    """Возвращает факт наличия данных в форме"""
-    customer = await session.get(Customer, {"telegram_id": telegram_id})
-    return bool(customer)
+
+async def get_customer_detail_info(session: AsyncSession, telegram_id: int = None, qr_code_token: int = None) -> Customer:
+    """Возвращает клиента по telegram_id или qr_code_token"""
+    if telegram_id is None and qr_code_token is None:
+        raise ValueError("Необходимо предоставить хотя бы один из параметров: 'telegram_id' или 'qr_code_token'.")
+
+    try:
+        if qr_code_token is not None:
+            stmt = select(Customer).where(Customer.qr_code_token == qr_code_token)
+        else:
+            stmt = select(Customer).where(Customer.telegram_id == telegram_id)
+        result = await session.execute(stmt)
+        customer = result.scalar_one_or_none()
+        return customer
+    except SQLAlchemyError as e:
+        logger.error(f"Ошибка базы данных: {e}")
 
 
 async def update_qr_code_file_id(

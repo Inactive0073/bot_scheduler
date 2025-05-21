@@ -7,7 +7,7 @@ from aiogram_dialog import DialogManager, ShowMode, StartMode
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-from ..db.customer_requests import has_customer_detail_info, upsert_customer
+from ..db.customer_requests import get_customer_detail_info, upsert_customer
 from ..states.customer.start import CustomerSG
 from ..states.settings import SettingsSG
 from ..states.start import StartSG
@@ -36,7 +36,7 @@ async def process_start_command(
     )
 
     if not roles.intersection({"admin", "manager", "waiter", "owner"}):
-        if not (await has_customer_detail_info(session, telegram_id)):
+        if not (await get_customer_detail_info(session, telegram_id)):
             logger.debug(f"Проверка пройдена успешно!")
             await upsert_customer(
                 session=session,

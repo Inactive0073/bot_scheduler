@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 import logging
 import sys
 
@@ -11,6 +10,7 @@ from fastapi import FastAPI, Request
 from fluentogram import TranslatorHub
 
 from .api.router import router as router_api
+from .pages.router import router as router_pages
 from .taskiq_broker.broker import broker, nats_source
 from .config_data.config import Config, load_config
 
@@ -87,4 +87,5 @@ async def webhook(request: Request) -> None:
     await dp.feed_update(bot, update)
 
 
+app.include_router(router_pages)
 app.include_router(router_api)

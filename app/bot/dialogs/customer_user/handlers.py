@@ -20,6 +20,7 @@ from app.bot.db.customer_requests import (
     get_card_info,
     record_personal_user_data,
     update_qr_code_file_id,
+    get_customer_detail_info,
 )
 from app.bot.utils.generate_qrcode import QRCode
 from .keyboards import get_kb
@@ -148,6 +149,12 @@ async def on_balance_selected(
 
     result = await get_bonus_info(session=session, telegram_id=callback.from_user.id)
     bonuses, date_expire, bonus_to_expire = result
+    customer = await get_customer_detail_info(
+        session=session, telegram_id=callback.from_user.id
+    )
+    visits = customer.visits
+    percent_cashback = customer.percent_cashback
+
     if date_expire:
         date_expire: datetime = date_expire.strftime("%d.%m.%Y")
         await bot.send_message(
@@ -156,6 +163,8 @@ async def on_balance_selected(
                 current_balance=bonuses,
                 date_expire=date_expire,
                 balance_to_expire=bonus_to_expire,
+                visits=visits,
+                percent_cashback=percent_cashback,
             ),
         )
     else:

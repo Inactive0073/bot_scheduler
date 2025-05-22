@@ -1,4 +1,5 @@
 from aiogram import F
+from aiogram.types import Message
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import WebApp, Button, Group, SwitchTo
@@ -50,11 +51,7 @@ waiter_dialog = Dialog(
             type_factory=int,
             on_success=process_subtract_bonus,
         ),
-        TextInput(
-            id="process_reset_cmd",
-            on_success=SwitchTo(text=Format("{back}"), id="__back__", state=WaiterSG.start),
-            filter=F.text == "/reset"
-        ),
+        SwitchTo(Format("{back}"), id="__back__", state=WaiterSG.start),
         state=WaiterSG.subtracting,
         getter=get_processing_guest_data,
     ),

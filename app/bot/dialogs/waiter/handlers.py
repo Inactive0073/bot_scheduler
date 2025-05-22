@@ -35,7 +35,9 @@ async def process_qr_token(
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     session = dialog_manager.middleware_data.get("session")
 
-    customer = await get_customer_detail_info(session=session, qr_code_token=token)
+    customer: Customer = await get_customer_detail_info(
+        session=session, qr_code_token=token
+    )
 
     if customer:
         result = await get_bonus_info(session=session, telegram_id=customer.telegram_id)
@@ -93,7 +95,7 @@ async def process_subtract_bonus(
     if customer_balance < n_bonus:
         await message.answer(i18n.waiter.processing.subtracting.not_.enough())
         return
-    
+
     result = await deduct_bonus(
         session=session, customer_id=customer_id, amount=n_bonus
     )

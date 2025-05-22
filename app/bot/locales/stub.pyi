@@ -167,11 +167,14 @@ class CustomerMenuHelp:
 class CustomerBalance:
     @staticmethod
     def message(
-        *, current_balance, date_expire, balance_to_expire
+        *, current_balance, date_expire, balance_to_expire, visits, percent_cashback
     ) -> Literal[
         """Баланс бонусов: { $current_balance }
 Ближайшая дата сгорания бонусов: { $date_expire }
 Количество бонусов к сгоранию: { $balance_to_expire }
+Количество визитов: { $visits }
+Процент кэшбэка: { $percent_cashback }
+
 
 Если вам недоступны бонусы и карта, поделитесь с нами своим номером телефона, вызвав команду /start"""
     ]: ...
@@ -308,8 +311,9 @@ class Waiter:
 class WaiterHello:
     @staticmethod
     def message() -> Literal[
-        """Добро пожаловать в чат-бот программы лояльности! 😊
+        """Привет! ✋
 
+Ваша роль: &lt;b&gt;Официант&lt;/b&gt;
 Для получения инструкции по работе с ботом, нажмите &lt;a href=&#34;/instruction&#34;&gt;/instruction&lt;/a&gt;"""
     ]: ...
 
@@ -326,8 +330,6 @@ class WaiterSuccessInfo:
         *, name, balance, date_expire, bonus_to_expire
     ) -> Literal[
         """Данные по пользователю успешно получены. 
-
-
 ---  
 👤 &lt;b&gt;Имя:&lt;/b&gt; { $name }  
 💰 &lt;b&gt;Кол-во бонусов:&lt;/b&gt; { $balance }  
@@ -357,11 +359,9 @@ class WaiterProcessing:
     def instruction() -> Literal[
         """&lt;b&gt;РАБОТА С КЛИЕНТОМ&lt;/b&gt;
 
-&lt;ul&gt;
-    &lt;li&gt;Для начисления нажмите &lt;b&gt;➕Начисить бонусы&lt;/b&gt;&lt;/li&gt;
-    &lt;li&gt;Для списания нажмите &lt;b&gt;➖Списать бонусы&lt;/b&gt;&lt;/li&gt;
-    &lt;li&gt;Для возврата нажмите &lt;b&gt;🔙 Назад&lt;/b&gt;&lt;/li&gt;
-&lt;/ul&gt;"""
+Для начисления: &lt;b&gt;➕Начисить бонусы&lt;/b&gt;
+Для списания: &lt;b&gt;➖Списать бонусы&lt;/b&gt;
+Для возврата: &lt;b&gt;🔙 Назад&lt;/b&gt;"""
     ]: ...
 
 class WaiterProcessingAdd:
@@ -376,7 +376,13 @@ class WaiterProcessingAdding:
     bonus: WaiterProcessingAddingBonus
 
     @staticmethod
-    def success() -> Literal["""Бонусы успешно начислены."""]: ...
+    def success(
+        *, amount
+    ) -> Literal[
+        """Бонусы успешно начислены. 
+
+&lt;b&gt;&lt;i&gt;Было начислено { $amount } б.&lt;/i&gt;&lt;/b&gt;"""
+    ]: ...
     @staticmethod
     def unsuccess() -> Literal[
         """Не удалось начислить бонусы. Проверьте данные и попробуйте снова."""
@@ -387,11 +393,12 @@ class WaiterProcessingAddingBonus:
     def instruction() -> Literal[
         """Введите сумму чека стола для начисления бонусов. 
 
-
 Вводите именно итоговую сумму чека. Бонусы будут рассчитаны автоматически."""
     ]: ...
 
 class WaiterProcessingSubtracting:
+    not_: WaiterProcessingSubtractingNot_
+
     @staticmethod
     def instruction() -> Literal["""Укажите сумму бонусов для списания."""]: ...
     @staticmethod
@@ -400,7 +407,13 @@ class WaiterProcessingSubtracting:
     def unsuccess() -> Literal[
         """Не удалось списать бонусы. Проверьте данные и попробуйте снова. 
 
-Возможно, вы указали неверную сумму или у вас недостаточно бонусов."""
+Возможно, вы указали неверную сумму или у вас недостаточно бонусов. Для возврата в основное меню нажмите &lt;a href=&#34;/reset&#34;&gt;/reset&lt;/a&gt;"""
+    ]: ...
+
+class WaiterProcessingSubtractingNot_:
+    @staticmethod
+    def enough() -> Literal[
+        """Введеное значение превышает доступное количество бонусов."""
     ]: ...
 
 class Start:
@@ -414,15 +427,17 @@ class Start:
 
 class StartHello:
     @staticmethod
-    def admin(
-        *, username
-    ) -> Literal[
-        """Привет, { $username }👋
+    def admin() -> Literal[
+        """Привет! 👋
 
-Я могу:
-✍Составить описание товара✍
-📅Запланировать пост📅
-✍Подготовить карточку товара✍
+Ваша роль: &lt;b&gt;Менеджер&lt;/b&gt;
+
+Доступный функционал:
+
+📅 Планирование поста
+✍ Добавление каналов для рассылок
+📤 Рассылка по пользователям бота
+📤 Рассылка в каналы
 
 ✨Для демонстрации возможностей нажми /demo ✨"""
     ]: ...

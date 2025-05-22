@@ -19,7 +19,7 @@ async def send_qr_code(request: QRCodeScanner):
         text = (
             f"🎉 QR-код успешно отсканирован!\n\n"
             f"📄 Результат сканирования:\n\n"
-            f"<code><b>{request.result_scan}</b></code>\n\n"
+            f"<code><b>{request.result_scan}</b></code> <i>⬅ Код копируется</i>\n\n"
         )
         await bot.send_message(chat_id=request.user_id, text=text)
         return JSONResponse(

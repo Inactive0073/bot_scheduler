@@ -104,4 +104,3 @@ class DependeciesConfig:
 
         # Запускаем функцию настройки проекта для работы с диалогами
         setup_dialogs(dp)
-

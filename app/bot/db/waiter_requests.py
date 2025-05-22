@@ -9,4 +9,3 @@ from app.bot.db.models import User, Customer, Bonus
 
 
 logger = logging.getLogger(__name__)
-

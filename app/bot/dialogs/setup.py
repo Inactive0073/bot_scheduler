@@ -8,6 +8,7 @@ from .settings.dialogs import settings_dialog
 from .customer_user.dialogs import customer_dialog
 from .waiter.dialogs import waiter_dialog
 
+
 def get_dialogs() -> List[Dialog]:
     return [
         start_dialog,

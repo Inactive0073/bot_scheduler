@@ -38,7 +38,6 @@ start_dialog = Dialog(
         markup_factory=ReplyKeyboardFactory(
             resize_keyboard=True,
             input_field_placeholder=Const("Выберите пункт меню"),
-            one_time_keyboard=True,
         ),
     )
 )

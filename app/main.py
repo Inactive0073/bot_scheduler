@@ -2,6 +2,9 @@ import asyncio
 import logging
 import sys
 
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update
 from contextlib import asynccontextmanager
@@ -73,9 +76,6 @@ async def lifespan(app: FastAPI):
     await broker.shutdown()
     logger.info("Connection to NATS closed")
 
-
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="app/static"), "static")

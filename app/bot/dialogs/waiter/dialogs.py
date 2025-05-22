@@ -1,3 +1,4 @@
+from aiogram import F
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
 from aiogram_dialog.widgets.kbd import WebApp, Button, Group, SwitchTo
@@ -5,7 +6,7 @@ from aiogram_dialog.widgets.input import TextInput
 
 from ...states.waiter.start import WaiterSG
 from .getters import get_common_data, get_processing_guest_data
-from .handlers import process_qr_token
+from .handlers import process_qr_token, process_adding_bonus, process_subtract_bonus
 
 waiter_dialog = Dialog(
     Window(
@@ -18,30 +19,44 @@ waiter_dialog = Dialog(
         Format("{process_guest_message}"),
         Group(
             SwitchTo(
-                Format("{add_bonus_button}"), 
-                id="on_add_selected", 
-                state=WaiterSG.adding),
+                Format("{add_bonus_button}"),
+                id="on_add_selected",
+                state=WaiterSG.adding,
+            ),
             SwitchTo(
-                Format("{subtract_bonus_button}"), 
-                id="on_subtract_selected", 
-                state=WaiterSG.subtracting),
-            width=2
+                Format("{subtract_bonus_button}"),
+                id="on_subtract_selected",
+                state=WaiterSG.subtracting,
+                when=F["dialog_data"]["has_bonus"],
+            ),
+            width=2,
         ),
         SwitchTo(Format("{back}"), id="__back__", state=WaiterSG.start),
         state=WaiterSG.processing,
-        getter=get_processing_guest_data
+        getter=get_processing_guest_data,
     ),
     Window(
         Format("{adding_instruction}"),
-        TextInput(id="adding_bonus_amount", on_success=...),
+        TextInput(
+            id="adding_bonus_amount", type_factory=int, on_success=process_adding_bonus
+        ),
         state=WaiterSG.adding,
-        getter=get_processing_guest_data
+        getter=get_processing_guest_data,
     ),
     Window(
         Format("{subtracting_instruction}"),
-        TextInput(id="subtracting_bonus_amount", on_success=...),
+        TextInput(
+            id="subtracting_bonus_amount",
+            type_factory=int,
+            on_success=process_subtract_bonus,
+        ),
+        TextInput(
+            id="process_reset_cmd",
+            on_success=SwitchTo(text=Format("{back}"), id="__back__", state=WaiterSG.start),
+            filter=F.text == "/reset"
+        ),
         state=WaiterSG.subtracting,
-        getter=get_processing_guest_data
+        getter=get_processing_guest_data,
     ),
     getter=get_common_data,
 )

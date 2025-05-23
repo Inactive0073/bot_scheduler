@@ -1,5 +1,4 @@
 import logging
-from typing import Literal
 from aiogram import Bot, Dispatcher
 
 from aiogram.client.default import DefaultBotProperties
@@ -19,7 +18,6 @@ from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.enums import ParseMode
 
 from taskiq_nats import NATSObjectStoreResultBackend, NATSKeyValueScheduleSource
-from taskiq import TaskiqScheduler
 
 from .bot.db.base import Base
 from .bot.middlewares import (
@@ -31,7 +29,6 @@ from .bot.middlewares import (
 from .bot.dialogs.setup import get_dialogs
 from .bot.handlers.commands import commands_router
 from .config_data.config import Config
-from .taskiq_broker.broker import broker
 from .storage.nats_storage import NatsStorage
 
 logger = logging.getLogger(__name__)

@@ -20,14 +20,6 @@ services:
     depends_on:
       - nats
 
-  redis:
-    image: redis:7.4.2
-    command: 
-      - redis-server
-    restart: on-failure
-    ports:
-      - "6379:6379"
-
   postgres:
     image: postgres:15-alpine
     restart: "no"  # избавляемся от автоматической перезагрузки

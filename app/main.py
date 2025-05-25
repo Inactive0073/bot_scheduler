@@ -1,9 +1,4 @@
-import asyncio
 import logging
-import sys
-
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Update

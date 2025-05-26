@@ -14,8 +14,8 @@ from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from magic_filter import F
 
-from app.bot.states.addition_channel import AdditionToChannelSG
-from app.bot.states.start import StartSG
+from app.bot.states.manager.addition_channel import AdditionToChannelSG
+from app.bot.states.manager.manager import ManagerSG
 from .getters import (
     get_channel_settings,
     get_data_for_caption,
@@ -66,7 +66,7 @@ dialog_addition_channel = Dialog(
             text=Format("{back}"),
             id="back_from_channel_settings",
             show_mode=ShowMode.DELETE_AND_SEND,
-            state=StartSG.start,
+            state=ManagerSG.start,
         ),
         TextInput(
             id="chhanel_check_bot_status",

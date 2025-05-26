@@ -48,8 +48,8 @@ from .handlers import (
 )
 from .services import parse_button, parse_time
 
-from app.bot.states.creating_post import PostingSG
-from app.bot.states.start import StartSG
+from app.bot.states.manager.creating_post import PostingSG
+from app.bot.states.manager.manager import ManagerSG
 
 create_post_dialog = Dialog(
     # Процесс создания поста
@@ -71,7 +71,7 @@ create_post_dialog = Dialog(
             on_click=process_to_select_channel,
         ),
         Row(
-            Start(Format("{back}"), id="back_to_menu", state=StartSG.start),
+            Start(Format("{back}"), id="back_to_menu", state=ManagerSG.start),
             SwitchTo(
                 Format("{next}"),
                 id="next_clicked",

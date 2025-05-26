@@ -18,7 +18,7 @@ from app.bot.db.requests import (
     upsert_caption_channel,
     upsert_channel_with_admin,
 )
-from app.bot.states.addition_channel import AdditionToChannelSG
+from app.bot.states.manager.addition_channel import AdditionToChannelSG
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore

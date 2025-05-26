@@ -16,7 +16,7 @@ from app.bot.db.customer_requests import get_all_customers
 from app.bot.db.message_requests import upsert_post
 from app.bot.db.requests import get_user_tz
 from app.bot.dialogs.creating_post.services import get_delay
-from app.bot.states.creating_post import PostingSG
+from app.bot.states.manager.creating_post import PostingSG
 
 from datetime import datetime, timezone, timedelta
 

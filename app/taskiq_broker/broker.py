@@ -11,7 +11,7 @@ from app.config_data.config import load_config, Config
 
 # if sys.platform == "win32":
 #     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    
+
 config: Config = load_config()
 
 broker = PullBasedJetStreamBroker(servers=config.nats.servers, queue="taskiq_queue")
@@ -19,6 +19,7 @@ nats_source = NATSKeyValueScheduleSource(config.nats.servers)
 scheduler = TaskiqScheduler(
     broker=broker, sources=[LabelScheduleSource(broker), nats_source]
 )
+
 
 @broker.on_event(TaskiqEvents.WORKER_STARTUP)
 async def startup(state: TaskiqState) -> None:

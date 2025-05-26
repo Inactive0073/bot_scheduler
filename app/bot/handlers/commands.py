@@ -8,9 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 from ..db.customer_requests import get_customer_detail_info, upsert_customer
+from ..states.admin import AdminSG
 from ..states.customer.start import CustomerSG
-from ..states.settings import SettingsSG
-from ..states.start import StartSG
+from ..states.manager.settings import SettingsSG
+from ..states.manager.manager import ManagerSG
 from ..states.waiter.start import WaiterSG
 from ..db.requests import upsert_user
 from ..db.common_requests import get_user_role
@@ -61,31 +62,16 @@ async def process_start_command(
             first_name=first_name,
             last_name=last_name,
         )
-        if "manager" in roles:
-            await dialog_manager.start(state=StartSG.start, mode=StartMode.RESET_STACK)
+        if "admin" in roles:
+            await dialog_manager.start(
+                state=AdminSG.start, mode=StartMode.RESET_STACK
+            )
+        elif "manager" in roles:
+            await dialog_manager.start(
+                state=ManagerSG.start, mode=StartMode.RESET_STACK
+            )
         elif "waiter" in roles:
-            await dialog_manager.start(state=WaiterSG.start, mode=StartMode.RESET_STACK)
+            await dialog_manager.start(
+                state=WaiterSG.start, mode=StartMode.RESET_STACK
+            )
 
-
-@commands_router.message(Command("demo"))
-async def process_demo_command(
-    message: Message,
-    dialog_manager: DialogManager,
-) -> None:
-    await dialog_manager.start(state=StartSG.demo)
-
-
-@commands_router.message(Command("cancel"))
-async def process_cancel_command(
-    message: Message,
-    dialog_manager: DialogManager,
-) -> None:
-    await dialog_manager.back(show_mode=ShowMode.DELETE_AND_SEND)
-
-
-@commands_router.message(Command("settings"))
-async def process_settings_command(
-    message: Message,
-    dialog_manager: DialogManager,
-) -> None:
-    await dialog_manager.start(state=SettingsSG.start)

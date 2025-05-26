@@ -4,10 +4,10 @@ from aiogram_dialog.widgets.kbd import Button, Group, Start
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from app.bot.dialogs.start.getters import get_hello
-from app.bot.states.addition_channel import AdditionToChannelSG
-from app.bot.states.settings import SettingsSG
-from app.bot.states.start import StartSG
-from app.bot.states.creating_post import PostingSG
+from app.bot.states.manager.addition_channel import AdditionToChannelSG
+from app.bot.states.manager.settings import SettingsSG
+from app.bot.states.manager.manager import ManagerSG
+from app.bot.states.manager.creating_post import PostingSG
 
 
 start_dialog = Dialog(
@@ -34,7 +34,7 @@ start_dialog = Dialog(
             width=2,
         ),
         getter=get_hello,
-        state=StartSG.start,
+        state=ManagerSG.start,
         markup_factory=ReplyKeyboardFactory(
             resize_keyboard=True,
             input_field_placeholder=Const("Выберите пункт меню"),

@@ -3,12 +3,14 @@ from typing import Literal
 class TranslatorRunner:
     def get(self, path: str, **kwargs) -> str: ...
 
+    a: A
     customer: Customer
     waiter: Waiter
     start: Start
     cr: Cr
     channel: Channel
     settings: Settings
+    admin: Admin
 
     @staticmethod
     def next() -> Literal["""⏭ Далее"""]: ...
@@ -32,6 +34,13 @@ class TranslatorRunner:
     def caption() -> Literal[
         """Сделано через &lt;a href=&#34;https://sale-keeper.ru&#34;&gt;&lt;b&gt;💵Sale Keeper&lt;/b&gt;&lt;/a&gt;"""
     ]: ...
+
+class A:
+    u: AU
+
+class AU:
+    @staticmethod
+    def sure() -> Literal["""Вы уверены?"""]: ...
 
 class Customer:
     hello: CustomerHello
@@ -169,11 +178,14 @@ class CustomerBalance:
     def message(
         *, current_balance, date_expire, balance_to_expire, visits, percent_cashback
     ) -> Literal[
-        """Баланс бонусов: { $current_balance }
-Ближайшая дата сгорания бонусов: { $date_expire }
-Количество бонусов к сгоранию: { $balance_to_expire }
-Количество визитов: { $visits }
-Процент кэшбэка: { $percent_cashback }
+        """Ваша бонусная информация
+
+
+&lt;b&gt;Баланс бонусов:&lt;/b&gt; { $current_balance }
+&lt;b&gt;Ближайшая дата сгорания бонусов:&lt;/b&gt; { $date_expire }
+&lt;b&gt;Количество бонусов к сгоранию:&lt;/b&gt; { $balance_to_expire }
+&lt;b&gt;Количество визитов:&lt;/b&gt; { $visits }
+&lt;b&gt;Процент кэшбэка:&lt;/b&gt; { $percent_cashback }
 
 
 Если вам недоступны бонусы и карта, поделитесь с нами своим номером телефона, вызвав команду /start"""
@@ -311,9 +323,7 @@ class Waiter:
 class WaiterHello:
     @staticmethod
     def message() -> Literal[
-        """Привет! ✋
-
-Ваша роль: &lt;b&gt;Официант&lt;/b&gt;
+        """Ваша роль: &lt;b&gt;Официант&lt;/b&gt;
 Для получения инструкции по работе с ботом, нажмите &lt;a href=&#34;/instruction&#34;&gt;/instruction&lt;/a&gt;"""
     ]: ...
 
@@ -428,9 +438,7 @@ class Start:
 class StartHello:
     @staticmethod
     def admin() -> Literal[
-        """Привет! 👋
-
-Ваша роль: &lt;b&gt;Менеджер&lt;/b&gt;
+        """Ваша роль: &lt;b&gt;Менеджер&lt;/b&gt;
 
 Доступный функционал:
 
@@ -439,7 +447,9 @@ class StartHello:
 📤 Рассылка по пользователям бота
 📤 Рассылка в каналы
 
-✨Для демонстрации возможностей нажми /demo ✨"""
+Для получения инструкции нажми &lt;a href=&#34;/demo&#34;&gt;/demo&lt;a&gt;
+&lt;b&gt;&lt;i&gt;Важно!&lt;/i&gt;&lt;/b&gt;
+Перед началом работы проверьте и укажите корректный часовой пояс в настройках"""
     ]: ...
 
 class StartCreate:
@@ -854,3 +864,139 @@ class SettingsSelect:
 Ваш выбранный часовой пояс: &lt;b&gt;{ $current_timezone }&lt;/b&gt;.
 Локальное время: &lt;b&gt;{ $local_datetime }&lt;/b&gt;"""
     ]: ...
+
+class Admin:
+    hello: AdminHello
+    ban: AdminBan
+    role: AdminRole
+    reports: AdminReports
+    team: AdminTeam
+
+class AdminHello:
+    @staticmethod
+    def message() -> Literal[
+        """Ваша роль: &lt;b&gt;Администратор&lt;/b&gt;
+
+Доступный функционал:
+
+🚩 Блокировка/разблокировка пользователя
+📱 Функционал менеджера
+👨‍💼 Команда
+📃 Отчет системы лояльности персонала"""
+    ]: ...
+
+class AdminBan:
+    menu: AdminBanMenu
+    not_: AdminBanNot_
+    success: AdminBanSuccess
+    unban: AdminBanUnban
+
+    @staticmethod
+    def ban() -> Literal["""Заблокировать"""]: ...
+
+class AdminBanMenu:
+    @staticmethod
+    def btn() -> Literal["""Блокировка/разблокировка"""]: ...
+    @staticmethod
+    def msg() -> Literal[
+        """Напишите &lt;b&gt;ID телеграм&lt;/b&gt; пользователя или &lt;b&gt;@username&lt;/b&gt;."""
+    ]: ...
+
+class AdminRole:
+    manager: AdminRoleManager
+
+class AdminRoleManager:
+    @staticmethod
+    def btn() -> Literal["""Менеджер"""]: ...
+
+class AdminReports:
+    menu: AdminReportsMenu
+    all_: AdminReportsAll_
+    bonus: AdminReportsBonus
+
+    @staticmethod
+    def btn() -> Literal["""Отчеты"""]: ...
+
+class AdminReportsMenu:
+    @staticmethod
+    def msg() -> Literal["""Выберите отчет для просмотра"""]: ...
+
+class AdminReportsAll_:
+    users: AdminReportsAll_Users
+    scheduled_posts: AdminReportsAll_Scheduled_posts
+
+class AdminReportsAll_Users:
+    @staticmethod
+    def btn() -> Literal["""Выгрузить клиентов"""]: ...
+
+class AdminReportsBonus:
+    accrual: AdminReportsBonusAccrual
+
+class AdminReportsBonusAccrual:
+    records: AdminReportsBonusAccrualRecords
+
+class AdminReportsBonusAccrualRecords:
+    @staticmethod
+    def btn() -> Literal["""Выгрузить записи начисления бонусов"""]: ...
+
+class AdminReportsAll_Scheduled_posts:
+    @staticmethod
+    def btn() -> Literal["""Выгрузить запланированные посты"""]: ...
+
+class AdminTeam:
+    menu: AdminTeamMenu
+    invite: AdminTeamInvite
+    kick: AdminTeamKick
+
+class AdminTeamMenu:
+    @staticmethod
+    def msg() -> Literal["""Выберите подходящий пункт из меню."""]: ...
+
+class AdminTeamInvite:
+    @staticmethod
+    def btn() -> Literal["""Добавить в команду"""]: ...
+    @staticmethod
+    def msg() -> Literal["""Выберите пользователя для добавления в команду."""]: ...
+    @staticmethod
+    def success(
+        *, user
+    ) -> Literal["""Пользователь { $user } был успешно добавлен в команду."""]: ...
+
+class AdminTeamKick:
+    @staticmethod
+    def btn() -> Literal["""Удалить из команды"""]: ...
+    @staticmethod
+    def msg() -> Literal["""Выберите пользователя для удаления."""]: ...
+    @staticmethod
+    def success(
+        *, user
+    ) -> Literal["""Пользователь { $user } был успешно удален из команды."""]: ...
+
+class AdminBanNot_:
+    found: AdminBanNot_Found
+
+class AdminBanNot_Found:
+    @staticmethod
+    def msg() -> Literal[
+        """Пользователь не найден. Проверьте данные и попробуйте еще раз. 
+
+Если все равно не удается найти пользователя, возможно, его нет в базе данных или он не запускал бота."""
+    ]: ...
+
+class AdminBanSuccess:
+    @staticmethod
+    def msg(
+        *, i_name, telegram_id
+    ) -> Literal["""Пользователь [{ $i_name }-{ $telegram_id }] заблокирован."""]: ...
+
+class AdminBanUnban:
+    success: AdminBanUnbanSuccess
+
+    @staticmethod
+    def __call__() -> Literal["""Разблокировать"""]: ...
+
+class AdminBanUnbanSuccess:
+    @staticmethod
+    def msg(
+        *, i_name, telegram_id
+    ) -> Literal["""Пользователь [{ $i_name }-{ $telegram_id }] разблокирован."""]: ...

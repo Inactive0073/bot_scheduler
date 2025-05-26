@@ -6,7 +6,7 @@ from cachetools import TTLCache
 from sqlalchemy.ext.asyncio import AsyncSession
 from logging import getLogger
 
-from app.bot.db.requests import upsert_user
+from app.bot.db.manager_requests import upsert_user
 
 logger = getLogger(__name__)
 

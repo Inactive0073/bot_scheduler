@@ -11,7 +11,7 @@ from dataclasses import dataclass
 
 from fluentogram import TranslatorRunner
 
-from app.bot.db.requests import get_channels, get_user_tz
+from app.bot.db.manager_requests import get_channels, get_user_tz
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore

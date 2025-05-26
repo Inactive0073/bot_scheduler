@@ -13,7 +13,7 @@ from ..states.customer.start import CustomerSG
 from ..states.manager.settings import SettingsSG
 from ..states.manager.manager import ManagerSG
 from ..states.waiter.start import WaiterSG
-from ..db.requests import upsert_user
+from ..db.manager_requests import upsert_user
 from ..db.common_requests import get_user_role
 
 commands_router = Router(name=__name__)

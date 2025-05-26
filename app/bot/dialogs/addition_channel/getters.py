@@ -8,7 +8,7 @@ from fluentogram import TranslatorRunner
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.db.requests import get_caption_channel, get_channels, get_channel
+from app.bot.db.manager_requests import get_caption_channel, get_channels, get_channel
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner

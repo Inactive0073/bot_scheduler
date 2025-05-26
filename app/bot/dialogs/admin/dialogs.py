@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.input import TextInput
 from app.bot.states.admin import AdminSG, ReportsSG, TeamSG, BanSG
 from app.bot.states.manager.manager import ManagerSG
 from .handlers import process_username_or_id
-from .getters import get_ban_data, get_common_data, get_reports_data, get_team_data
+from .getters import get_ban_data, get_common_data, get_kicking_data, get_reports_data, get_team_data
 from .filters import filter_message_to_find_username_or_id
 
 admin_dialog = Dialog(
@@ -64,7 +64,7 @@ admin_dialog = Dialog(
             SwitchTo(
                 Format("{team_add_btn}"),
                 id="add_selected",
-                state=TeamSG.add,
+                state=TeamSG.invite,
             ),
             SwitchTo(
                 Format("{team_kick_btn}"),
@@ -109,7 +109,14 @@ admin_dialog = Dialog(
             on_success=process_username_or_id, 
             filter=filter_message_to_find_username_or_id
         ),
-        state=TeamSG.invite
+        state=TeamSG.invite,
+        getter=get_team_data
+    ),
+    Window(
+        Format("{team_kick_msg}"),
+
+        state=TeamSG.kick,
+        getter=get_kicking_data
     ),
     getter=get_common_data,
 )

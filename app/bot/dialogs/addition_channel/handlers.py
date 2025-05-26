@@ -11,7 +11,7 @@ from aiogram_dialog.widgets.input import TextInput
 from fluentogram import TranslatorRunner
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.db.requests import (
+from app.bot.db.manager_requests import (
     delete_caption_channel,
     delete_channel,
     toggle_auto_caption_channel,

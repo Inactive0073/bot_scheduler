@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.kbd import ManagedRadio
 
 from fluentogram import TranslatorRunner
 
-from app.bot.db.requests import get_user_tz
+from app.bot.db.manager_requests import get_user_tz
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore

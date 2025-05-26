@@ -3,7 +3,7 @@ import logging
 from sqlalchemy import select, update, func, case, and_
 from sqlalchemy.dialects.postgresql import insert as upsert, insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.bot.db.models import Customer, Bonus
 from app.bot.utils.generate_qrcode import QRCode

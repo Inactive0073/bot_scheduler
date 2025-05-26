@@ -44,6 +44,13 @@ async def get_team_data(
         "team_add_btn": i18n.admin.team.invite.btn(),
         "team_invite_msg": i18n.admin.team.invite.msg(),
         "team_kick_btn": i18n.admin.team.kick.btn(),
+    }
+
+
+async def get_kicking_data(
+        dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
+) -> Dict[str,str]:
+    return {
         "team_kick_msg": i18n.admin.team.kick.msg(),
     }
 

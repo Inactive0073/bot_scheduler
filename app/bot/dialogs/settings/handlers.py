@@ -2,7 +2,7 @@ from aiogram.types import CallbackQuery
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Button
 
-from app.bot.db.requests import set_user_tz
+from app.bot.db.manager_requests import set_user_tz
 
 
 async def on_timezone_selected(

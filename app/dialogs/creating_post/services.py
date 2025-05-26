@@ -2,6 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from validators.url import url
+from datetime import datetime as dt
+import pytz
 
 
 def parse_button(text: str) -> InlineKeyboardMarkup:
@@ -14,6 +16,7 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
 
     Пример:
         "Кнопка 1 - https://ya.ru | Кнопка 2 - https://google.com"
+        "Кнопка 3 - https://ya.ru | Кнопка 4 - https://google.com"
 
     Args:
         text (str): Входной текст с описанием кнопок.
@@ -48,3 +51,45 @@ def parse_button(text: str) -> InlineKeyboardMarkup:
         builder.row(*row_buttons)
 
     return builder.as_markup()
+
+
+def parse_time(time: str):
+    """
+    Парсит строку времени в формате HH, HHMM, HHMMDD
+    и возвращает datetime с замененными значениями.
+    
+    Args:
+        time_str (str): Строка времени (только цифры)
+        
+    Returns:
+        datetime: Объект datetime
+        
+    Raises:
+        ValueError: При неверном формате или некорректных значениях
+    """
+    while ' ' in time.strip():
+        time = time.replace(' ', '')
+    
+    if not all((char.isdigit() for char in time)):
+        raise ValueError
+    
+    date = dt.now()
+    
+    if len(time) == 2:
+        hour = int(time)
+        date = date.replace(hour=hour, minute=0)
+    
+    elif len(time) <= 4:
+        hour = int(str(time[:2]))
+        minute = int(str(time[2:]))
+        date = date.replace(hour=hour, minute=minute)
+    
+    elif len(time) == 8:
+        hour, minute, day, month = [int(str(time[i:i+2])) for i in range(0, len(time), 2)]
+        date = date.replace(hour=hour, minute=minute, day=day, month=month)
+        
+    else:
+        raise ValueError
+    
+    date = date.replace(second=0, microsecond=0, tzinfo=pytz.timezone("Europe/Moscow"))
+    return date

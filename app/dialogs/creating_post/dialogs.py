@@ -5,11 +5,14 @@ from aiogram_dialog.widgets.kbd import Group, SwitchTo, Back, Toggle, Button, Ca
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 
 from app.dialogs.creating_post.getters import (
+    get_addition_media_data,
     get_creating_post_data,
+    get_time_instruction_data,
     get_watch_text,
     get_url_instruction,
 )
 from app.dialogs.creating_post.handlers import (
+    invalid_set_time,
     process_delete_button,
     process_other_type_msg,
     process_post_msg,
@@ -18,8 +21,10 @@ from app.dialogs.creating_post.handlers import (
     process_invalid_button_case,
     process_invalid_media_content,
     edit_text,
+    process_set_time,
+    process_toggle_notify,
 )
-from app.dialogs.creating_post.services import parse_button
+from app.dialogs.creating_post.services import parse_button, parse_time
 
 from app.states.creating_post import PostingSG
 
@@ -42,8 +47,8 @@ create_post_dialog = Dialog(
         # Меню настройки поста
         # =============================================================
         # Редактировать пост | Добавить URL кнопок / Удалить URL кнопки
-        # Время отправки     | С уведомлением / Без уведомления
-        # Добавить медиа     | Отключить комментарии
+        # Время отправки / Редактировать время     | С уведомлением / Без уведомления
+        # Добавить медиа / Удалить медиа     | Отключить комментарии
         # Отправить сейчас
         # =============================================================
         Format("{reply_title}\n"),
@@ -72,12 +77,24 @@ create_post_dialog = Dialog(
             ),
             # Установить время
             SwitchTo(
-                Format("{set_time}"), id="set_time_pressed", state=PostingSG.set_time
+                Case(
+                    texts={
+                        0: Format("{set_time}"),
+                        1: Format("{posting_time}"),
+                    },
+                    selector="posting_time_index"
+                ),
+                id="set_time_pressed", 
+                state=PostingSG.set_time,
+                show_mode=ShowMode.DELETE_AND_SEND
             ),
-            SwitchTo(
-                Format("{set_notify}"),
+            # Уведомление
+            Toggle(
+                Format("{item.desc}"),
                 id="set_notify_pressed",
-                state=PostingSG.set_notify,
+                items="states_notify",
+                item_id_getter=lambda notify: notify.id,
+                on_click=process_toggle_notify
             ),
             SwitchTo(Format("{media}"), id="media_pressed", state=PostingSG.media),
             SwitchTo(
@@ -117,21 +134,37 @@ create_post_dialog = Dialog(
         getter=get_url_instruction,
     ),
     # окно добавления времени постинга
-    # (в разработке) 
     Window(
         Format("{instruction_delayed_post}"),
+        TextInput(
+            id="time_set",
+            type_factory=parse_time,
+            on_success=process_set_time,
+            on_error=invalid_set_time,
+        ),
         state=PostingSG.set_time,
+        getter=get_time_instruction_data,
     ),
+    # окно добавления медиа
     Window(
         Format("{instruction_add_media}"),
         MessageInput(
             func=process_addition_media,
             content_types=[
-                ContentType.VIDEO, 
+                ContentType.VIDEO,
                 ContentType.PHOTO,
-            ]
+            ],
         ),
         MessageInput(func=process_invalid_media_content),
-        state=PostingSG.media
-    )
+        state=PostingSG.media,
+        getter=get_addition_media_data,
+    ),
+    # окно апрува медиа
+    # Window(
+    #     Format("{cr-instruction-media-approve}"),
+    #     SwitchTo(),
+    #     state=...,
+    #     getter=...,
+    # )
+    # окно уведомления
 )

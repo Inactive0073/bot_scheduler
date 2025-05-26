@@ -175,3 +175,7 @@ rabbitmq_data/
 
 # Локальные настройки Docker Compose
 docker-compose.override.yml
+
+# user folders
+nats/data
+nui/

@@ -1,11 +1,16 @@
 from typing import TYPE_CHECKING
 
 from aiogram.types import Message, InlineKeyboardMarkup, CallbackQuery
+
+from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
-from aiogram_dialog.widgets.kbd import Button
+from aiogram_dialog.widgets.kbd import Button, Toggle
 
+from app.dialogs.creating_post.services import parse_time
 from app.states.creating_post import PostingSG
+
+from datetime import datetime
 
 from logging import getLogger
 
@@ -13,6 +18,7 @@ if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
 
 logger = getLogger(__name__)
+
 
 # Запись поста
 async def process_post_msg(
@@ -24,7 +30,8 @@ async def process_post_msg(
     """
     copy_msg = await message.send_copy(chat_id=message.chat.id)
     logger.debug(
-        f"Полученые следующие данные от {message.from_user.full_name}:\n"
+        f"\nПолученые следующие данные от {message.from_user.username}:\n"
+        f"user_id={message.from_user.id}\n"
         f"message_id={copy_msg.message_id} \n{copy_msg.chat.id=}\ntext={copy_msg.text}\n"
     )
     # удаляем старое сообщение, чтобы сохранить историю чище
@@ -55,6 +62,7 @@ async def process_other_type_msg(
     """
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     await message.answer(i18n.cr.invalid.data())
+
 
 # Добавления URL кнопок
 async def process_button_case(
@@ -89,18 +97,16 @@ async def process_button_case(
     )
 
     logger.debug("Сообщение было отредактировано")
-    
+
     # Сохраняем в dialog_data изменение кнопки
     dialog_manager.dialog_data["url_button_empty"] = False
     dialog_manager.dialog_data["url_button_exists"] = True
-    
+
     await dialog_manager.switch_to(PostingSG.creating_post, ShowMode.DELETE_AND_SEND)
 
 
 async def process_delete_button(
-    callback:CallbackQuery, 
-    button: Button,
-    dialog_manager: DialogManager
+    callback: CallbackQuery, button: Button, dialog_manager: DialogManager
 ):
     """
     Удаляет кнопки с меню настройки постинга новости
@@ -114,13 +120,13 @@ async def process_delete_button(
     )
     dialog_manager.dialog_data["url_button_empty"] = True
     dialog_manager.dialog_data["url_button_exists"] = False
-    
+
 
 async def process_invalid_button_case(
     message: Message,
     widget: TextInput,
     dialog_manager: DialogManager,
-    error: ValueError,
+    e: ValueError,
 ):
     """
     Удаляет сообщения с неудачным текстом и инструкцией для чистой истории
@@ -132,6 +138,7 @@ async def process_invalid_button_case(
         chat_id=message.chat.id, message_id=message.message_id
     )
 
+
 # Редактирование текста
 async def edit_text(
     message: Message, widget: TextInput, dialog_manager: DialogManager, text: str
@@ -142,7 +149,7 @@ async def edit_text(
     # получаем данные для редактирования сообщения
     msg_id = dialog_manager.dialog_data["message_id"]
     chat_id = dialog_manager.dialog_data["chat_id"]
-
+    
     keyboard = dialog_manager.dialog_data.get("keyboard")
 
     # удаляем старое сообщение
@@ -162,29 +169,58 @@ async def edit_text(
             message_id=msg_id,
             chat_id=chat_id,
         )
-    
+
     # Возвращаемся обратно в меню создания и настройки поста
+    await dialog_manager.switch_to(
+        PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND
+    )
+
+
+# Установка времени поста
+async def process_set_time(
+    message: Message, widget: TextInput, dialog_manager: DialogManager, dt: datetime
+) -> None:
+    """
+    Сохраняет время публикации
+
+    Допустимые форматы:
+        18 - текущие сутки 18:00
+        0830 - текущие сутки 08:30
+        1830 - текущие сутки 18:30
+        18300408 - 18:30 04.08
+    """
+    weekday = ("пн", "вт", "ср", "чт", "пт", "сб","вс")[dt.weekday()]
+    dialog_manager.dialog_data["dt_posting_iso"] = dt.isoformat()
+    dialog_manager.dialog_data["dt_posting_view"] = f"{weekday}, {dt.strftime("%d.%m, %H:%M")}"
+    await message.delete()
     await dialog_manager.switch_to(PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND)
+
+
+async def invalid_set_time(
+    message: Message, widget: TextInput, dialog_manager: DialogManager, e: ValueError
+) -> None:
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get('i18n')
+    await message.answer(i18n.cr.instruction.invalid.time())
+    await message.delete()
+    
+    
     
 # Установка медиа
-
+# (!В разработке)
 async def process_addition_media(
     message: Message,
     widget: MessageInput,
     dialog_manager: DialogManager,
 ) -> None:
     """
-    Установка медиа контента(фото/видео) к посту
+    Сохранение
     """
-    media_group_id = message.media_group_id
-    message_id = dialog_manager.dialog_data["message_id"]
-    chat_id = dialog_manager.dialog_data["chat_id"]
-    dialog_manager.dialog_data.setdefault("post_media", []).append(
+    dialog_manager.dialog_data.setdefault("media_content", []).append(
         (message.photo[-1].file_id, message.photo[-1].file_unique_id),
     )
+    MediaAttachment()
+    await message.bot.edit_message_media()
 
-    
-    
 
 async def process_invalid_media_content(
     message: Message,
@@ -194,6 +230,20 @@ async def process_invalid_media_content(
     """
     Обработка некорректных сообщений, если они не попадают под тайп видео, фото, кружка, гифки
     """
-    i18n: TranslatorRunner = dialog_manager.dialog_data['i18n']
+    i18n: TranslatorRunner = dialog_manager.dialog_data["i18n"]
     # dialog_manager.show_mode = ShowMode.DELETE_AND_SEND # пока оставим для экспериментов
-    await message.reply(i18n.cr.instruction.media.invalid.type())
+    await message.answer(i18n.cr.instruction.media.invalid.type())
+
+
+# Настройка времени
+async def process_toggle_notify(
+    message: Message,
+    widget: Toggle,
+    dialog_manager: DialogManager,
+    state: str
+):  
+    dialog_manager.dialog_data["notify_on"] = True if state == "turn_on" else False
+    logger.info(
+        f"\nПользователь: {message.from_user.first_name} [{message.from_user.username}] переключил настройку уведомлений\n"
+        f"Текущее состояние поста: {state}\n"
+    )

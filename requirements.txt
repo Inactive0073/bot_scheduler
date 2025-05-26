@@ -18,7 +18,7 @@ fluentogram==1.1.10
 frozenlist==1.5.0
 idna==3.10
 importlib_metadata==8.6.1
-Jinja2==3.1.5
+Jinja2==3.1.6
 magic-filter==1.0.12
 MarkupSafe==3.0.2
 marshmallow==3.26.0

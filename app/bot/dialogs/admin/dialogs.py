@@ -2,14 +2,15 @@ from aiogram import F
 from aiogram.types import Message
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo, Start
+from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo, Start, Select
 from aiogram_dialog.widgets.input import TextInput
 
-from app.bot.states.admin import AdminSG, ReportsSG, TeamSG, BanSG
+from app.bot.states.admin import AdminSG
 from app.bot.states.manager.manager import ManagerSG
-from .handlers import process_username_or_id
-from .getters import get_ban_data, get_common_data, get_kicking_data, get_reports_data, get_team_data
+from .handlers import process_to_select_role, process_username_or_id
+from .getters import get_ban_data, get_common_data, get_kicking_data, get_reports_data, get_roles_data, get_team_data
 from .filters import filter_message_to_find_username_or_id
+from .services import parse_username_or_id_data
 
 admin_dialog = Dialog(
     Window(
@@ -25,9 +26,10 @@ admin_dialog = Dialog(
                 state=ManagerSG,
                 data={"is_admin": True},
             ),
-            SwitchTo(
-                Format("{ban_menu_btn}"), id="ban_menu_selected", state=AdminSG.ban_menu
-            ),
+            # пока в заморозке
+            # SwitchTo(
+            #     Format("{ban_menu_btn}"), id="ban_menu_selected", state=AdminSG.ban_menu
+            # ),
             width=2,
         ),
         state=AdminSG.start,
@@ -39,17 +41,18 @@ admin_dialog = Dialog(
             SwitchTo(
                 Format("{reports_users}"),
                 id="reports_users_selected",
-                state=ReportsSG.users,
+                state=AdminSG.report_users,
             ),
-            SwitchTo(
-                Format("{reports_scheduled_posts}"),
-                id="reports_scheduled_posts_selected",
-                state=ReportsSG.posts,
-            ),
+            # заморожено
+            # SwitchTo(
+            #     Format("{reports_scheduled_posts}"),
+            #     id="reports_scheduled_posts_selected",
+            #     state=AdminSG.report_posts,
+            # ),
             SwitchTo(
                 Format("{reports_bonus_records}"),
                 id="reports_bonus_records_selected",
-                state=ReportsSG.bonuses,
+                state=AdminSG.report_bonuses,
             ),
             width=2,
         ),
@@ -64,12 +67,12 @@ admin_dialog = Dialog(
             SwitchTo(
                 Format("{team_add_btn}"),
                 id="add_selected",
-                state=TeamSG.invite,
+                state=AdminSG.selecting_role,
             ),
             SwitchTo(
                 Format("{team_kick_btn}"),
                 id="kick_selected",
-                state=TeamSG.kick
+                state=AdminSG.kick
             ),
             width=2,
         ),
@@ -77,19 +80,19 @@ admin_dialog = Dialog(
         state=AdminSG.team,
         getter=get_team_data,
     ),
-    # Управление доступом
+    # Управление доступом (пока на стопе)
     Window(
         Format("{ban_msg}"),
         Group(
             SwitchTo(
                 Format("{ban_btn}"),
                 id="ban_btn_selected",
-                state=BanSG.ban
+                state=AdminSG.ban
             ),
             SwitchTo(
                 Format("{unban_btn}"),
                 id="unban_btn_selected",
-                state=BanSG.unban                
+                state=AdminSG.unban                
             ),
             width=2,
         ),
@@ -103,19 +106,35 @@ admin_dialog = Dialog(
     
     # Управление командой
     Window(
+        Format("{team_select_msg}"),
+        Group(
+            Select(
+                Format("{item[0]}"),
+                id="selected_role",
+                item_id_getter=lambda item: item[0],
+                items="roles",
+                on_click=process_to_select_role,
+            ),
+            width=2
+        ),
+        state=AdminSG.selecting_role,
+        getter=get_roles_data
+    ),
+    Window(
         Format("{team_invite_msg}"),
         TextInput(
             id="processing_invite_new_member",
+            type_factory=parse_username_or_id_data,
             on_success=process_username_or_id, 
             filter=filter_message_to_find_username_or_id
         ),
-        state=TeamSG.invite,
+        state=AdminSG.invite,
         getter=get_team_data
     ),
     Window(
         Format("{team_kick_msg}"),
 
-        state=TeamSG.kick,
+        state=AdminSG.kick,
         getter=get_kicking_data
     ),
     getter=get_common_data,

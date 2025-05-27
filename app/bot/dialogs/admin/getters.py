@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, Dict
 from aiogram_dialog import DialogManager
 from fluentogram import TranslatorRunner
 
+from app.bot.enums import UserType
+
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
 
@@ -44,6 +46,16 @@ async def get_team_data(
         "team_add_btn": i18n.admin.team.invite.btn(),
         "team_invite_msg": i18n.admin.team.invite.msg(),
         "team_kick_btn": i18n.admin.team.kick.btn(),
+    }
+
+
+async def get_roles_data(
+    dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
+) -> Dict[str, str]:
+    roles = UserType.get_roles(with_id=True)
+    return {
+        "team_select_msg": i18n.admin.team.select.role.msg(),
+        "roles": roles
     }
 
 

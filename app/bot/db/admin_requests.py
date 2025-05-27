@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 async def create_employee(
     session: AsyncSession, telegram_id: int, role: UserType) -> bool:
-    role_id = {UserType.WAITER: 1, UserType.MANAGER: 2, UserType.ADMIN: 3}.get(role_id)
+    role_id = {UserType.WAITER: 1, UserType.MANAGER: 2, UserType.ADMIN: 3}.get(role)
     if role_id is None:
         logger.error(f"Неверная роль: {role}")
         return False

@@ -1,16 +1,18 @@
 from aiogram import F
 from aiogram.types import Message
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo, Start, Select
+from aiogram_dialog.widgets.common import sync_scroll
+from aiogram_dialog.widgets.text import Format, List
+from aiogram_dialog.widgets.kbd import Button, Group, SwitchTo, Start, Select, ScrollingGroup, Multiselect
 from aiogram_dialog.widgets.input import TextInput
 
 from app.bot.states.admin import AdminSG
 from app.bot.states.manager.manager import ManagerSG
 from .handlers import process_to_select_role, process_username_or_id
-from .getters import get_ban_data, get_common_data, get_kicking_data, get_reports_data, get_roles_data, get_team_data
+from .getters import get_approve_data, get_ban_data, get_common_data, get_kicking_data, get_reports_data, get_roles_data, get_team_data
 from .filters import filter_message_to_find_username_or_id
-from .services import parse_username_or_id_data
+from .services import parse_username_or_id_data, get_telegram_id
+
 
 admin_dialog = Dialog(
     Window(
@@ -23,7 +25,7 @@ admin_dialog = Dialog(
             Start(
                 Format("{manager_role_btn}"),
                 id="roles_selected",
-                state=ManagerSG,
+                state=ManagerSG.start,
                 data={"is_admin": True},
             ),
             # пока в заморозке
@@ -72,7 +74,7 @@ admin_dialog = Dialog(
             SwitchTo(
                 Format("{team_kick_btn}"),
                 id="kick_selected",
-                state=AdminSG.kick
+                state=AdminSG.selecting_employee
             ),
             width=2,
         ),
@@ -105,6 +107,8 @@ admin_dialog = Dialog(
     # Window(),
     
     # Управление командой
+    
+    # раздел добавления
     Window(
         Format("{team_select_msg}"),
         Group(
@@ -131,11 +135,41 @@ admin_dialog = Dialog(
         state=AdminSG.invite,
         getter=get_team_data
     ),
+    
+    # раздел удаления
     Window(
         Format("{team_kick_msg}"),
-
+        List(
+            Format("{pos}. @{item.username} | {item.first_name} <b>ID:<code>{item.telegram_id}</code></b>"),
+            items="employees",
+            id="list_employees",
+            page_size=12,
+        ),
+        ScrollingGroup(
+            Multiselect(
+                Format("✓ {item.first_name} | {item.username}"),
+                Format("{item.first_name} | {item.username}"),
+                id="ms_employees",
+                items="employees",
+                item_id_getter=get_telegram_id,
+            ),
+            id="sg_employees",
+            width=2,
+            height=6,
+            on_page_changed=sync_scroll("list_employees"),
+            hide_on_single_page=True
+        ),
+        SwitchTo(Format("{next}"), id="to_kick_employees", state=AdminSG.kick),
+        SwitchTo(Format("{back}"), id="__back__", state=AdminSG.team),
+        state=AdminSG.selecting_employee,
+        getter=get_kicking_data,
+        preview_data=get_kicking_data,
+    ),
+    
+    Window(
+        Format("{approve_kick_msg}"),
         state=AdminSG.kick,
-        getter=get_kicking_data
+        getter=get_approve_data,
     ),
     getter=get_common_data,
 )

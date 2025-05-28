@@ -1,9 +1,11 @@
 from typing import TYPE_CHECKING, Dict
 
 from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Multiselect
 from fluentogram import TranslatorRunner
 
-from app.bot.enums import UserType
+from app.bot.db.admin_requests import get_employees
+from app.bot.utils.enums import UserType
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
@@ -17,6 +19,7 @@ async def get_common_data(
     return {
         "back": i18n.back(),
         "hello_admin": i18n.admin.hello.message(),
+        "next": i18n.next(),
         "yes": i18n.yes(),
         "no": i18n.no(),
         "a_u_sure?": i18n.a.u.sure(),
@@ -62,8 +65,26 @@ async def get_roles_data(
 async def get_kicking_data(
         dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
 ) -> Dict[str,str]:
+    session = dialog_manager.middleware_data.get("session")
+    employees = []
+    for user in await get_employees(session=session):
+        user.username = "нет никнейма" if user.username is None else user.username
+        employees.append(user)
+        
     return {
         "team_kick_msg": i18n.admin.team.kick.msg(),
+        "employees": employees
+    }
+
+
+async def get_approve_data(
+    dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
+) -> Dict[str, str]:
+    ms: Multiselect = dialog_manager.find("ms_employees")
+    selected_employees = ms.get_checked()
+    print(F"{selected_employees=}")
+    return {
+        "approve_kick_msg": i18n.admin.team.approve.kick.msg()
     }
 
 

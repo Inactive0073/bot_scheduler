@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING
 from app.bot.db.admin_requests import create_employee
 from app.bot.db.common_requests import get_telegram_id_by_username
 from app.bot.states.admin.admin import AdminSG
+from app.bot.utils.exc import AlreadyHaveAllRoles, NotFoundError
 
 
 if TYPE_CHECKING:
@@ -41,12 +42,21 @@ async def process_username_or_id(
 
     if not text.isdigit():
         telegram_id = await get_telegram_id_by_username(session=session, username=text)
+        if telegram_id is None:
+            await message.answer(i18n.admin.not_.found.user())
+            return
     else:
         telegram_id = text
     telegram_id = int(telegram_id)
     logger.info(f"Получен запрос на добавлении нового пользователя {telegram_id} с ролью {role}.")
-    result = await create_employee(session=session, telegram_id=telegram_id, role=role)
-    if result:
-        await message.answer(i18n.admin.team.invite.success())
-    else:
-        await message.answer(i18n.admin.team.invite.unsuccess())
+    try:
+        result = await create_employee(session=session, telegram_id=telegram_id, role=role)
+        if result:
+            await message.answer(i18n.admin.team.invite.success())
+            await dialog_manager.switch_to(AdminSG.start)
+        else:
+            await message.answer(i18n.admin.team.invite.unsuccess())
+    except NotFoundError:
+        await message.answer(i18n.admin.not_.found.user())
+    except AlreadyHaveAllRoles:
+        await message.answer(i18n.admin.team.already.has.roles())

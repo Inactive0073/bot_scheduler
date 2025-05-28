@@ -15,10 +15,6 @@ from app.config_data.config import load_config, DataBase
 # access to the values within the .ini file in use.
 config = context.config
 
-# For migrations to work
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
 if config.config_file_name is not None:

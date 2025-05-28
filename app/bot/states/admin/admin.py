@@ -16,4 +16,6 @@ class AdminSG(StatesGroup):
     team = State()
     selecting_role = State()
     invite = State()
+    
+    selecting_employee = State()
     kick = State()

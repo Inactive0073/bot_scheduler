@@ -897,11 +897,23 @@ class SettingsSelect:
 
 
 class Admin:
+    not_: AdminNot_
     hello: AdminHello
     ban: AdminBan
     role: AdminRole
     reports: AdminReports
     team: AdminTeam
+
+
+class AdminNot_:
+    found: AdminNot_Found
+
+
+class AdminNot_Found:
+    @staticmethod
+    def user() -> Literal["""Пользователь не найден. Проверьте данные и попробуйте еще раз.
+
+Допустимый формат поиска: &lt;b&gt;123455&lt;/b&gt;, если ищем по Telegram ID или &lt;b&gt;@username&lt;/b&gt;, если ищем по имени пользователя."""]: ...
 
 
 class AdminHello:
@@ -910,9 +922,8 @@ class AdminHello:
 
 Доступный функционал:
 
-🚩 Блокировка/разблокировка пользователя
 📱 Функционал менеджера
-👨‍💼 Команда
+👨‍💼 Управление командой
 📃 Отчет системы лояльности персонала"""]: ...
 
 
@@ -956,7 +967,9 @@ class AdminTeam:
     menu: AdminTeamMenu
     invite: AdminTeamInvite
     select: AdminTeamSelect
+    already: AdminTeamAlready
     kick: AdminTeamKick
+    approve: AdminTeamApprove
 
     @staticmethod
     def btn() -> Literal["""Команда"""]: ...
@@ -1008,7 +1021,10 @@ class AdminTeamInvite:
     def msg() -> Literal["""Выберите пользователя для добавления в команду."""]: ...
 
     @staticmethod
-    def success(*, user) -> Literal["""Пользователь { $user } был успешно добавлен в команду."""]: ...
+    def success() -> Literal["""Пользователь был успешно добавлен в команду."""]: ...
+
+    @staticmethod
+    def unsuccess() -> Literal["""Не удалось добавить пользователя в команду. Попробуйте позже, если ошибка повторяется обратитесь в службу поддержки."""]: ...
 
 
 class AdminTeamSelect:
@@ -1020,15 +1036,35 @@ class AdminTeamSelectRole:
     def msg() -> Literal["""Выберите роль для члена вашей команды."""]: ...
 
 
+class AdminTeamAlready:
+    has: AdminTeamAlreadyHas
+
+
+class AdminTeamAlreadyHas:
+    @staticmethod
+    def roles() -> Literal["""У этого пользователя уже есть все роли."""]: ...
+
+
 class AdminTeamKick:
     @staticmethod
     def btn() -> Literal["""Удалить из команды"""]: ...
 
     @staticmethod
-    def msg() -> Literal["""Выберите пользователя для удаления."""]: ...
+    def msg() -> Literal["""Выберите пользователей для удаления."""]: ...
 
     @staticmethod
-    def success(*, user) -> Literal["""Пользователь { $user } был успешно удален из команды."""]: ...
+    def success() -> Literal["""Пользователи были успешно удалены из команды."""]: ...
+
+
+class AdminTeamApprove:
+    kick: AdminTeamApproveKick
+
+
+class AdminTeamApproveKick:
+    @staticmethod
+    def msg() -> Literal["""Вы уверены, что хотите удалить из команды выбранных пользователей? 
+
+&lt;i&gt;Удаление из команды никак не повлияет на их профиль клиента. Они смогут пользоваться системой лояльности.&lt;/i&gt;"""]: ...
 
 
 class AdminBanNot_:

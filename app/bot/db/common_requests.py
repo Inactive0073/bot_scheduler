@@ -21,3 +21,8 @@ async def get_telegram_id_by_username(session: AsyncSession, username: str) -> i
     stmt = select(User.telegram_id).where(User.username == username.lower())
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
+async def user_exists(session: AsyncSession, telegram_id: int) -> bool:
+    stmt = select(User).where(User.telegram_id == telegram_id)
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none() is not None

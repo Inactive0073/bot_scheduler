@@ -16,7 +16,6 @@ from .bot.utils import (
     create_translator_hub,
     connect_to_nats,
 )
-from .config_data.config import Config, load_config
 from .setup import DependeciesConfig
 
 

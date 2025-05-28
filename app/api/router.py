@@ -1,6 +1,4 @@
-import base64
 
-from aiogram.types import BufferedInputFile
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from .schemas import QRCodeScanner

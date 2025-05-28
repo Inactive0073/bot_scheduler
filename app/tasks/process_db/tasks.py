@@ -1,9 +1,8 @@
 import logging
-import asyncio
 from datetime import datetime, timezone
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy import case, delete, select, and_, or_, update
+from sqlalchemy import case, delete, and_, or_, update
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.bot.db.models.customers import Customer

@@ -1,6 +1,4 @@
-import asyncio
 import logging
-import sys
 
 from taskiq_nats import PullBasedJetStreamBroker, NATSKeyValueScheduleSource
 from taskiq.schedule_sources import LabelScheduleSource

@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.db.models import Role, UserRole, User
@@ -16,11 +16,14 @@ async def get_user_role(session: AsyncSession, telegram_id: int) -> list[str]:
         return result.scalars().all()
 
 
-async def get_telegram_id_by_username(session: AsyncSession, username: str) -> int | None:
+async def get_telegram_id_by_username(
+    session: AsyncSession, username: str
+) -> int | None:
     "Возвращает Telegram ID по никнейму пользователя."
     stmt = select(User.telegram_id).where(User.username == username.lower())
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
+
 
 async def user_exists(session: AsyncSession, telegram_id: int) -> bool:
     stmt = select(User).where(User.telegram_id == telegram_id)

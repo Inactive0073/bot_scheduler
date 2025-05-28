@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.enums import ParseMode
 
-from taskiq_nats import NATSObjectStoreResultBackend, NATSKeyValueScheduleSource
+from taskiq_nats import NATSKeyValueScheduleSource
 
 from .bot.db.base import Base
 from .bot.middlewares import (

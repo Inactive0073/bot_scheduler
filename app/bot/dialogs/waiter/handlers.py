@@ -2,15 +2,10 @@ from typing import TYPE_CHECKING
 
 from aiogram.types import (
     Message,
-    InlineKeyboardMarkup,
-    CallbackQuery,
-    InputMediaPhoto,
 )
-from aiogram.exceptions import TelegramBadRequest
 
-from aiogram_dialog import DialogManager, ShowMode
-from aiogram_dialog.widgets.input import MessageInput, TextInput
-from aiogram_dialog.widgets.kbd import Button, Toggle, Multiselect, ManagedMultiselect
+from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.input import TextInput
 
 from app.bot.db.models.customers import Customer
 from app.bot.db.customer_requests import (

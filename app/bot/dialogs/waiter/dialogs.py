@@ -1,9 +1,10 @@
 from aiogram import F
-from aiogram.types import Message
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import WebApp, Button, Group, SwitchTo
+from aiogram_dialog.widgets.kbd import WebApp, Group, SwitchTo, Start
 from aiogram_dialog.widgets.input import TextInput
+
+from app.bot.states.admin import AdminSG
 
 from ...states.waiter.start import WaiterSG
 from .getters import get_common_data, get_processing_guest_data
@@ -13,6 +14,12 @@ waiter_dialog = Dialog(
     Window(
         Format("{hello_waiter}"),
         WebApp(Format("{waiter_menu_scan}"), url=Format("{waiter_menu_scan_url}")),
+        Start(
+            Format("{to_admin_menu}"),
+            id="to_admin_menu",
+            state=AdminSG.start,
+            when="is_admin",
+        ),
         TextInput(id="process_qr_token", type_factory=int, on_success=process_qr_token),
         state=WaiterSG.start,
     ),

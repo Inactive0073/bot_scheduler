@@ -13,11 +13,14 @@ async def get_common_data(
     **kwargs,
 ) -> Dict[str, str]:
     web_app_url = dialog_manager.middleware_data.get("web_app_url")
+    is_admin = dialog_manager.start_data.get("is_admin")
     return {
         "back": i18n.back(),
         "hello_waiter": i18n.waiter.hello.message(),
         "waiter_menu_scan": i18n.waiter.menu.scan(),
         "waiter_menu_scan_url": f"{web_app_url}/",
+        "is_admin": is_admin,
+        "to_admin_menu": i18n.admin.comeback.btn(),
     }
 
 

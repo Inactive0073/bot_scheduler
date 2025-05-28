@@ -1,15 +1,11 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import (
-    Group,
-    Button,
-    Row,
-    RequestContact,
-)
+from aiogram_dialog.widgets.kbd import Group, Button, Row, RequestContact, Start
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
+from app.bot.states.admin import AdminSG
 from app.bot.states.customer.start import CustomerSG
 from .getters import get_common_data, get_customer_menu_data
 from .filters import ContactFilter
@@ -144,6 +140,12 @@ customer_dialog = Dialog(
             Format("{menu_about_button}"),
             id="about_us_selected",
             on_click=on_about_selected,
+        ),
+        Start(
+            Format("{to_admin_menu}"),
+            id="to_admin_menu",
+            state=AdminSG.start,
+            when="is_admin",
         ),
         state=CustomerSG.menu,
         markup_factory=ReplyKeyboardFactory(

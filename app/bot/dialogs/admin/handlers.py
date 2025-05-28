@@ -1,20 +1,17 @@
-from datetime import datetime
 import logging
-from aiogram import Bot
 from aiogram.types import (
     Message,
     CallbackQuery,
-    BufferedInputFile,
 )
-from aiogram_dialog import DialogManager, ShowMode
-from aiogram_dialog.widgets.kbd import Button, Select
-from aiogram_dialog.widgets.input import MessageInput, ManagedTextInput
+from aiogram_dialog import DialogManager
+from aiogram_dialog.widgets.kbd import Button, Select, Multiselect
+from aiogram_dialog.widgets.input import ManagedTextInput
 
 from fluentogram import TranslatorRunner
 
 from typing import TYPE_CHECKING
 
-from app.bot.db.admin_requests import create_employee
+from app.bot.db.admin_requests import create_employee, kick_employees
 from app.bot.db.common_requests import get_telegram_id_by_username
 from app.bot.states.admin.admin import AdminSG
 from app.bot.utils.exc import AlreadyHaveAllRoles, NotFoundError
@@ -33,6 +30,7 @@ async def process_to_select_role(
     dialog_manager.dialog_data["selected_role"] = data
     await dialog_manager.switch_to(AdminSG.invite)
 
+
 async def process_username_or_id(
     message: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str
 ):
@@ -48,9 +46,13 @@ async def process_username_or_id(
     else:
         telegram_id = text
     telegram_id = int(telegram_id)
-    logger.info(f"Получен запрос на добавлении нового пользователя {telegram_id} с ролью {role}.")
+    logger.info(
+        f"Получен запрос на добавлении нового пользователя {telegram_id} с ролью {role}."
+    )
     try:
-        result = await create_employee(session=session, telegram_id=telegram_id, role=role)
+        result = await create_employee(
+            session=session, telegram_id=telegram_id, role=role
+        )
         if result:
             await message.answer(i18n.admin.team.invite.success())
             await dialog_manager.switch_to(AdminSG.start)
@@ -60,3 +62,18 @@ async def process_username_or_id(
         await message.answer(i18n.admin.not_.found.user())
     except AlreadyHaveAllRoles:
         await message.answer(i18n.admin.team.already.has.roles())
+
+
+async def process_kick_button(
+    callback: CallbackQuery, _: Button, dialog_manager: DialogManager
+):
+    session = dialog_manager.middleware_data.get("session")
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    ms: Multiselect = dialog_manager.find("ms_employees")
+    selected_employees = list(map(int, ms.get_checked()))
+    if await kick_employees(session=session, telegram_ids=selected_employees):
+        callback.message.answer(i18n.admin.team.kick.success())
+        await dialog_manager.switch_to(AdminSG.start)
+    else:
+        callback.message.answer(i18n.admin.team.kick.unsuccess())
+        await dialog_manager.switch_to(AdminSG.selecting_employee)

@@ -12,10 +12,10 @@ class AdminSG(StatesGroup):
     ban_menu = State()
     ban = State()
     unban = State()
-    
+
     team = State()
     selecting_role = State()
     invite = State()
-    
+
     selecting_employee = State()
     kick = State()

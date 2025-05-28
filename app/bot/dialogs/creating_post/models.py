@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from enum import Enum
-from aiogram.types import InlineKeyboardMarkup, ContentType
+from aiogram.types import InlineKeyboardMarkup
 
 
 class MediaType(str, Enum):

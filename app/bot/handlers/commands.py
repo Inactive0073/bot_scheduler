@@ -1,6 +1,6 @@
 import logging
 from aiogram import Router
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram_dialog import DialogManager, ShowMode, StartMode
 
@@ -10,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..db.customer_requests import get_customer_detail_info, upsert_customer
 from ..states.admin import AdminSG
 from ..states.customer.start import CustomerSG
-from ..states.manager.settings import SettingsSG
 from ..states.manager.manager import ManagerSG
 from ..states.waiter.start import WaiterSG
 from ..db.manager_requests import upsert_user
@@ -38,7 +37,7 @@ async def process_start_command(
 
     if not roles.intersection({"admin", "manager", "waiter", "owner"}):
         if not (await get_customer_detail_info(session, telegram_id)):
-            logger.debug(f"Проверка пройдена успешно!")
+            logger.debug("Проверка пройдена успешно!")
             await upsert_customer(
                 session=session,
                 telegram_id=telegram_id,
@@ -46,7 +45,7 @@ async def process_start_command(
                 first_name=first_name,
                 last_name=last_name,
             )
-            logger.debug(f"Обновление данных пройдено успешно")
+            logger.debug("Обновление данных пройдено успешно")
             await dialog_manager.start(
                 state=CustomerSG.start, mode=StartMode.RESET_STACK
             )
@@ -63,15 +62,10 @@ async def process_start_command(
             last_name=last_name,
         )
         if "admin" in roles:
-            await dialog_manager.start(
-                state=AdminSG.start, mode=StartMode.RESET_STACK
-            )
+            await dialog_manager.start(state=AdminSG.start, mode=StartMode.RESET_STACK)
         elif "manager" in roles:
             await dialog_manager.start(
                 state=ManagerSG.start, mode=StartMode.RESET_STACK
             )
         elif "waiter" in roles:
-            await dialog_manager.start(
-                state=WaiterSG.start, mode=StartMode.RESET_STACK
-            )
-
+            await dialog_manager.start(state=WaiterSG.start, mode=StartMode.RESET_STACK)

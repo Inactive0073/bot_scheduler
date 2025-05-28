@@ -32,6 +32,7 @@ async def get_customer_menu_data(
     i18n: TranslatorRunner,
     **kwargs,
 ) -> Dict[str, str]:
+    is_admin = dialog_manager.start_data.get("is_admin")
     return {
         "menu_info_message": i18n.customer.menu.info.message(),
         "customer_menu_placeholder": i18n.customer.menu.placeholder(),
@@ -43,4 +44,6 @@ async def get_customer_menu_data(
         "menu_loayalty_button": i18n.customer.menu.loyalty.button(),
         "menu_partnership_button": i18n.customer.menu.partnership.button(),
         "menu_help_button": i18n.customer.menu.help.button(),
+        "is_admin": is_admin,
+        "to_admin_menu": i18n.admin.comeback.btn(),
     }

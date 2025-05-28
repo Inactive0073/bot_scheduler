@@ -18,6 +18,7 @@ async def get_hello(
     username = html.quote(
         event_from_user.first_name if event_from_user.first_name else "пользователь"
     )
+    is_admin = dialog_manager.start_data.get("is_admin")
     return {
         "hello_admin": i18n.start.hello.admin(username=username),
         "create_post": i18n.start.create.post(),
@@ -25,4 +26,6 @@ async def get_hello(
         "edit_post": i18n.start.edit.post(),
         "create_description": i18n.start.create.description(),
         "settings": i18n.start.settings(),
+        "to_admin_menu": i18n.admin.comeback.btn(),
+        "is_admin": is_admin,
     }

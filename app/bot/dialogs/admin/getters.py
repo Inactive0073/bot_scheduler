@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Dict
-
+from aiogram.types import User
 from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Multiselect
 from fluentogram import TranslatorRunner
@@ -24,6 +24,8 @@ async def get_common_data(
         "no": i18n.no(),
         "a_u_sure?": i18n.a.u.sure(),
         "reports_btn": i18n.admin.reports.btn(),
+        "customer_role_btn": i18n.admin.role.customer.btn(),
+        "waiter_role_btn": i18n.admin.role.waiter.btn(),
         "manager_role_btn": i18n.admin.role.manager.btn(),
         "ban_menu_btn": i18n.admin.ban.menu.btn(),
         "team_menu_btn": i18n.admin.team.btn(),
@@ -56,36 +58,35 @@ async def get_roles_data(
     dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
 ) -> Dict[str, str]:
     roles = UserType.get_roles(with_id=True)
-    return {
-        "team_select_msg": i18n.admin.team.select.role.msg(),
-        "roles": roles
-    }
+    return {"team_select_msg": i18n.admin.team.select.role.msg(), "roles": roles}
 
 
 async def get_kicking_data(
-        dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
-) -> Dict[str,str]:
+    dialog_manager: DialogManager,
+    i18n: TranslatorRunner,
+    event_from_user: User,
+    **kwargs,
+) -> Dict[str, str]:
     session = dialog_manager.middleware_data.get("session")
+    ms: Multiselect = dialog_manager.find("ms_employees")
+    selected_employees = ms.get_checked()
     employees = []
     for user in await get_employees(session=session):
         user.username = "нет никнейма" if user.username is None else user.username
-        employees.append(user)
-        
+        if user.username != event_from_user.username:
+            employees.append(user)
+
     return {
+        "selected_employees": selected_employees,
         "team_kick_msg": i18n.admin.team.kick.msg(),
-        "employees": employees
+        "employees": employees,
     }
 
 
 async def get_approve_data(
     dialog_manager: DialogManager, i18n: TranslatorRunner, **kwargs
 ) -> Dict[str, str]:
-    ms: Multiselect = dialog_manager.find("ms_employees")
-    selected_employees = ms.get_checked()
-    print(F"{selected_employees=}")
-    return {
-        "approve_kick_msg": i18n.admin.team.approve.kick.msg()
-    }
+    return {"approve_kick_msg": i18n.admin.team.approve.kick.msg()}
 
 
 async def get_ban_data(

@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Iterable
 
 import logging
 
@@ -16,6 +16,7 @@ from .common_requests import user_exists
 
 logger = logging.getLogger(__name__)
 
+
 async def create_employee(
     session: AsyncSession, telegram_id: int, role: UserType
 ) -> bool:
@@ -25,7 +26,9 @@ async def create_employee(
         return False
     is_exists = await user_exists(session=session, telegram_id=telegram_id)
     if not is_exists:
-        logger.error(f"Администратор пытается добавить пользователя {telegram_id}, который не запустил бота или такого пользователя вообще не существует.")
+        logger.error(
+            f"Администратор пытается добавить пользователя {telegram_id}, который не запустил бота или такого пользователя вообще не существует."
+        )
         raise NotFoundError
     # Проверка, есть ли у пользователя все роли
     all_roles = {1, 2, 3}
@@ -36,11 +39,10 @@ async def create_employee(
         logger.info(f"Пользователь {telegram_id} уже имеет все роли.")
         raise AlreadyHaveAllRoles
     # Добавление роли, если она еще не назначена
-    stmt = insert(UserRole).values(
-        user_id=telegram_id,
-        role_id=role_id
-    ).on_conflict_do_nothing(
-        index_elements=['user_id', 'role_id']
+    stmt = (
+        insert(UserRole)
+        .values(user_id=telegram_id, role_id=role_id)
+        .on_conflict_do_nothing(index_elements=["user_id", "role_id"])
     )
     try:
         result = await session.execute(stmt)
@@ -53,37 +55,50 @@ async def create_employee(
             return False
     except SQLAlchemyError as e:
         await session.rollback()
-        logger.error(f"Произошла ошибка при добавлении роли для сотрудника {telegram_id}. Ошибка: {e}")
+        logger.error(
+            f"Произошла ошибка при добавлении роли для сотрудника {telegram_id}. Ошибка: {e}"
+        )
         return False
 
 
-async def kick_employee(
-    session: AsyncSession, telegram_id: int
-) -> bool:
-    stmt = delete(UserRole).where(UserRole.user_id == telegram_id)
+async def kick_employees(session: AsyncSession, telegram_ids: Iterable[int]) -> bool:
+    """Удаляет роли у сотрудников по списку Telegram ID."""
+    if not telegram_ids:
+        logger.info("Передан пустой список telegram_ids, ничего не удалено.")
+        return False
+
+    stmt = delete(UserRole).where(UserRole.user_id.in_(telegram_ids))
     try:
         result = await session.execute(stmt)
         await session.commit()
-        return result.rowcount > 0
+        if result.rowcount > 0:
+            logger.info(f"Удалены роли для сотрудников: {telegram_ids}")
+            return True
+        else:
+            logger.info(f"Не найдены роли для удаления для сотрудников: {telegram_ids}")
+            return False
     except SQLAlchemyError as e:
-        logger.error(f"Произошла ошибка при удалении сотрудника. Ошибка: {e}")
+        await session.rollback()
+        logger.error(f"Ошибка при удалении ролей для сотрудников {telegram_ids}: {e}")
         return False
-    
 
-async def get_employee(
-    session: AsyncSession, telegram_id: int
-) -> User:
-    stmt = select(User).join(UserRole, UserRole.user_id == telegram_id).where(User.telegram_id == telegram_id)
+
+async def get_employee(session: AsyncSession, telegram_id: int) -> User:
+    stmt = (
+        select(User)
+        .join(UserRole, UserRole.user_id == telegram_id)
+        .where(User.telegram_id == telegram_id)
+    )
     try:
         result = await session.execute(stmt)
         return result.one_or_none()
     except SQLAlchemyError as e:
-        logger.error(f"Произошла ошибка при получении сотрудника {telegram_id}. Ошибка: {e}")
+        logger.error(
+            f"Произошла ошибка при получении сотрудника {telegram_id}. Ошибка: {e}"
+        )
 
 
-async def get_employees(
-    session: AsyncSession, size: int | None = None
-) -> list[User]:
+async def get_employees(session: AsyncSession, size: int | None = None) -> list[User]:
     """Получает всех сотрудников с их ролями."""
     stmt = (
         select(User)

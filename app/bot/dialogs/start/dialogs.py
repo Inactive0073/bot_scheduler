@@ -4,6 +4,7 @@ from aiogram_dialog.widgets.kbd import Button, Group, Start
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from app.bot.dialogs.start.getters import get_hello
+from app.bot.states.admin.admin import AdminSG
 from app.bot.states.manager.addition_channel import AdditionToChannelSG
 from app.bot.states.manager.settings import SettingsSG
 from app.bot.states.manager.manager import ManagerSG
@@ -32,6 +33,12 @@ start_dialog = Dialog(
                 show_mode=ShowMode.DELETE_AND_SEND,
             ),
             width=2,
+        ),
+        Start(
+            Format("{to_admin_menu}"),
+            id="to_admin_menu",
+            state=AdminSG.start,
+            when="is_admin",
         ),
         getter=get_hello,
         state=ManagerSG.start,

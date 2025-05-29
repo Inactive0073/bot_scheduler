@@ -66,7 +66,7 @@ async def send_message_bot_subscribers(
 
 @broker.task(task_name="push_msg_to_bot_later")
 async def send_schedule_message_bot_subscribers(
-    chat_id: int,
+    telegram_ids: list[int],
     text: str,
     keyboard: InlineKeyboardMarkup = None,
     file_id: str = None,
@@ -80,22 +80,25 @@ async def send_schedule_message_bot_subscribers(
     if file_id is None:
         async with BOT_LIMIT_MESSAGE:
             with suppress(TelegramBadRequest):
-                message = await bot.send_message(
-                    chat_id=chat_id,
-                    text=text,
-                    reply_markup=keyboard,
-                    disable_notification=notify_status,
-                )
-                logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+                for telegram_id in telegram_ids:
+                    message = await bot.send_message(
+                        chat_id=telegram_id,
+                        text=text,
+                        reply_markup=keyboard,
+                        disable_notification=notify_status,
+                    )
+                    logger.debug(f"Сообщение {message.message_id} успешно отправлено.\n")
     elif file_id:
+        
         async with BOT_LIMIT_MESSAGE:
             with suppress(TelegramBadRequest):
-                message = await bot.send_photo(
-                    chat_id=chat_id,
-                    photo=file_id,
-                    caption=text,
-                    has_spoiler=has_spoiler,
-                    reply_markup=keyboard,
-                    disable_notification=notify_status,
-                )
-                logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+                for telegram_id in telegram_ids:  
+                    message = await bot.send_photo(
+                        chat_id=telegram_id,
+                        photo=file_id,
+                        caption=text,
+                        has_spoiler=has_spoiler,
+                        reply_markup=keyboard,
+                        disable_notification=notify_status,
+                    )
+                    logger.debug(f"Сообщение {message.message_id} успешно отправлено.\n")

@@ -23,7 +23,7 @@ async def get_hello(
         "hello_admin": i18n.start.hello.admin(username=username),
         "create_post": i18n.start.create.post(),
         "add_channel": i18n.start.add.channel(),
-        "edit_post": i18n.start.edit.post(),
+        "my_posts": i18n.start.my.posts(),
         "create_description": i18n.start.create.description(),
         "settings": i18n.start.settings(),
         "to_admin_menu": i18n.admin.comeback.btn(),

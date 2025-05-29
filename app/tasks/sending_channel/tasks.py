@@ -1,9 +1,11 @@
+import asyncio
+
 from taskiq import TaskiqDepends
 
 import logging
 from aiogram import Bot
 from aiogram.types import InlineKeyboardMarkup
-from aiogram.exceptions import TelegramBadRequest
+from aiogram.exceptions import TelegramBadRequest, TelegramRetryAfter
 
 from aiolimiter import AsyncLimiter
 from contextlib import suppress
@@ -13,10 +15,10 @@ from ...taskiq_broker.broker import broker
 logger = logging.getLogger(__name__)
 
 
-@broker.task(task_name="push_msg_to_bot_now")
+@broker.task(task_name="push_msg_to_channel")
 async def send_message_to_channel(
-    chat_id: int,
     text: str,
+    channels: list[tuple[str, str]],
     keyboard: InlineKeyboardMarkup = None,
     file_id: str = None,
     notify_status: bool = True,
@@ -27,12 +29,18 @@ async def send_message_to_channel(
 ) -> None:
     limiter = AsyncLimiter(limit_message, 1)
     # Отправляем сообщение
-    async with limiter:
-        with suppress(TelegramBadRequest):
-            message = await bot.send_message(
-                chat_id=chat_id,
-                text=text,
-                reply_markup=keyboard,
-                disable_notification=notify_status,
-            )
-            logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+    for channel in channels:
+        channel_name = "@" + channel[0]  # channel — это кортеж
+        async with limiter:
+            with suppress(TelegramBadRequest):
+                try:
+                    message = await bot.send_message(
+                        chat_id=channel_name,
+                        text=text,
+                        reply_markup=keyboard,
+                        disable_notification=notify_status,
+                    )
+                    logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
+                except TelegramRetryAfter as e:
+                    logger.error(f"Превысили допустимое количество отправки сообщений в секунду. Ошибка: {e}")
+                    await asyncio.sleep(5)

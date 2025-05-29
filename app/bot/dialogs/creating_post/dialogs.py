@@ -27,6 +27,7 @@ from .getters import (
     get_posting_sg_common_data,
 )
 from .handlers import (
+    back_to_menu,
     invalid_set_time,
     process_delete_button,
     process_other_type_msg,
@@ -71,7 +72,7 @@ create_post_dialog = Dialog(
             on_click=process_to_select_channel,
         ),
         Row(
-            Start(Format("{back}"), id="back_to_menu", state=ManagerSG.start),
+            Button(Format("{back}"), id="back_to_menu", on_click=back_to_menu),
             SwitchTo(
                 Format("{next}"),
                 id="next_clicked",
@@ -91,6 +92,7 @@ create_post_dialog = Dialog(
         MessageInput(
             func=process_other_type_msg,
         ),
+        SwitchTo(Format("{back}"), id="__back__", state=PostingSG.select_channels),
         state=PostingSG.watch_text,
         getter=get_watch_text,
     ),
@@ -113,8 +115,8 @@ create_post_dialog = Dialog(
                 state=PostingSG.editing_text,
                 show_mode=ShowMode.DELETE_AND_SEND,
             ),
-            # Добавить URL кнопок
             Group(
+                # Добавить URL кнопок
                 SwitchTo(
                     Format("{url}"),
                     id="add_url_pressed",
@@ -261,6 +263,7 @@ create_post_dialog = Dialog(
         Format("{report_message}"),
         List(Format("└ {item[1]}"), items="channels"),
         Format("\n\n{autocaption}"),
+        SwitchTo(Format("{main_menu}"), id="__back__", state=PostingSG.select_channels),
         state=PostingSG.show_posted_status,
         getter=get_report_after_push_data,
     ),

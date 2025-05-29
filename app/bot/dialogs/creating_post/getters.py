@@ -173,6 +173,7 @@ async def get_report_after_push_data(
     return {
         "report_message": report,
         "channels": channels_name,
+        "main_menu": i18n.main.menu(),
     }
 
 

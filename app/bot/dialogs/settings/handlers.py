@@ -3,7 +3,15 @@ from aiogram_dialog import DialogManager
 from aiogram_dialog.widgets.kbd import Button
 
 from app.bot.db.manager_requests import set_user_tz
+from app.bot.states.manager.manager import ManagerSG
 
+
+async def back_to_menu(
+    callback: CallbackQuery, _: Button, dialog_manager: DialogManager
+) -> None:
+    is_admin = dialog_manager.start_data.get("is_admin")
+    await dialog_manager.start(state=ManagerSG.start, data={"is_admin": is_admin})
+    
 
 async def on_timezone_selected(
     callback: CallbackQuery,

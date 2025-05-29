@@ -19,11 +19,19 @@ from app.bot.db.manager_requests import (
     upsert_channel_with_admin,
 )
 from app.bot.states.manager.addition_channel import AdditionToChannelSG
+from app.bot.states.manager.manager import ManagerSG
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
 
 logger = logging.getLogger(__name__)
+
+
+async def back_to_menu(
+    callback: CallbackQuery, _: Button, dialog_manager: DialogManager
+) -> None:
+    is_admin = dialog_manager.start_data.get("is_admin")
+    await dialog_manager.start(state=ManagerSG.start, data={"is_admin": is_admin})
 
 
 def validate_channel(text: str):

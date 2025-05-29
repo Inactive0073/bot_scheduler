@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import (
     Select,
     Group,
     Back,
-    Start,
+    Button,
     Checkbox,
 )
 from aiogram_dialog.widgets.input import TextInput, MessageInput
@@ -26,6 +26,7 @@ from .getters import (
 from .handlers import (
     add_caption_to_channel,
     auto_caption_changed,
+    back_to_menu,
     check_admin_status,
     delete_caption,
     delete_channel_from_bot,
@@ -62,12 +63,7 @@ dialog_addition_channel = Dialog(
             url=Format("{url_button}"),
             id="add_channel_pressed",
         ),
-        Start(
-            text=Format("{back}"),
-            id="back_from_channel_settings",
-            show_mode=ShowMode.DELETE_AND_SEND,
-            state=ManagerSG.start,
-        ),
+        Button(Format("{back}"), id="back_to_menu", on_click=back_to_menu),
         TextInput(
             id="chhanel_check_bot_status",
             type_factory=validate_channel,

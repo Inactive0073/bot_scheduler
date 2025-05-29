@@ -22,17 +22,26 @@ from datetime import datetime, timezone, timedelta
 
 from logging import getLogger
 
+from app.bot.states.manager.manager import ManagerSG
 from app.tasks import (
     send_message_bot_subscribers,
     send_schedule_message_bot_subscribers,
     send_message_to_channel,
 )
 
+from .models import PostData
+
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
 
 logger = getLogger(__name__)
 
+
+async def back_to_menu(
+    callback: CallbackQuery, _: Button, dialog_manager: DialogManager
+) -> None:
+    is_admin = dialog_manager.start_data.get("is_admin")
+    await dialog_manager.start(state=ManagerSG.start, data={"is_admin": is_admin})
 
 async def process_to_select_bot_mailing(
     message: Message, widget: Button, dialog_manager: DialogManager
@@ -561,23 +570,24 @@ async def process_push_to_bot_button(
     type_media = dialog_manager.dialog_data.get("type_media")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
-
-    for telegram_id in telegram_ids:
-        task = await send_schedule_message_bot_subscribers.schedule_by_time(
-            source=nats_source,
-            time=posting_time,
-            chat_id=telegram_id,
-            text=post_message,
-            keyboard=keyboard,
-            file_id=file_id,
-            type_media=type_media,
-            notify_status=notify_status,
-            has_spoiler=has_spoiler,
-        )
+    
+    task = await send_schedule_message_bot_subscribers.schedule_by_time(
+        source=nats_source,
+        time=posting_time,
+        telegram_ids=telegram_ids,
+        text=post_message,
+        keyboard=keyboard,
+        file_id=file_id,
+        type_media=type_media,
+        notify_status=notify_status,
+        has_spoiler=has_spoiler,
+    )
+    data_json = {""}
     await upsert_post(
         session=session,
         schedule_id=task.schedule_id,
         target_type=recipient_type,
+        scheduled_time=posting_time,
         data_json={},
         post_message=post_message,
         author_id=message.from_user.id,
@@ -593,6 +603,7 @@ async def process_send_to_channel_later(
     widget: Button,
     dialog_manager: DialogManager,
 ) -> None:
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get('i18n')
     nats_source = dialog_manager.middleware_data.get("nats_source")
     session = dialog_manager.middleware_data.get("session")
 
@@ -606,28 +617,49 @@ async def process_send_to_channel_later(
     posting_time = datetime.fromisoformat(posting_time_iso).replace(
         tzinfo=timezone(timedelta(hours=tz_offset))
     )
-    delay = int(get_delay(post_time=posting_time))
-
+    try:
+        get_delay(post_time=posting_time)
+    except ValueError:
+        await message.answer(i18n.cr.instruction.too.late.time())
+        return
+    
     # Пользовательские данные для сообщения
-    selected_channels = dialog_manager.dialog_data["selected_channels"]
-    post_message = dialog_manager.dialog_data.get("post_message")
-    keyboard = dialog_manager.dialog_data.get("keyboard")
-    notify_status = dialog_manager.dialog_data.get("notify_on")
-    has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
-    file_id = dialog_manager.dialog_data.get("media_content")
-
-    for channel in selected_channels:
-        channel_name = "@" + channel[0]  # channel — это кортеж
-        await send_message_to_channel.schedule_by_time(
-            source=nats_source,
-            time=posting_time,
-            chat_id=channel_name,
-            text=post_message,
-            keyboard=keyboard,
-            file_id=file_id,
-            notify_status=notify_status,
-            has_spoiler=has_spoiler,
-        )
+    post_data = PostData(
+        text=dialog_manager.dialog_data.get("post_message"),
+        scheduled_time=posting_time,
+        keyboard=dialog_manager.dialog_data.get("keyboard"),
+        file_id=dialog_manager.dialog_data.get("media_content"),
+        type_media=dialog_manager.dialog_data.get("type_media"),
+        has_spoiler=dialog_manager.dialog_data.get("has_spoiler"),
+        notify_status = dialog_manager.dialog_data.get("notify_on"),
+        selected_channels=dialog_manager.dialog_data.get("selected_channels"),
+    )
+    task = await send_message_to_channel.schedule_by_time(
+        source=nats_source,
+        time=post_data.scheduled_time,
+        text=post_data.text,
+        channels=post_data.selected_channels,
+        keyboard=post_data.keyboard,
+        file_id=post_data.file_id,
+        notify_status=post_data.notify_status,
+        has_spoiler=post_data.has_spoiler,
+    )
+    schedule_id = task.schedule_id
+    data_json = {
+        "keyboard": post_data.keyboard,
+        "notify_status": post_data.notify_status,
+        "has_spoiler": post_data.has_spoiler,
+        "selected_channels": post_data.selected_channels
+    }
+    await upsert_post(
+        session=session,
+        schedule_id=schedule_id,
+        target_type="channel",
+        scheduled_time=posting_time,
+        data_json=data_json,
+        post_message=post_data.text,
+        author_id=message.from_user.id
+    )
     await dialog_manager.switch_to(
         state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND
     )

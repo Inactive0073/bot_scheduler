@@ -1,11 +1,10 @@
 from aiogram_dialog import Dialog, Window
 from aiogram_dialog.widgets.text import Format
-from aiogram_dialog.widgets.kbd import Group, SwitchTo, Radio, Start, Column
+from aiogram_dialog.widgets.kbd import Group, SwitchTo, Radio, Button, Column
 
-from app.bot.states.manager.manager import ManagerSG
 from app.bot.states.manager.settings import SettingsSG
 from .getters import get_setting_menu_data, get_settings_data, get_start_setting_tz_data
-from .handlers import on_timezone_selected
+from .handlers import back_to_menu, on_timezone_selected
 
 settings_dialog = Dialog(
     Window(
@@ -23,7 +22,7 @@ settings_dialog = Dialog(
             ),
             width=2,
         ),
-        Start(Format("{back}"), id="back_to_menu", state=ManagerSG.start),
+        Button(Format("{back}"), id="back_to_menu", on_click=back_to_menu),
         state=SettingsSG.start,
         getter=get_setting_menu_data,
     ),

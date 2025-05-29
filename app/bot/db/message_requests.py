@@ -3,6 +3,7 @@ from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import delete, select
 
+from datetime import datetime
 from .models.schedule_post import SchedulePost
 
 
@@ -11,6 +12,7 @@ async def upsert_post(
     session: AsyncSession,
     schedule_id: int,
     target_type: Literal["channel", "customer"],
+    scheduled_time: datetime,
     data_json: dict,
     post_message: str,
     author_id: int,
@@ -21,22 +23,25 @@ async def upsert_post(
         session: Асинхронная сессия SQLAlchemy
         schedule_id: Уникальный идентификатор запланированного поста
         target_type: Тип целевого объекта (канал или пользователь)
+        scheduled_time: Время постинга
         data_json: Данные для отправки в формате JSON
         post_message: Сообщение поста
         author_id: Телеграм ID автора поста
 
     Example:
-        await create_post(session, 1, "channel", {"key": "value"}, "Hello, world!", 12345)
+        await create_post(session, 1, "channel", datetime, {"key": "value"}, "Hello, world!", 12345)
     """
     values = {
         "schedule_id": schedule_id,
         "target_type": target_type,
+        "scheduled_time": scheduled_time,
         "data_json": data_json,
         "post_message": post_message,
         "author_id": author_id,
     }
     update_values = {
         "target_type": target_type,
+        "scheduled_time": scheduled_time,
         "data_json": data_json,
         "post_message": post_message,
     }
@@ -61,6 +66,12 @@ async def get_post(
         select(SchedulePost).where(SchedulePost.schedule_id == schedule_id)
     )
     return result.scalar_one_or_none()
+
+
+async def get_posts(session: AsyncSession) -> list[SchedulePost]:
+    """Получить все запланированные посты"""
+    result = await session.execute(select(SchedulePost))
+    return result.scalars().all()
 
 
 async def delete_post(session: AsyncSession, schedule_id: int) -> bool:

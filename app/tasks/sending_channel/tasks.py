@@ -21,7 +21,7 @@ async def send_message_to_channel(
     channels: list[tuple[str, str]],
     keyboard: InlineKeyboardMarkup = None,
     file_id: str = None,
-    notify_status: bool = True,
+    disable_notification: bool = True,
     has_spoiler: bool = False,
     bot: Bot = TaskiqDepends(),
     limit_message: int = 15,
@@ -38,9 +38,11 @@ async def send_message_to_channel(
                         chat_id=channel_name,
                         text=text,
                         reply_markup=keyboard,
-                        disable_notification=notify_status,
+                        disable_notification=disable_notification,
                     )
                     logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
                 except TelegramRetryAfter as e:
-                    logger.error(f"Превысили допустимое количество отправки сообщений в секунду. Ошибка: {e}")
+                    logger.error(
+                        f"Превысили допустимое количество отправки сообщений в секунду. Ошибка: {e}"
+                    )
                     await asyncio.sleep(5)

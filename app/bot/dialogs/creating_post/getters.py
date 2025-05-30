@@ -11,7 +11,9 @@ from dataclasses import dataclass
 
 from fluentogram import TranslatorRunner
 
+from app.bot.db.common_requests import get_user_role
 from app.bot.db.manager_requests import get_channels, get_user_tz
+from app.bot.utils.enums.role import UserType
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
@@ -59,7 +61,7 @@ async def get_creating_post_data(
     posting_time_index = bool(posting_time)
     has_media = dialog_manager.dialog_data.get("has_media", False)
     has_keyboard = dialog_manager.dialog_data.get("has_keyboard", False)
-    notify_status = dialog_manager.dialog_data.get("notify_status", True)
+    disable_notification = dialog_manager.dialog_data.get("disable_notification", True)
 
     return {
         "reply_title": i18n.cr.reply.text(),
@@ -71,10 +73,10 @@ async def get_creating_post_data(
         "posting_time": posting_time,
         "posting_time_index": posting_time_index,
         "states_notify": [
-            NotifyAlert(id="turn_on", desc=i18n.cr.set.notify()),
-            NotifyAlert(id="turn_off", desc=i18n.cr.unset.notify()),
+            NotifyAlert(id="enable_notification", desc=i18n.cr.set.notify()),
+            NotifyAlert(id="disable_notification", desc=i18n.cr.unset.notify()),
         ],
-        "notify_status": notify_status,
+        "disable_notification": disable_notification,
         "media_message": i18n.cr.add.media(),
         "delete_media_message": i18n.cr.remove.media(),
         "has_media": has_media,
@@ -144,12 +146,17 @@ async def get_preselect_channel_data(
         for channel in channels
         if channel[2] in one_or_more_selected
     ]
+    is_admin = UserType.ADMIN in await get_user_role(
+        session=session, telegram_id=event_from_user.id
+    )
+
     dialog_manager.dialog_data["selected_channels"] = selected_channels
     return {
         "all_channels": channels,
         "mail_to_bots_subscribers_message": i18n.cr.select.bot.to.send.message(),
         "select_channel_message": i18n.cr.select.channel.to.send.message(),
         "one_or_more_selected": one_or_more_selected,
+        "is_admin": is_admin,
     }
 
 
@@ -164,7 +171,7 @@ async def get_report_after_push_data(
         if (schedule_time := dialog_manager.dialog_data.get("dt_posting_view")) is None
         else schedule_time
     )
-    report = i18n.cr.success.pushed(
+    report = i18n.cr.success.pushed.channel(
         post_message=post_message, date_posting=date_posting
     )
     channels_name = [
@@ -174,6 +181,7 @@ async def get_report_after_push_data(
         "report_message": report,
         "channels": channels_name,
         "main_menu": i18n.main.menu(),
+        "edit_post_btn": i18n.cr.edit.scheduled.post.btn(),
     }
 
 

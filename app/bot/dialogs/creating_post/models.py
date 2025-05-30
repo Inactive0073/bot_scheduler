@@ -13,11 +13,16 @@ class PostData(BaseModel):
     file_id: Optional[str] = None
     type_media: Optional[MediaType]
     has_spoiler: Optional[bool] = False
-    notify_status: Optional[bool] = False
+    disable_notification: Optional[bool] = False
     selected_channels: Optional[list[tuple[str, str]]] = None
     selected_customers: Optional[list[int]] = None
 
     @property
-    def data(self):
+    def data_python(self):
+        data = self.model_dump(mode="python")
+        return data
+
+    @property
+    def data_json(self):
         data = self.model_dump(mode="json")
         return data

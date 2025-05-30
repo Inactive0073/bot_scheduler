@@ -1,17 +1,17 @@
 from typing import Literal
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 
 from datetime import datetime
 from .models.schedule_post import SchedulePost
-
+from ..utils.enums import PostStatus
 
 # ------------------- Schedule Post Operations -------------------
 async def upsert_post(
     session: AsyncSession,
     schedule_id: int,
-    target_type: Literal["channel", "customer"],
+    target_type: Literal["channel", "bot"],
     scheduled_time: datetime,
     data_json: dict,
     post_message: str,
@@ -77,6 +77,14 @@ async def get_posts(session: AsyncSession) -> list[SchedulePost]:
 async def delete_post(session: AsyncSession, schedule_id: int) -> bool:
     """Удаляет запись о запланированном посте из базы данных."""
     stmt = delete(SchedulePost).where(SchedulePost.schedule_id == schedule_id)
+    result = await session.execute(stmt)
+    await session.commit()
+    return result.rowcount > 0
+
+
+async def cancel_post(session: AsyncSession, schedule_id: int) -> bool:
+    """Удаляет запись о запланированном посте из базы данных."""
+    stmt = update(SchedulePost).where(SchedulePost.schedule_id == schedule_id).values(notify_status=PostStatus.CANCELED)
     result = await session.execute(stmt)
     await session.commit()
     return result.rowcount > 0

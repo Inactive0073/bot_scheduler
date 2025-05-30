@@ -8,7 +8,9 @@ from fluentogram import TranslatorRunner
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.db.common_requests import get_user_role
 from app.bot.db.manager_requests import get_caption_channel, get_channels, get_channel
+from app.bot.utils.enums.role import UserType
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner
@@ -24,7 +26,9 @@ async def get_url_info(
 
     channels = await get_channels(session=session, telegram_id=event_from_user.id)
     channel_exists = bool(channels)
-
+    is_admin = UserType.ADMIN in await get_user_role(
+        session=session, telegram_id=event_from_user.id
+    )
     return {
         "channel_exists_message": i18n.channel.exists(),
         "channel_not_exists_message": i18n.channel._not.exists(),
@@ -33,6 +37,7 @@ async def get_url_info(
         "url_button_name": i18n.channel.add.channel.button(),
         "channel_exists": channel_exists,
         "channels": channels,
+        "is_admin": is_admin,
         "back": i18n.back(),
     }
 

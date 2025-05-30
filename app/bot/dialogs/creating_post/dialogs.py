@@ -27,7 +27,7 @@ from .getters import (
     get_posting_sg_common_data,
 )
 from .handlers import (
-    back_to_menu,
+    cancel_old_post,
     invalid_set_time,
     process_delete_button,
     process_other_type_msg,
@@ -72,7 +72,12 @@ create_post_dialog = Dialog(
             on_click=process_to_select_channel,
         ),
         Row(
-            Button(Format("{back}"), id="back_to_menu", on_click=back_to_menu),
+            Start(
+                Format("{back}"),
+                id="back_to_menu",
+                state=ManagerSG.start,
+                when="is_admin",
+            ),
             SwitchTo(
                 Format("{next}"),
                 id="next_clicked",
@@ -263,7 +268,19 @@ create_post_dialog = Dialog(
         Format("{report_message}"),
         List(Format("└ {item[1]}"), items="channels"),
         Format("\n\n{autocaption}"),
-        SwitchTo(Format("{main_menu}"), id="__back__", state=PostingSG.select_channels),
+        Row(
+            Start(
+                Format("{main_menu}"),
+                id="__back__",
+                state=ManagerSG.start,
+            ),
+            SwitchTo(
+                Format("{edit_post_btn}"),
+                id="edit_scheduled_post",
+                state=PostingSG.creating_post,
+                on_click=cancel_old_post
+            ),
+        ),
         state=PostingSG.show_posted_status,
         getter=get_report_after_push_data,
     ),

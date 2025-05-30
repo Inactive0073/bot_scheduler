@@ -1,7 +1,12 @@
 from typing import TYPE_CHECKING, Dict
 
+from aiogram.types import User
 from aiogram_dialog import DialogManager
 from fluentogram import TranslatorRunner
+
+from app.bot.db.common_requests import get_user_role
+from app.bot.utils.enums.role import UserType
+
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
@@ -10,10 +15,14 @@ if TYPE_CHECKING:
 async def get_common_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
+    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
     web_app_url = dialog_manager.middleware_data.get("web_app_url")
-    is_admin = dialog_manager.start_data.get("is_admin")
+    session = dialog_manager.middleware_data.get("session")
+    is_admin = UserType.ADMIN in await get_user_role(
+        session=session, telegram_id=event_from_user.id
+    )
     return {
         "back": i18n.back(),
         "hello_waiter": i18n.waiter.hello.message(),

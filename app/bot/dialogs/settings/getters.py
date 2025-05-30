@@ -8,7 +8,9 @@ from aiogram_dialog.widgets.kbd import ManagedRadio
 
 from fluentogram import TranslatorRunner
 
+from app.bot.db.common_requests import get_user_role
 from app.bot.db.manager_requests import get_user_tz
+from app.bot.utils.enums.role import UserType
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type:ignore
@@ -46,12 +48,18 @@ async def get_settings_data(
 async def get_setting_menu_data(
     dialog_manager: DialogManager,
     i18n: TranslatorRunner,
+    event_from_user: User,
     **kwargs,
 ) -> Dict[str, str]:
+    session = dialog_manager.middleware_data.get("session")
+    is_admin = UserType.ADMIN in await get_user_role(
+        session=session, telegram_id=event_from_user.id
+    )
     return {
         "settings_menu_message": i18n.settings.main.menu(),
         "settings_timezone_button": i18n.settings.timezone.button(),
         "settings_support_button": i18n.settings.support.button(),
+        "is_admin": is_admin,
     }
 
 

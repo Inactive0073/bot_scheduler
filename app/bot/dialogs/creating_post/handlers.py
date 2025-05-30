@@ -12,8 +12,10 @@ from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.widgets.input import MessageInput, TextInput
 from aiogram_dialog.widgets.kbd import Button, Toggle, Multiselect, ManagedMultiselect
 
+from taskiq_nats import NATSKeyValueScheduleSource
+
 from app.bot.db.customer_requests import get_all_customers
-from app.bot.db.message_requests import upsert_post
+from app.bot.db.message_requests import delete_post, upsert_post
 from app.bot.db.manager_requests import get_user_tz
 from app.bot.dialogs.creating_post.services import get_delay
 from app.bot.states.manager.creating_post import PostingSG
@@ -36,12 +38,6 @@ if TYPE_CHECKING:
 
 logger = getLogger(__name__)
 
-
-async def back_to_menu(
-    callback: CallbackQuery, _: Button, dialog_manager: DialogManager
-) -> None:
-    is_admin = dialog_manager.start_data.get("is_admin")
-    await dialog_manager.start(state=ManagerSG.start, data={"is_admin": is_admin})
 
 async def process_to_select_bot_mailing(
     message: Message, widget: Button, dialog_manager: DialogManager
@@ -239,6 +235,7 @@ async def process_delete_button(
         )
     dialog_manager.dialog_data["url_button_empty"] = True
     dialog_manager.dialog_data["url_button_exists"] = False
+    dialog_manager.dialog_data["keyboard"] = None
 
 
 async def process_invalid_button_case(
@@ -288,7 +285,7 @@ async def edit_text(
             message_id=msg_id,
             chat_id=chat_id,
         )
-
+    dialog_manager.dialog_data["post_message"] = text
     # Возвращаемся обратно в меню создания и настройки поста
     await dialog_manager.switch_to(
         PostingSG.creating_post, show_mode=ShowMode.DELETE_AND_SEND
@@ -444,8 +441,10 @@ async def process_remove_media(
 async def process_toggle_notify(
     message: Message, widget: Toggle, dialog_manager: DialogManager, state: str
 ):
-    dialog_manager.dialog_data["notify_on"] = True if state == "turn_on" else False
-    logger.info(
+    dialog_manager.dialog_data["disable_notification"] = (
+        True if state == "disable_notification" else False
+    )
+    logger.debug(
         f"\nПользователь: {message.from_user.first_name} [{message.from_user.username}] переключил настройку уведомлений\n"
         f"Текущее состояние поста: {state}\n"
     )
@@ -459,7 +458,7 @@ async def process_push_now_to_channel_button(
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
     keyboard = dialog_manager.dialog_data.get("keyboard")
     post_message = dialog_manager.dialog_data.get("post_message")
-    notify_on = dialog_manager.dialog_data.get("notify_on")
+    disable_notification = dialog_manager.dialog_data.get("disable_notification")
     file_id = dialog_manager.dialog_data.get("media_content")
     multiselect: Multiselect = dialog_manager.find("selected_channel_for_publication")
     channels: list[str] = multiselect.get_checked()
@@ -483,7 +482,7 @@ async def process_push_now_to_channel_button(
                     chat_id=channel_name,
                     text=post_message,
                     reply_markup=keyboard,
-                    disable_notification=notify_on,
+                    disable_notification=disable_notification,
                 )
                 logger.info(
                     "Сообщение отправлено в канал",
@@ -523,7 +522,7 @@ async def process_push_now_to_bot_button(
     post_message = dialog_manager.dialog_data.get("post_message")
     file_id = dialog_manager.dialog_data.get("media_content")
     has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
-    notify_status = dialog_manager.dialog_data.get("notify_on")
+    disable_notification = dialog_manager.dialog_data.get("disable_notification")
 
     for telegram_id in telegram_ids:
         await send_message_bot_subscribers.kiq(
@@ -531,7 +530,7 @@ async def process_push_now_to_bot_button(
             text=post_message,
             keyboard=keyboard,
             file_id=file_id,
-            notify_status=notify_status,
+            disable_notification=disable_notification,
             has_spoiler=has_spoiler,
         )
     logger.info(f"Запланировано к отправке {len(telegram_ids)} сообщений")
@@ -563,33 +562,42 @@ async def process_push_to_bot_button(
     posting_time = datetime.fromisoformat(posting_time_iso)
 
     # Пользовательские данные для сообщения
-    keyboard = dialog_manager.dialog_data.get("keyboard")
-    post_message = dialog_manager.dialog_data.get("post_message")
-    notify_status = dialog_manager.dialog_data.get("notify_on")
-    file_id = dialog_manager.dialog_data.get("media_content")
-    type_media = dialog_manager.dialog_data.get("type_media")
-    has_spoiler = dialog_manager.dialog_data.get("has_spoiler")
+    post_data = PostData(
+        text=dialog_manager.dialog_data.get("post_message"),
+        scheduled_time=posting_time,
+        keyboard=dialog_manager.dialog_data.get("keyboard"),
+        file_id=dialog_manager.dialog_data.get("media_content"),
+        type_media=dialog_manager.dialog_data.get("type_media"),
+        has_spoiler=dialog_manager.dialog_data.get("has_spoiler"),
+        disable_notification=dialog_manager.dialog_data.get("disable_notification"),
+        selected_customers=telegram_ids,
+    )
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
-    
+
     task = await send_schedule_message_bot_subscribers.schedule_by_time(
         source=nats_source,
-        time=posting_time,
+        time=post_data.scheduled_time,
         telegram_ids=telegram_ids,
-        text=post_message,
-        keyboard=keyboard,
-        file_id=file_id,
-        type_media=type_media,
-        notify_status=notify_status,
-        has_spoiler=has_spoiler,
+        text=post_data.text,
+        keyboard=post_data.keyboard,
+        file_id=post_data.file_id,
+        type_media=post_data.type_media,
+        disable_notification=post_data.disable_notification,
+        has_spoiler=post_data.has_spoiler,
     )
-    data_json = {""}
+    data_json = {
+        "keyboard": post_data.keyboard.model_dump(),
+        "disable_notification": post_data.disable_notification,
+        "has_spoiler": post_data.has_spoiler,
+        "selected_channels": post_data.selected_channels,
+    }
     await upsert_post(
         session=session,
         schedule_id=task.schedule_id,
         target_type=recipient_type,
         scheduled_time=posting_time,
-        data_json={},
-        post_message=post_message,
+        data_json=data_json,
+        post_message=post_data.text,
         author_id=message.from_user.id,
     )
     await dialog_manager.switch_to(
@@ -603,8 +611,8 @@ async def process_send_to_channel_later(
     widget: Button,
     dialog_manager: DialogManager,
 ) -> None:
-    i18n: TranslatorRunner = dialog_manager.middleware_data.get('i18n')
-    nats_source = dialog_manager.middleware_data.get("nats_source")
+    i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
+    nats_source: NATSKeyValueScheduleSource = dialog_manager.middleware_data.get("nats_source")
     session = dialog_manager.middleware_data.get("session")
 
     # Предварительная подготовка
@@ -622,7 +630,7 @@ async def process_send_to_channel_later(
     except ValueError:
         await message.answer(i18n.cr.instruction.too.late.time())
         return
-    
+
     # Пользовательские данные для сообщения
     post_data = PostData(
         text=dialog_manager.dialog_data.get("post_message"),
@@ -631,9 +639,10 @@ async def process_send_to_channel_later(
         file_id=dialog_manager.dialog_data.get("media_content"),
         type_media=dialog_manager.dialog_data.get("type_media"),
         has_spoiler=dialog_manager.dialog_data.get("has_spoiler"),
-        notify_status = dialog_manager.dialog_data.get("notify_on"),
+        disable_notification=dialog_manager.dialog_data.get("disable_notification"),
         selected_channels=dialog_manager.dialog_data.get("selected_channels"),
     )
+    recipient_type = dialog_manager.dialog_data.get("recipient_type")
     task = await send_message_to_channel.schedule_by_time(
         source=nats_source,
         time=post_data.scheduled_time,
@@ -641,25 +650,44 @@ async def process_send_to_channel_later(
         channels=post_data.selected_channels,
         keyboard=post_data.keyboard,
         file_id=post_data.file_id,
-        notify_status=post_data.notify_status,
+        disable_notification=post_data.disable_notification,
         has_spoiler=post_data.has_spoiler,
     )
+    
+    if dialog_manager.dialog_data.get("need_cancel_old_post"):
+        schedule_id = dialog_manager.dialog_data.get("schedule_id")
+        await nats_source.delete_schedule(schedule_id)
+        result = await delete_post(session=session, schedule_id=schedule_id)
+        if result:
+            logger.debug(f"Старый пост {schedule_id} был удален.")
+        else:
+            logger.debug(f"Не удалось удалить пост {schedule_id}.")
+        
     schedule_id = task.schedule_id
+        
+    dialog_manager.dialog_data["schedule_id"] = schedule_id
+    keyboard_dumped = post_data.keyboard.model_dump() if post_data.keyboard else None
     data_json = {
-        "keyboard": post_data.keyboard,
-        "notify_status": post_data.notify_status,
+        "keyboard": keyboard_dumped,
+        "disable_notification": post_data.disable_notification,
         "has_spoiler": post_data.has_spoiler,
-        "selected_channels": post_data.selected_channels
+        "selected_channels": post_data.selected_channels,
     }
     await upsert_post(
         session=session,
         schedule_id=schedule_id,
-        target_type="channel",
+        target_type=recipient_type,
         scheduled_time=posting_time,
         data_json=data_json,
         post_message=post_data.text,
-        author_id=message.from_user.id
+        author_id=message.from_user.id,
     )
     await dialog_manager.switch_to(
         state=PostingSG.show_posted_status, show_mode=ShowMode.DELETE_AND_SEND
     )
+
+
+async def cancel_old_post(
+    callback: CallbackQuery, _: Button, dialog_manager: DialogManager
+):
+    dialog_manager.dialog_data["need_cancel_old_post"] = True

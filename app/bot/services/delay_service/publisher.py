@@ -20,7 +20,7 @@ async def delay_message_sending(
     tz_offset: int = 3,
     keyboard: InlineKeyboardMarkup = None,
     file_id: str = None,
-    notify_status: bool = True,
+    disable_notification: bool = True,
     has_spoiler: bool = False,
 ) -> None:
     payload = json.dumps(
@@ -32,7 +32,7 @@ async def delay_message_sending(
             "timestamp": datetime.now().isoformat(),
             "tz_label": tz_label,
             "tz_offset": tz_offset,
-            "notify_status": notify_status,
+            "disable_notification": disable_notification,
             "has_spoiler": has_spoiler,
         }
     ).encode("utf-8")

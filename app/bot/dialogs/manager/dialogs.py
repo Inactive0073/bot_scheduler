@@ -1,32 +1,39 @@
-from aiogram_dialog import Dialog, Window
+from aiogram_dialog import Dialog, Window, ShowMode
 from aiogram_dialog.widgets.text import Format, Const
-from aiogram_dialog.widgets.kbd import Button, Group, Start
+from aiogram_dialog.widgets.kbd import Group, Start
 from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from app.bot.dialogs.manager.getters import get_hello
 from app.bot.states.admin.admin import AdminSG
 from app.bot.states.manager.manager import ManagerSG
-from .handlers import on_channel, on_create_post, on_settings
+from app.bot.states.manager.addition_channel import AdditionToChannelSG
+from app.bot.states.manager.creating_post import PostingSG
+from app.bot.states.manager.settings import SettingsSG
 
 
 manager_dialog = Dialog(
     Window(
         Format("{hello_admin}"),
         Group(
-            Button(
+            Start(
                 text=Format("{create_post}"),
                 id="create_post_pressed",
-                on_click=on_create_post,
+                state=PostingSG.select_channels,
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
-            Button(Format("{my_posts}"), id="edit_post_pressed"),
+            # Start(Format("{my_posts}"), id="my_posts_pressed", state=),
             # Button(Format("{create_description}"), id="create_descript_card_pressed"), # пока отложено
-            Button(
-                text=Format("{settings}"), id="settings_pressed", on_click=on_settings
+            Start(
+                text=Format("{settings}"),
+                id="settings_pressed",
+                state=SettingsSG.start,
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
-            Button(
+            Start(
                 text=Format("{add_channel}"),
                 id="add_channel_pressed",
-                on_click=on_channel,
+                state=AdditionToChannelSG.start,
+                show_mode=ShowMode.DELETE_AND_SEND,
             ),
             width=2,
         ),

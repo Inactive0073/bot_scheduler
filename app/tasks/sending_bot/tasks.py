@@ -34,7 +34,7 @@ async def send_message_bot_subscribers(
     keyboard: InlineKeyboardMarkup = None,
     file_id: str = None,
     type_media: ContentType = ContentType.PHOTO,
-    notify_status: bool = True,
+    disable_notification: bool = True,
     has_spoiler: bool = False,
     bot: Bot = TaskiqDepends(),
     **kwargs,
@@ -47,7 +47,7 @@ async def send_message_bot_subscribers(
                     chat_id=chat_id,
                     text=text,
                     reply_markup=keyboard,
-                    disable_notification=notify_status,
+                    disable_notification=disable_notification,
                 )
                 logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
     elif file_id:
@@ -59,7 +59,7 @@ async def send_message_bot_subscribers(
                     caption=text,
                     has_spoiler=has_spoiler,
                     reply_markup=keyboard,
-                    disable_notification=notify_status,
+                    disable_notification=disable_notification,
                 )
                 logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
 
@@ -71,7 +71,7 @@ async def send_schedule_message_bot_subscribers(
     keyboard: InlineKeyboardMarkup = None,
     file_id: str = None,
     type_media: ContentType = ContentType.PHOTO,
-    notify_status: bool = True,
+    disable_notification: bool = True,
     has_spoiler: bool = False,
     bot: Bot = TaskiqDepends(),
     **kwargs,
@@ -85,20 +85,23 @@ async def send_schedule_message_bot_subscribers(
                         chat_id=telegram_id,
                         text=text,
                         reply_markup=keyboard,
-                        disable_notification=notify_status,
+                        disable_notification=disable_notification,
                     )
-                    logger.debug(f"Сообщение {message.message_id} успешно отправлено.\n")
+                    logger.debug(
+                        f"Сообщение {message.message_id} успешно отправлено.\n"
+                    )
     elif file_id:
-        
         async with BOT_LIMIT_MESSAGE:
             with suppress(TelegramBadRequest):
-                for telegram_id in telegram_ids:  
+                for telegram_id in telegram_ids:
                     message = await bot.send_photo(
                         chat_id=telegram_id,
                         photo=file_id,
                         caption=text,
                         has_spoiler=has_spoiler,
                         reply_markup=keyboard,
-                        disable_notification=notify_status,
+                        disable_notification=disable_notification,
                     )
-                    logger.debug(f"Сообщение {message.message_id} успешно отправлено.\n")
+                    logger.debug(
+                        f"Сообщение {message.message_id} успешно отправлено.\n"
+                    )

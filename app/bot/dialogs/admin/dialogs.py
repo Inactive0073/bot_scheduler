@@ -46,19 +46,16 @@ admin_dialog = Dialog(
                 Format("{manager_role_btn}"),
                 id="roles_selected",
                 state=ManagerSG.start,
-                data={"is_admin": True},
             ),
             Start(
                 Format("{waiter_role_btn}"),
                 id="waiter_selected",
                 state=WaiterSG.start,
-                data={"is_admin": True},
             ),
             Start(
                 Format("{customer_role_btn}"),
                 id="customer_selected",
                 state=CustomerSG.menu,
-                data={"is_admin": True},
             ),
             # пока в заморозке
             # SwitchTo(

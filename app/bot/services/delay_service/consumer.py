@@ -88,7 +88,7 @@ class DelayedMessageConsumer:
             delay = payload.get("delay", 0)
             tz_label = payload.get("tz_label")
             tz_offset = payload.get("tz_offset")
-            notify_status = payload.get("notify_status")
+            disable_notification = payload.get("disable_notification")
             has_spoiler = payload.get("has_spoiler")
 
             # Время публикации
@@ -118,7 +118,7 @@ class DelayedMessageConsumer:
                     chat_id=chat_id,
                     text=post_message,
                     reply_markup=keyboard_data,
-                    disable_notification=notify_status,
+                    disable_notification=disable_notification,
                 )
                 logger.info(
                     "Сообщение успешно отправлено в канал",
@@ -158,7 +158,7 @@ class DelayedMessageConsumer:
             delay = payload.get("delay", 0)
             tz_label = payload.get("tz_label")
             tz_offset = payload.get("tz_offset")
-            notify_status = payload.get("notify_status")
+            disable_notification = payload.get("disable_notification")
             has_spoiler = payload.get("has_spoiler")
 
             # Время публикации
@@ -181,7 +181,7 @@ class DelayedMessageConsumer:
                         chat_id=chat_id,
                         text=post_message,
                         reply_markup=keyboard_data,
-                        disable_notification=notify_status,
+                        disable_notification=disable_notification,
                     )
                     logger.info(f"Сообщение {message.message_id} успешно отправлено.\n")
                     await msg.ack()

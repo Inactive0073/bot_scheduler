@@ -9,6 +9,7 @@ from app.bot.states.manager.manager import ManagerSG
 from app.bot.states.manager.addition_channel import AdditionToChannelSG
 from app.bot.states.manager.creating_post import PostingSG
 from app.bot.states.manager.settings import SettingsSG
+from app.bot.states.manager.content import ContentSG
 
 
 manager_dialog = Dialog(
@@ -21,7 +22,7 @@ manager_dialog = Dialog(
                 state=PostingSG.select_channels,
                 show_mode=ShowMode.DELETE_AND_SEND,
             ),
-            # Start(Format("{my_posts}"), id="my_posts_pressed", state=),
+            Start(Format("{my_posts}"), id="my_posts_pressed", state=ContentSG.start),
             # Button(Format("{create_description}"), id="create_descript_card_pressed"), # пока отложено
             Start(
                 text=Format("{settings}"),

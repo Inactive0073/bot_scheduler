@@ -1,4 +1,4 @@
 from .role import UserType
-from .message import MediaType, PostStatus
+from .message import MediaType, PostStatus, MessageType
 
-__all__ = ["UserType", "MediaType", "PostStatus"]
+__all__ = ["UserType", "MediaType", "PostStatus", "MessageType"]

@@ -20,6 +20,8 @@ from app.bot.db.manager_requests import get_user_tz
 from app.bot.dialogs.creating_post.services import get_delay
 from app.bot.states.manager.creating_post import PostingSG
 
+from app.bot.utils.enums import MessageType
+
 from datetime import datetime, timezone, timedelta
 
 from logging import getLogger
@@ -31,7 +33,7 @@ from app.tasks import (
     send_message_to_channel,
 )
 
-from .models import PostData
+from ...utils.schemas.models import PostData
 
 if TYPE_CHECKING:
     from locales.stub import TranslatorRunner  # type: ignore
@@ -47,7 +49,7 @@ async def process_to_select_bot_mailing(
         "Пользователь выбрал рассылку по ботам",
         extra={"user_id": message.from_user.id, "action": "select_bot_mailing"},
     )
-    dialog_manager.dialog_data["recipient_type"] = "bot"
+    dialog_manager.dialog_data["recipient_type"] = MessageType.BOT
 
 
 async def process_to_select_channel(
@@ -58,7 +60,7 @@ async def process_to_select_channel(
         "Пользователь выбрал отправку в каналы",
         extra={"user_id": message.from_user.id, "action": "select_channel"},
     )
-    dialog_manager.dialog_data["recipient_type"] = "channel"
+    dialog_manager.dialog_data["recipient_type"] = MessageType.CHANNEL
 
 
 # Запись поста
@@ -504,6 +506,7 @@ async def process_push_now_to_channel_button(
                 )
                 await message.answer(f"{i18n.error()}")
             finally:
+                dialog_manager.dialog_data["display_none"] = True  
                 await dialog_manager.switch_to(state=PostingSG.show_posted_status)
 
 
@@ -534,6 +537,7 @@ async def process_push_now_to_bot_button(
             has_spoiler=has_spoiler,
         )
     logger.info(f"Запланировано к отправке {len(telegram_ids)} сообщений")
+    dialog_manager.dialog_data["display_none"] = True
     await dialog_manager.switch_to(
         state=PostingSG.show_sended_status, show_mode=ShowMode.DELETE_AND_SEND
     )
@@ -567,7 +571,6 @@ async def process_push_to_bot_button(
         scheduled_time=posting_time,
         keyboard=dialog_manager.dialog_data.get("keyboard"),
         file_id=dialog_manager.dialog_data.get("media_content"),
-        type_media=dialog_manager.dialog_data.get("type_media"),
         has_spoiler=dialog_manager.dialog_data.get("has_spoiler"),
         disable_notification=dialog_manager.dialog_data.get("disable_notification"),
         selected_customers=telegram_ids,
@@ -585,11 +588,13 @@ async def process_push_to_bot_button(
         disable_notification=post_data.disable_notification,
         has_spoiler=post_data.has_spoiler,
     )
+    keyboard_dumped = post_data.keyboard.model_dump() if post_data.keyboard else None
     data_json = {
-        "keyboard": post_data.keyboard.model_dump(),
+        "keyboard": keyboard_dumped,
         "disable_notification": post_data.disable_notification,
         "has_spoiler": post_data.has_spoiler,
         "selected_channels": post_data.selected_channels,
+        "file_id": post_data.file_id
     }
     await upsert_post(
         session=session,
@@ -637,7 +642,6 @@ async def process_send_to_channel_later(
         scheduled_time=posting_time,
         keyboard=dialog_manager.dialog_data.get("keyboard"),
         file_id=dialog_manager.dialog_data.get("media_content"),
-        type_media=dialog_manager.dialog_data.get("type_media"),
         has_spoiler=dialog_manager.dialog_data.get("has_spoiler"),
         disable_notification=dialog_manager.dialog_data.get("disable_notification"),
         selected_channels=dialog_manager.dialog_data.get("selected_channels"),

@@ -900,6 +900,7 @@ class ChannelCaption_not:
 class Content:
     bot: ContentBot
     today: ContentToday
+    month: ContentMonth
     channel: ContentChannel
 
     @staticmethod
@@ -907,43 +908,47 @@ class Content:
 
 
 class ContentBot:
-    info: ContentBotInfo
-
     @staticmethod
     def btn() -> Literal["""Подписчики бота"""]: ...
 
 
 class ContentToday:
-    empty: ContentTodayEmpty
+    info: ContentTodayInfo
 
 
-class ContentTodayEmpty:
-    bot: ContentTodayEmptyBot
-    channel: ContentTodayEmptyChannel
-
-
-class ContentTodayEmptyBot:
+class ContentTodayInfo:
     @staticmethod
-    def msg(*, today) -> Literal["""На { $today } в рассылке по подписчикам нет запланированных новостей"""]: ...
+    def msg(*, today, type_, count_post) -> Literal["""На { $today } в { $type_ -&gt;
+[bot] рассылке по подписчикам
+[channel] рассылке по каналам
+*[other] { $type_ }
+*[other]  рассылке
+}
+{ $count_post -&gt;
+[0] &lt;u&gt;нет запланированных новостей&lt;/u&gt;
+[one] 1 запланированное сообщение
+*[other] { $count_post }
+*[other]  запланированных сообщений
+}"""]: ...
+
+
+class ContentMonth:
+    info: ContentMonthInfo
+
+
+class ContentMonthInfo:
+    @staticmethod
+    def msg(*, month, count_post) -> Literal["""На { $month } в рассылке по подписчикам { $count_post -&gt;
+[0] &lt;u&gt;нет запланированных новостей&lt;/u&gt;
+[one] 1 запланированное сообщение
+*[other] { $count_post }
+*[other]  запланированных сообщений
+}"""]: ...
 
 
 class ContentChannel:
     @staticmethod
     def btn() -> Literal["""Каналы"""]: ...
-
-
-class ContentTodayEmptyChannel:
-    @staticmethod
-    def msg(*, today) -> Literal["""🙅‍♂️ На { $today } в рассылке по каналу нет запланированных новостей"""]: ...
-
-
-class ContentBotInfo:
-    bot: ContentBotInfoBot
-
-
-class ContentBotInfoBot:
-    @staticmethod
-    def msg(*, today, count_post) -> Literal["""👌 На { $today } в рассылке запланированных постов: { $count_post }"""]: ...
 
 
 class Settings:

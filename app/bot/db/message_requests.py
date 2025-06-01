@@ -1,16 +1,16 @@
 from typing import Literal
 from sqlalchemy.dialects.postgresql import insert as upsert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, select, update, and_, func
 
 from datetime import datetime
 from .models.schedule_post import SchedulePost
-from ..utils.enums import PostStatus
+from ..utils.enums import PostStatus, MessageType
 
 # ------------------- Schedule Post Operations -------------------
 async def upsert_post(
     session: AsyncSession,
-    schedule_id: int,
+    schedule_id: str,
     target_type: Literal["channel", "bot"],
     scheduled_time: datetime,
     data_json: dict,
@@ -68,9 +68,12 @@ async def get_post(
     return result.scalar_one_or_none()
 
 
-async def get_posts(session: AsyncSession) -> list[SchedulePost]:
+async def get_posts(session: AsyncSession, target_type: MessageType = None) -> list[SchedulePost]:
     """Получить все запланированные посты"""
-    result = await session.execute(select(SchedulePost))
+    stmt = select(SchedulePost).where(SchedulePost.scheduled_time > func.now())
+    if target_type in MessageType:
+        stmt = stmt.where(SchedulePost.target_type == target_type)
+    result = await session.execute(stmt)
     return result.scalars().all()
 
 

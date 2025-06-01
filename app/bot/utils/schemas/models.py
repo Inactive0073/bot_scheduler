@@ -11,7 +11,6 @@ class PostData(BaseModel):
     scheduled_time: Optional[datetime] = None
     keyboard: Optional[InlineKeyboardMarkup] = None
     file_id: Optional[str] = None
-    type_media: Optional[MediaType]
     has_spoiler: Optional[bool] = False
     disable_notification: Optional[bool] = False
     selected_channels: Optional[list[tuple[str, str]]] = None
@@ -26,3 +25,4 @@ class PostData(BaseModel):
     def data_json(self):
         data = self.model_dump(mode="json")
         return data
+

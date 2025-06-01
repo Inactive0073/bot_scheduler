@@ -170,12 +170,6 @@ create_post_dialog = Dialog(
                     when=F["has_media"],
                 ),
             ),
-            # Включение/отключение комментариев
-            SwitchTo(
-                Format("{unset_comments}"),
-                id="unset_comments_pressed",
-                state=PostingSG.toggle_comments,
-            ),
             # Отправить сейчас
             SwitchTo(
                 Format("{push_now}"), id="push_now_pressed", state=PostingSG.push_now
@@ -278,7 +272,8 @@ create_post_dialog = Dialog(
                 Format("{edit_post_btn}"),
                 id="edit_scheduled_post",
                 state=PostingSG.creating_post,
-                on_click=cancel_old_post
+                on_click=cancel_old_post,
+                when=~F["dialog_data"]["display_none"]
             ),
         ),
         state=PostingSG.show_posted_status,
@@ -307,9 +302,15 @@ create_post_dialog = Dialog(
         state=PostingSG.push_later,
         getter=get_push_later_data,
     ),
+    # окно статуса планирования поста для подписчиков бота 
     Window(
         Format("{report_message}"),
         Format("\n\n{autocaption}"),
+        Start(
+                Format("{main_menu}"),
+                id="__back__",
+                state=ManagerSG.start,
+        ),
         state=PostingSG.show_sended_status,
         getter=get_report_after_sending_subscribers,
     ),

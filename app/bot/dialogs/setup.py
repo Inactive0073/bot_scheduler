@@ -8,6 +8,7 @@ from .addition_channel.dialogs import dialog_addition_channel
 from .settings.dialogs import settings_dialog
 from .customer_user.dialogs import customer_dialog
 from .waiter.dialogs import waiter_dialog
+from .content_plan.dialogs import content_dialog
 
 
 def get_dialogs() -> List[Dialog]:
@@ -19,4 +20,5 @@ def get_dialogs() -> List[Dialog]:
         settings_dialog,
         customer_dialog,
         waiter_dialog,
+        content_dialog,
     ]

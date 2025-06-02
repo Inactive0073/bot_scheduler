@@ -548,7 +548,7 @@ async def process_push_to_bot_button(
 ):
     """Отправка среди подписчиков бота"""
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    nats_source = dialog_manager.middleware_data.get("nats_source")
+    nats_source: NATSKeyValueScheduleSource = dialog_manager.middleware_data.get("nats_source")
     session = dialog_manager.middleware_data.get("session")
 
     # получение списка ID пользователей
@@ -564,7 +564,14 @@ async def process_push_to_bot_button(
         "dt_posting_iso", datetime.now(tz=tzinfo).isoformat()
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
-
+    
+    # Проверка на валидность времени
+    try:
+        get_delay(post_time=posting_time)
+    except ValueError:
+        await message.answer(i18n.cr.instruction.too.late.time())
+        return
+    
     # Пользовательские данные для сообщения
     post_data = PostData(
         text=dialog_manager.dialog_data.get("post_message"),
@@ -576,7 +583,7 @@ async def process_push_to_bot_button(
         selected_customers=telegram_ids,
     )
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
-
+    
     task = await send_schedule_message_bot_subscribers.schedule_by_time(
         source=nats_source,
         time=post_data.scheduled_time,
@@ -584,10 +591,22 @@ async def process_push_to_bot_button(
         text=post_data.text,
         keyboard=post_data.keyboard,
         file_id=post_data.file_id,
-        type_media=post_data.type_media,
         disable_notification=post_data.disable_notification,
         has_spoiler=post_data.has_spoiler,
     )
+    
+    if dialog_manager.dialog_data.get("need_cancel_old_post"):
+        schedule_id = dialog_manager.dialog_data.get("schedule_id")
+        await nats_source.delete_schedule(schedule_id)
+        result = await delete_post(session=session, schedule_id=schedule_id)
+        if result:
+            logger.debug(f"Старый пост {schedule_id} был удален.")
+        else:
+            logger.debug(f"Не удалось удалить пост {schedule_id}.")
+    
+    schedule_id = task.schedule_id
+    dialog_manager.dialog_data["schedule_id"] = schedule_id
+    
     keyboard_dumped = post_data.keyboard.model_dump() if post_data.keyboard else None
     data_json = {
         "keyboard": keyboard_dumped,
@@ -598,7 +617,7 @@ async def process_push_to_bot_button(
     }
     await upsert_post(
         session=session,
-        schedule_id=task.schedule_id,
+        schedule_id=schedule_id,
         target_type=recipient_type,
         scheduled_time=posting_time,
         data_json=data_json,

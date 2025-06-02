@@ -8,6 +8,7 @@ from app.bot.utils.enums import MediaType
 
 class PostData(BaseModel):
     text: str
+    schedule_id: Optional[str] = None
     scheduled_time: Optional[datetime] = None
     keyboard: Optional[InlineKeyboardMarkup] = None
     file_id: Optional[str] = None
@@ -26,3 +27,4 @@ class PostData(BaseModel):
         data = self.model_dump(mode="json")
         return data
 
+    

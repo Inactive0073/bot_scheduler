@@ -220,4 +220,5 @@ async def get_report_after_sending_subscribers(
     return {
         "report_message": report_message,
         "main_menu": i18n.main.menu(),
+        "edit_post_btn": i18n.cr.edit.scheduled.post.btn(),
     }

@@ -274,7 +274,7 @@ create_post_dialog = Dialog(
                 state=PostingSG.creating_post,
                 on_click=cancel_old_post,
                 when=~F["dialog_data"]["display_none"]
-            ),
+        ),
         ),
         state=PostingSG.show_posted_status,
         getter=get_report_after_push_data,
@@ -306,10 +306,19 @@ create_post_dialog = Dialog(
     Window(
         Format("{report_message}"),
         Format("\n\n{autocaption}"),
-        Start(
+        Row(
+            Start(
                 Format("{main_menu}"),
                 id="__back__",
                 state=ManagerSG.start,
+            ),
+            SwitchTo(
+                Format("{edit_post_btn}"),
+                id="edit_scheduled_post",
+                state=PostingSG.creating_post,
+                on_click=cancel_old_post,
+                when=~F["dialog_data"]["display_none"]
+            ),
         ),
         state=PostingSG.show_sended_status,
         getter=get_report_after_sending_subscribers,

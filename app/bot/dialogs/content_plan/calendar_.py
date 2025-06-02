@@ -19,7 +19,7 @@ from aiogram_dialog.widgets.kbd.calendar_kbd import (
 from babel.dates import get_day_names, get_month_names
 
 
-SELECTED_DAYS_KEY = "selected_dates"
+SELECTED_DAYS_KEY = "days_with_posts"
 
 
 class WeekDay(Text):
@@ -39,7 +39,7 @@ class MarkedDay(Text):
 
     async def _render_text(self, data, manager: DialogManager) -> str:
         current_date: date = data["date"]
-        serial_date = current_date.isoformat()
+        serial_date = current_date
         selected = manager.dialog_data.get(SELECTED_DAYS_KEY, [])
         if serial_date in selected:
             return self.mark
@@ -60,8 +60,8 @@ class CustomCalendar(Calendar):
         return {
             CalendarScope.DAYS: CalendarDaysView(
                 self._item_callback_data,
-                date_text=MarkedDay("🔴", DATE_TEXT),
-                today_text=MarkedDay("⭕", TODAY_TEXT),
+                date_text=MarkedDay("✔", DATE_TEXT),
+                today_text=MarkedDay("🔥", TODAY_TEXT),
                 header_text= Month(),
                 weekday_text=WeekDay(),
                 next_month_text=Month() + " >>",

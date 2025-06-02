@@ -27,8 +27,6 @@ def find_selected_posts(posts: list[PostData], selected_date: datetime, tz_offse
         post.scheduled_time = post.scheduled_time.replace(
             tzinfo=timezone(offset=timedelta(hours=tz_offset))
         )
-        print(f"{post.scheduled_time.date()} <- this is post date")
-        print(f"{selected_date.date()} <- this is selected date")
         
         if post.scheduled_time.date() == selected_date.date():
             result.append(post)

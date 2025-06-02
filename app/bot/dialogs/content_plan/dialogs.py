@@ -59,7 +59,7 @@ content_dialog = Dialog(
         Format("{today_info_msg}"),
         ScrollingGroup(
             Select(
-                Format("{item.schedule_time} - {item.text[:20]}"),
+                Format("{item.scheduled_time} - {item.text}"),
                 id="s_calendar",
                 item_id_getter=post_id_getter,
                 items="posts"

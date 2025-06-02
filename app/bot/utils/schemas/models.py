@@ -16,6 +16,8 @@ class PostData(BaseModel):
     disable_notification: Optional[bool] = False
     selected_channels: Optional[list[tuple[str, str]]] = None
     selected_customers: Optional[list[int]] = None
+    
+    
 
     @property
     def data_python(self):
@@ -27,4 +29,7 @@ class PostData(BaseModel):
         data = self.model_dump(mode="json")
         return data
 
-    
+    def __getitem__(self, idx):
+        pass
+
+

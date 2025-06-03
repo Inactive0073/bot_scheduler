@@ -7,3 +7,4 @@ class ContentSG(StatesGroup):
     today_info_bot = State()
     channel = State()
     today_info_channel = State()
+    process_selected = State()

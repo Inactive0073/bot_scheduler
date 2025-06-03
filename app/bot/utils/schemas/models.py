@@ -17,7 +17,9 @@ class PostData(BaseModel):
     selected_channels: Optional[list[tuple[str, str]]] = None
     selected_customers: Optional[list[int]] = None
     
-    
+    @property
+    def time(self):
+        return self.scheduled_time.strftime("%H:%M")
 
     @property
     def data_python(self):

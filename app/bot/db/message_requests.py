@@ -77,7 +77,7 @@ async def get_posts(session: AsyncSession, target_type: MessageType = None) -> l
     return result.scalars().all()
 
 
-async def delete_post(session: AsyncSession, schedule_id: int) -> bool:
+async def delete_post(session: AsyncSession, schedule_id: str) -> bool:
     """Удаляет запись о запланированном посте из базы данных."""
     stmt = delete(SchedulePost).where(SchedulePost.schedule_id == schedule_id)
     result = await session.execute(stmt)
@@ -85,7 +85,7 @@ async def delete_post(session: AsyncSession, schedule_id: int) -> bool:
     return result.rowcount > 0
 
 
-async def cancel_post(session: AsyncSession, schedule_id: int) -> bool:
+async def cancel_post(session: AsyncSession, schedule_id: str) -> bool:
     """Удаляет запись о запланированном посте из базы данных."""
     stmt = update(SchedulePost).where(SchedulePost.schedule_id == schedule_id).values(notify_status=PostStatus.CANCELED)
     result = await session.execute(stmt)

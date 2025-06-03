@@ -746,7 +746,7 @@ class CrSuccessPushed:
 успешно запланирован на &lt;b&gt;{ $date_posting }&lt;/b&gt;
 в каналах:
 
-&lt;i&gt;При нажатии на кнопку изменить текст, старый пост будет автоматически отменен&lt;/i&gt;"""]: ...
+&lt;i&gt;При нажатии на кнопку &lt;u&gt;&lt;b&gt;Изменить пост&lt;/b&gt;&lt;/u&gt; текст, старый пост будет автоматически отменен&lt;/i&gt;"""]: ...
 
 
 class CrEditScheduled:
@@ -899,9 +899,10 @@ class ChannelCaption_not:
 
 class Content:
     bot: ContentBot
+    channel: ContentChannel
     today: ContentToday
     month: ContentMonth
-    channel: ContentChannel
+    process: ContentProcess
 
     @staticmethod
     def hello() -> Literal["""Выберите раздел, где хотите посмотреть контент план."""]: ...
@@ -912,13 +913,18 @@ class ContentBot:
     def btn() -> Literal["""Подписчики бота"""]: ...
 
 
+class ContentChannel:
+    @staticmethod
+    def btn() -> Literal["""Каналы"""]: ...
+
+
 class ContentToday:
     info: ContentTodayInfo
 
 
 class ContentTodayInfo:
     @staticmethod
-    def msg(*, today, type_, count_post) -> Literal["""На { $today } в { $type_ -&gt;
+    def msg(*, selected_date, type_, count_post) -> Literal["""На &lt;b&gt;{ $selected_date }&lt;/b&gt; в { $type_ -&gt;
 [bot] рассылке по подписчикам
 [channel] рассылке по каналам
 *[other] { $type_ }
@@ -938,7 +944,12 @@ class ContentMonth:
 
 class ContentMonthInfo:
     @staticmethod
-    def msg(*, month, count_post) -> Literal["""На { $month } в рассылке по подписчикам { $count_post -&gt;
+    def msg(*, month, type_, count_post) -> Literal["""На &lt;b&gt;{ $month }&lt;/b&gt; в { $type_ -&gt;
+[bot] рассылке по подписчикам
+[channel] рассылке по каналам
+*[other] { $type_ }
+*[other]  рассылке
+} рассылке по подписчикам { $count_post -&gt;
 [0] &lt;u&gt;нет запланированных новостей&lt;/u&gt;
 [one] 1 запланированное сообщение
 *[other] { $count_post }
@@ -946,9 +957,17 @@ class ContentMonthInfo:
 }"""]: ...
 
 
-class ContentChannel:
+class ContentProcess:
+    select: ContentProcessSelect
+
+
+class ContentProcessSelect:
+    post: ContentProcessSelectPost
+
+
+class ContentProcessSelectPost:
     @staticmethod
-    def btn() -> Literal["""Каналы"""]: ...
+    def msg() -> Literal["""Для отмены запланированного поста нажмите &lt;b&gt;🧹 Удалить&lt;/b&gt;."""]: ...
 
 
 class Settings:

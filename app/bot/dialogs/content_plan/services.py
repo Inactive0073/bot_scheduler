@@ -30,7 +30,6 @@ def find_selected_posts(posts: list[PostData], selected_date: datetime, tz_offse
         
         if post.scheduled_time.date() == selected_date.date():
             result.append(post)
-        print(f"{posts=}")
     return result
 
 def get_dates_with_posts(posts: list[PostData]) -> set[str]:

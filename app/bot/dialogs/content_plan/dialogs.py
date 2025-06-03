@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.kbd import (
     SwitchTo,
     Toggle,
     Button,
-    Multiselect,
+    Back,
     Select,
     Calendar,
     Row,
@@ -20,7 +20,7 @@ from app.bot.states.manager import ManagerSG, ContentSG
 from app.bot.utils.schemas.models import PostData
 from .calendar_ import CustomCalendar
 from .getters import content_bot_data, content_channel_data, content_data, content_today_bot_data
-from .handlers import on_date_selected, type_selected
+from .handlers import on_date_selected, on_post_selected, type_selected
 
 
 
@@ -32,13 +32,13 @@ content_dialog = Dialog(
         Row(
             SwitchTo(
                 Format("{content_bot_btn}"), 
-                id="bot_content",
+                id="bot",
                 state=ContentSG.bot,
                 on_click=type_selected
             ),
             SwitchTo(
                 Format("{content_channel_btn}"),
-                id="channel_content",
+                id="channel",
                 state=ContentSG.channel,
                 on_click=type_selected
             ),
@@ -54,15 +54,16 @@ content_dialog = Dialog(
         state=ContentSG.bot,
         getter=content_bot_data    
     ),
-    # окно 
+    # окно контента бота
     Window(
         Format("{today_info_msg}"),
         ScrollingGroup(
             Select(
-                Format("{item.scheduled_time} - {item.text}"),
+                Format("{item.time} - {item.text}"),
                 id="s_calendar",
                 item_id_getter=post_id_getter,
-                items="posts"
+                items="posts",
+                on_click=on_post_selected
             ),
             id="sg_calendar",
             height=5,
@@ -72,6 +73,13 @@ content_dialog = Dialog(
         getter=content_today_bot_data,
         state=ContentSG.today_info_bot
     ),
+    # окно работы с постами на выбранный период
+    Window(
+        Format("{process_selected_post_msg}"),
+        Button(Format("{to_cancel}"), id="delete_post", on_click=on_post_selected),
+        Back(Format("{back}")),
+        state=ContentSG.process_selected
+    ),
     # окно контента канала
     Window(
         Format("{channel_content_msg}"),        
@@ -80,5 +88,6 @@ content_dialog = Dialog(
         state=ContentSG.channel,
         getter=content_channel_data    
     ),
+    
     getter=content_data
 )

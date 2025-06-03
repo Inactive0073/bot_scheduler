@@ -46,9 +46,10 @@ async def content_data(
         "content_hello_msg": i18n.content.hello(),
         "content_bot_btn": i18n.content.bot.btn(),
         "content_channel_btn": i18n.content.channel.btn(),
-        "delete_btn": i18n.delete(),
+        "to_cancel": i18n.to.cancel(),
         "edit_btn": i18n.edit(),
         "back": i18n.back(),
+        "process_selected_post_msg": i18n.content.process.select.post.msg(),
     }
     
     
@@ -69,10 +70,11 @@ async def content_bot_data(
     days_with_posts = [post.scheduled_time.date() for post in all_posts]
     
     dialog_manager.dialog_data["days_with_posts"] = days_with_posts
+    recipient_type = dialog_manager.dialog_data.get("recipient_type")
     dialog_manager.dialog_data["user_tz_offset"] = user_tz_offset
     dialog_manager.dialog_data["parsed_posts"] = parsed_data
 
-    text_month_info = i18n.content.month.info.msg(month=current_month, count_post=len(parsed_data))
+    text_month_info = i18n.content.month.info.msg(month=current_month, type_=recipient_type, count_post=len(parsed_data))
 
     return {
         "bot_content_msg": text_month_info,
@@ -92,7 +94,6 @@ async def content_today_bot_data(
         )
     )
     selected_date_fmt = selected_date.strftime("%d.%m")
-    
     parsed_posts = [PostData.model_validate(post) for post in dialog_manager.dialog_data.get("parsed_posts")]
     today_posts = find_selected_posts(parsed_posts, selected_datetime, user_tz_offset)
     count_posts = len(today_posts)

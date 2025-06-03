@@ -20,11 +20,11 @@ from app.bot.states.manager import ManagerSG, ContentSG
 from app.bot.utils.schemas.models import PostData
 from .calendar_ import CustomCalendar
 from .getters import content_bot_data, content_channel_data, content_data, content_today_bot_data
-from .handlers import on_date_selected, on_post_selected, type_selected
+from .handlers import on_date_selected, on_post_selected, type_selected, on_cancel_selected
 
 
 
-post_id_getter: Callable[[PostData], str] = lambda item: item.schedule_id
+post_id_getter: Callable[[PostData], str] = lambda item: item.schedule_id 
 
 content_dialog = Dialog(
     Window(
@@ -76,7 +76,7 @@ content_dialog = Dialog(
     # окно работы с постами на выбранный период
     Window(
         Format("{process_selected_post_msg}"),
-        Button(Format("{to_cancel}"), id="delete_post", on_click=on_post_selected),
+        Button(Format("{to_cancel}"), id="delete_post", on_click=on_cancel_selected),
         Back(Format("{back}")),
         state=ContentSG.process_selected
     ),

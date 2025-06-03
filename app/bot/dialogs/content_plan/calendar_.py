@@ -1,12 +1,10 @@
-from aiogram_dialog import ChatEvent, Dialog, DialogManager, Window
-from aiogram_dialog.widgets.text import Const, Format, Text
+from aiogram_dialog import  DialogManager
+from aiogram_dialog.widgets.text import Format, Text
 
 from datetime import date
 from aiogram_dialog.widgets.kbd import (
     Calendar,
-    CalendarScope,
-    ManagedCalendar,
-    SwitchTo,
+    CalendarScope
 )
 from aiogram_dialog.widgets.kbd.calendar_kbd import (
     DATE_TEXT,

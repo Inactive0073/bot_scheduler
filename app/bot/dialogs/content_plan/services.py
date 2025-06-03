@@ -2,7 +2,8 @@ from typing import Any
 from app.bot.utils.schemas import PostData
 from app.bot.db.models.schedule_post import SchedulePost
 
-from datetime import timedelta, timezone, datetime, date
+from datetime import timedelta, timezone, datetime
+
 
 def parse_post_data(data: list[SchedulePost]) -> list[dict[str, Any]]:
     posts = []
@@ -32,5 +33,7 @@ def find_selected_posts(posts: list[PostData], selected_date: datetime, tz_offse
             result.append(post)
     return result
 
+
 def get_dates_with_posts(posts: list[PostData]) -> set[str]:
     return {post.scheduled_time.date() for post in posts}
+

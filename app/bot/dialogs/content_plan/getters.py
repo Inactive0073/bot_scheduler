@@ -1,5 +1,4 @@
 from typing import TYPE_CHECKING, Dict
-import ormsgpack
 
 from aiogram.types import User
 
@@ -88,7 +87,9 @@ async def content_today_bot_data(
 ) -> Dict[str,str]:
     user_tz_offset = dialog_manager.dialog_data.get("user_tz_offset")
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
-    selected_date: date = dialog_manager.dialog_data.get("selected_date")
+    year, month, day = map(int, dialog_manager.dialog_data.get("selected_date").split("-")) # Данные приходят в формате yyyy-mm-dd
+    selected_date = date(year, month, day)
+
     selected_datetime = (
         datetime.fromisoformat(selected_date.isoformat()).replace(tzinfo=timezone(timedelta(hours=user_tz_offset))
         )

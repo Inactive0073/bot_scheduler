@@ -70,7 +70,10 @@ async def get_post(
 
 async def get_posts(session: AsyncSession, target_type: MessageType = None) -> list[SchedulePost]:
     """Получить все запланированные посты"""
-    stmt = select(SchedulePost).where(SchedulePost.scheduled_time > func.now())
+    stmt = select(SchedulePost).where(
+        SchedulePost.scheduled_time > func.now(),
+        SchedulePost.notify_status == PostStatus.SCHEDULED,
+    )
     if target_type in MessageType:
         stmt = stmt.where(SchedulePost.target_type == target_type)
     result = await session.execute(stmt)

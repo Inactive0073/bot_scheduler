@@ -1,9 +1,10 @@
 import logging
+from typing import cast
 from aiogram import Bot, Dispatcher
-
+from aiogram.types import Message
 from aiogram.client.default import DefaultBotProperties
 
-from aiogram_dialog import setup_dialogs
+from aiogram_dialog import DialogManager, ShowMode, StartMode, setup_dialogs
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     create_async_engine,
@@ -19,6 +20,8 @@ from aiogram.enums import ParseMode
 
 from taskiq_nats import NATSKeyValueScheduleSource
 
+from app.bot.db.common_requests import get_user_role
+
 from .bot.db.base import Base
 from .bot.middlewares import (
     DbSessionMiddleware,
@@ -27,7 +30,7 @@ from .bot.middlewares import (
     ContextMiddleware,
 )
 from .bot.dialogs.setup import get_dialogs
-from .bot.handlers.commands import commands_router
+from .bot.handlers.commands import commands_router, run_dialog
 from .config_data.config import Config
 from .storage.nats_storage import NatsStorage
 
@@ -70,6 +73,45 @@ class DependeciesConfig:
         dp = Dispatcher(storage=storage)
         self.dp = dp
         return dp
+    
+        
+    # async def on_unknown_intent(self, event, dialog_manager: DialogManager):
+    #     message = cast(Message, event.update.message)
+    #     session = dialog_manager.middleware_data.get("session")
+    #     logging.error(f"Restarting dialog: {event.exception}")
+    #     roles = set(await get_user_role(
+    #         session=session, 
+    #         telegram_id=message.chat.id,
+    #     ))
+    #     await run_dialog(
+    #         dialog_manager=dialog_manager,
+    #         session=session,
+    #         roles=roles,
+    #         telegram_id=message.chat.id,
+    #         username=message.chat.username,
+    #         first_name=message.chat.first_name,
+    #         last_name=message.chat.last_name,
+    #     )
+
+
+    # async def on_unknown_state(self, event, dialog_manager: DialogManager):
+    #     message = cast(Message, event.update.message)
+    #     logging.error(f"Restarting dialog: {event.exception}")
+    #     session = dialog_manager.middleware_data.get("session")
+    #     roles = set(await get_user_role(
+    #         session=self.session, 
+    #         telegram_id=message.chat.id,
+    #     ))
+    #     await run_dialog(
+    #         dialog_manager=dialog_manager,
+    #         session=session,
+    #         roles=roles,
+    #         telegram_id=message.chat.id,
+    #         username=message.chat.username,
+    #         first_name=message.chat.first_name,
+    #         last_name=message.chat.last_name,
+    #     )
+        
 
     @staticmethod
     def register_middlewares_and_routers(
@@ -101,3 +143,4 @@ class DependeciesConfig:
 
         # Запускаем функцию настройки проекта для работы с диалогами
         setup_dialogs(dp)
+

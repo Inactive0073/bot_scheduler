@@ -35,21 +35,6 @@ async def process_start_command(
     logger.info(
         f"Пользователь {first_name}|{username} с ролями {roles}, нажал кнопку /start"
     )
-    await run_dialog(
-        dialog_manager, session, roles, 
-        telegram_id, username, first_name, last_name
-    )
-
-
-async def run_dialog(
-    dialog_manager: DialogManager,
-    session: AsyncSession,
-    roles: set[Literal["admin", "manager", "waiter","owner"]],
-    telegram_id: int,
-    username: str = None,
-    first_name: str = None,
-    last_name: str = None,
-):
     if not roles.intersection({"admin", "manager", "waiter", "owner"}):
         if not (await get_customer_detail_info(session, telegram_id)):
             logger.debug(f"Проверка {telegram_id} пройдена успешно!")

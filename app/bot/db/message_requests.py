@@ -7,6 +7,7 @@ from datetime import datetime
 from .models.schedule_post import SchedulePost
 from ..utils.enums import PostStatus, MessageType
 
+
 # ------------------- Schedule Post Operations -------------------
 async def upsert_post(
     session: AsyncSession,
@@ -68,7 +69,9 @@ async def get_post(
     return result.scalar_one_or_none()
 
 
-async def get_posts(session: AsyncSession, target_type: MessageType = None) -> list[SchedulePost]:
+async def get_posts(
+    session: AsyncSession, target_type: MessageType = None
+) -> list[SchedulePost]:
     """Получить все запланированные посты"""
     stmt = select(SchedulePost).where(
         SchedulePost.scheduled_time > func.now(),
@@ -90,7 +93,11 @@ async def delete_post(session: AsyncSession, schedule_id: str) -> bool:
 
 async def cancel_post(session: AsyncSession, schedule_id: str) -> bool:
     """Удаляет запись о запланированном посте из базы данных."""
-    stmt = update(SchedulePost).where(SchedulePost.schedule_id == schedule_id).values(notify_status=PostStatus.CANCELED)
+    stmt = (
+        update(SchedulePost)
+        .where(SchedulePost.schedule_id == schedule_id)
+        .values(notify_status=PostStatus.CANCELED)
+    )
     result = await session.execute(stmt)
     await session.commit()
     return result.rowcount > 0

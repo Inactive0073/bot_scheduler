@@ -7,9 +7,6 @@ from taskiq import TaskiqEvents, TaskiqState, TaskiqScheduler
 from app.config_data.config import load_config, Config
 
 
-# if sys.platform == "win32":
-#     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
 config: Config = load_config()
 
 broker = PullBasedJetStreamBroker(servers=config.nats.servers, queue="taskiq_queue")

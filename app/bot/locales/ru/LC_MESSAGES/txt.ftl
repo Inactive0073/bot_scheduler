@@ -74,7 +74,7 @@ customer-menu-partnership-button = Сотрудничество
 customer-menu-help-button = Помощь
 
 # Balance
-customer-balance-message = Ваша бонусная информация
+customer-balance-message = <b>Баланс и уровень</b>
  
 
     <b>Баланс бонусов:</b> {$current_balance}

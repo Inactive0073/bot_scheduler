@@ -6,8 +6,7 @@ from datetime import timedelta, timezone, datetime
 
 
 def parse_post_data(
-    data: list[SchedulePost], 
-    tzinfo=timezone(timedelta(hours=3))
+    data: list[SchedulePost], tzinfo=timezone(timedelta(hours=3))
 ) -> list[dict[str, Any]]:
     posts = []
     for post in data:
@@ -26,7 +25,7 @@ def parse_post_data(
                 file_id=post.data_json.get("file_id"),
             ).data_python
         )
-        
+
     return posts
 
 
@@ -40,4 +39,3 @@ def find_selected_posts(posts: list[PostData], selected_date: datetime):
 
 def get_dates_with_posts(posts: list[PostData]) -> set[str]:
     return {post.scheduled_time.date() for post in posts}
-

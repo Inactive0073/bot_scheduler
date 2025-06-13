@@ -273,8 +273,8 @@ create_post_dialog = Dialog(
                 id="edit_scheduled_post",
                 state=PostingSG.creating_post,
                 on_click=cancel_old_post,
-                when=~F["dialog_data"]["display_none"]
-        ),
+                when=~F["dialog_data"]["display_none"],
+            ),
         ),
         state=PostingSG.show_posted_status,
         getter=get_report_after_push_data,
@@ -302,7 +302,7 @@ create_post_dialog = Dialog(
         state=PostingSG.push_later,
         getter=get_push_later_data,
     ),
-    # окно статуса планирования поста для подписчиков бота 
+    # окно статуса планирования поста для подписчиков бота
     Window(
         Format("{report_message}"),
         Format("\n\n{autocaption}"),
@@ -317,7 +317,7 @@ create_post_dialog = Dialog(
                 id="edit_scheduled_post",
                 state=PostingSG.creating_post,
                 on_click=cancel_old_post,
-                when=~F["dialog_data"]["display_none"]
+                when=~F["dialog_data"]["display_none"],
             ),
         ),
         state=PostingSG.show_sended_status,

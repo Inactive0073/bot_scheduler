@@ -506,7 +506,7 @@ async def process_push_now_to_channel_button(
                 )
                 await message.answer(f"{i18n.error()}")
             finally:
-                dialog_manager.dialog_data["display_none"] = True  
+                dialog_manager.dialog_data["display_none"] = True
                 await dialog_manager.switch_to(state=PostingSG.show_posted_status)
 
 
@@ -548,7 +548,9 @@ async def process_push_to_bot_button(
 ):
     """Отправка среди подписчиков бота"""
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    nats_source: NATSKeyValueScheduleSource = dialog_manager.middleware_data.get("nats_source")
+    nats_source: NATSKeyValueScheduleSource = dialog_manager.middleware_data.get(
+        "nats_source"
+    )
     session = dialog_manager.middleware_data.get("session")
 
     # получение списка ID пользователей
@@ -564,14 +566,14 @@ async def process_push_to_bot_button(
         "dt_posting_iso", datetime.now(tz=tzinfo).isoformat()
     )
     posting_time = datetime.fromisoformat(posting_time_iso)
-    
+
     # Проверка на валидность времени
     try:
         get_delay(post_time=posting_time)
     except ValueError:
         await message.answer(i18n.cr.instruction.too.late.time())
         return
-    
+
     # Пользовательские данные для сообщения
     post_data = PostData(
         text=dialog_manager.dialog_data.get("post_message"),
@@ -583,7 +585,7 @@ async def process_push_to_bot_button(
         selected_customers=telegram_ids,
     )
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
-    
+
     task = await send_schedule_message_bot_subscribers.schedule_by_time(
         source=nats_source,
         time=post_data.scheduled_time,
@@ -594,7 +596,7 @@ async def process_push_to_bot_button(
         disable_notification=post_data.disable_notification,
         has_spoiler=post_data.has_spoiler,
     )
-    
+
     if dialog_manager.dialog_data.get("need_cancel_old_post"):
         schedule_id = dialog_manager.dialog_data.get("schedule_id")
         await nats_source.delete_schedule(schedule_id)
@@ -603,17 +605,17 @@ async def process_push_to_bot_button(
             logger.debug(f"Старый пост {schedule_id} был удален.")
         else:
             logger.debug(f"Не удалось удалить пост {schedule_id}.")
-    
+
     schedule_id = task.schedule_id
     dialog_manager.dialog_data["schedule_id"] = schedule_id
-    
+
     keyboard_dumped = post_data.keyboard.model_dump() if post_data.keyboard else None
     data_json = {
         "keyboard": keyboard_dumped,
         "disable_notification": post_data.disable_notification,
         "has_spoiler": post_data.has_spoiler,
         "selected_channels": post_data.selected_channels,
-        "file_id": post_data.file_id
+        "file_id": post_data.file_id,
     }
     await upsert_post(
         session=session,
@@ -636,7 +638,9 @@ async def process_send_to_channel_later(
     dialog_manager: DialogManager,
 ) -> None:
     i18n: TranslatorRunner = dialog_manager.middleware_data.get("i18n")
-    nats_source: NATSKeyValueScheduleSource = dialog_manager.middleware_data.get("nats_source")
+    nats_source: NATSKeyValueScheduleSource = dialog_manager.middleware_data.get(
+        "nats_source"
+    )
     session = dialog_manager.middleware_data.get("session")
 
     # Предварительная подготовка
@@ -676,7 +680,7 @@ async def process_send_to_channel_later(
         disable_notification=post_data.disable_notification,
         has_spoiler=post_data.has_spoiler,
     )
-    
+
     if dialog_manager.dialog_data.get("need_cancel_old_post"):
         schedule_id = dialog_manager.dialog_data.get("schedule_id")
         await nats_source.delete_schedule(schedule_id)
@@ -685,9 +689,9 @@ async def process_send_to_channel_later(
             logger.debug(f"Старый пост {schedule_id} был удален.")
         else:
             logger.debug(f"Не удалось удалить пост {schedule_id}.")
-        
+
     schedule_id = task.schedule_id
-        
+
     dialog_manager.dialog_data["schedule_id"] = schedule_id
     keyboard_dumped = post_data.keyboard.model_dump() if post_data.keyboard else None
     data_json = {

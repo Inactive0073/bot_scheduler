@@ -27,5 +27,3 @@ class PostData(BaseModel):
     def data_json(self):
         data = self.model_dump(mode="json")
         return data
-
-

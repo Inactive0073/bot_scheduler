@@ -4,10 +4,4 @@ from .creating_post import PostingSG
 from .settings import SettingsSG
 from .manager import ManagerSG
 
-__all__ = [
-    "ContentSG",
-    "AdditionToChannelSG",
-    "PostingSG",
-    "SettingsSG",
-    "ManagerSG"
-]
+__all__ = ["ContentSG", "AdditionToChannelSG", "PostingSG", "SettingsSG", "ManagerSG"]

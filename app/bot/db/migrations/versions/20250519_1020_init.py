@@ -93,6 +93,14 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("role_id"),
         sa.UniqueConstraint("name"),
     )
+    op.execute("""
+        INSERT INTO roles (name) VALUES 
+            ('waiter'), 
+            ('manager'), 
+            ('admin'), 
+            ('owner');
+    """)  # Заполнение дефолтных ролей в таблице (waiter, manager, admin, owner)
+
     op.create_table(
         "users",
         sa.Column(

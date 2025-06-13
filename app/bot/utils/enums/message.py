@@ -12,6 +12,7 @@ class PostStatus(str, Enum):
     CANCELED = "cancelled"
     FAILED = "failed"
 
+
 class MessageType(str, Enum):
     BOT = "bot"
     CHANNEL = "channel"

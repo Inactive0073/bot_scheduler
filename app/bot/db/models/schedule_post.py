@@ -10,6 +10,7 @@ from app.bot.db import Base
 
 from app.bot.utils.enums import PostStatus
 
+
 class SchedulePost(TimestampMixin, Base):
     __tablename__ = "schedule_posts"
 
@@ -25,6 +26,6 @@ class SchedulePost(TimestampMixin, Base):
         Text,
         nullable=False,
         server_default=PostStatus.SCHEDULED,
-        default=PostStatus.SCHEDULED 
+        default=PostStatus.SCHEDULED,
     )
     user: Mapped["User"] = relationship(back_populates="schedule_posts")  # type: ignore

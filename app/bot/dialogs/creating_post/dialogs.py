@@ -230,6 +230,7 @@ create_post_dialog = Dialog(
             content_types=[ContentType.PHOTO, ContentType.VIDEO],
         ),
         MessageInput(func=process_invalid_media_content),
+        SwitchTo(Format("{back}"),id="__back__", state=PostingSG.creating_post),
         state=PostingSG.media,
         getter=get_addition_media_data,
     ),

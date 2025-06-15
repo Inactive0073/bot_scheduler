@@ -157,7 +157,10 @@ async def process_button_case(
         msg_id = dialog_manager.dialog_data["message_id"]
         chat_id = dialog_manager.dialog_data["chat_id"]
         post_message = dialog_manager.dialog_data["post_message"]
-        media_file_id = dialog_manager.dialog_data.get("media_content")
+        media_arr = dialog_manager.dialog_data.get("media_content", [])
+        file_id = None
+        if media_arr:
+            file_id, uq_file_id = media_arr[0]
 
         # Кладем клавиатуру в dialog_data
         dialog_manager.dialog_data["keyboard"] = keyboard.model_dump()
@@ -171,7 +174,8 @@ async def process_button_case(
                 reply_markup=keyboard,
             )
         else:
-            media = InputMediaPhoto(media=media_file_id, caption=post_message)
+            print(f"{file_id=}")
+            media = InputMediaPhoto(media=file_id, caption=post_message)
             await message.bot.edit_message_media(
                 media=media,
                 chat_id=chat_id,
@@ -430,13 +434,14 @@ async def process_remove_media(
         chat_id=chat_id,
         message_id=msg_id,
     )
+    logger.info(f"Пользователь {message.from_user.id} удалил медиа.")
     # Заново складываем в диалог дату обновленные данные
     new_message = await message.bot.send_message(
         chat_id=chat_id, text=post_message, reply_markup=keyboard
     )
     dialog_manager.dialog_data["message_id"] = new_message.message_id
     dialog_manager.dialog_data["has_media"] = False
-    dialog_manager.dialog_data["media_content"] = None
+    dialog_manager.dialog_data["media_content"] = []
 
 
 # Настройка уведомлений
@@ -575,15 +580,21 @@ async def process_push_to_bot_button(
         return
 
     # Пользовательские данные для сообщения
+    media_arr = dialog_manager.dialog_data.get("media_content", [])
+    file_id = None
+    print(f"{media_arr=}")
+    if media_arr:
+        file_id, uq_file_id = media_arr[0]
     post_data = PostData(
         text=dialog_manager.dialog_data.get("post_message"),
         scheduled_time=posting_time,
         keyboard=dialog_manager.dialog_data.get("keyboard"),
-        file_id=dialog_manager.dialog_data.get("media_content"),
+        file_id=file_id,
         has_spoiler=dialog_manager.dialog_data.get("has_spoiler"),
         disable_notification=dialog_manager.dialog_data.get("disable_notification"),
         selected_customers=telegram_ids,
     )
+    print(f"{post_data.__dict__=}")
     recipient_type = dialog_manager.dialog_data.get("recipient_type")
 
     task = await send_schedule_message_bot_subscribers.schedule_by_time(
